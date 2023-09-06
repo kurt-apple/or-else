@@ -17,19 +17,51 @@ Hunger is a potent catalyst for behavior change. Your brain wants you to survive
 - Set a minimum ration to prevent weird days with unforseen obligations from needlessly punishing you; not exactly the point of the game to punish you for things outside your control.
 
 # Installation
+## Find a Good Spot
 Navigate to a directory you can clone a repo folder.
 Clone the project into your folder of choice.
-`git clone git@github.com:kurt-apple/or-else.git or-else`
+```bash
+git clone git@github.com:kurt-apple/or-else.git or-else
+```
 Navigate into the project directory.
-`cd or-else`
+```bash
+cd or-else
+```
+## Initialize the SQLite Database
 Create a habits.db file in the main directory of the project.
-`touch habits.db`
-Navigate to client folder and install packages. Yarn is recommended (by Quasar docs)
-`cd client`
-`yarn`
-Run the frontend.
-`quasar dev`
+```bash
+touch habits.db
+```
+## Set Up The Client
+Navigate to client folder and install dependencies. Yarn is recommended (by Quasar docs)
+```bash
+cd client
+yarn
+# or
+npm install
+```
+## Start the app in development mode (hot-code reloading, error reporting, etc.)
+### Run the Frontend
+```bash
+quasar dev
+```
+### Run the Backend (no hot reloading for Golang)
 In another terminal window, navigate to the main directory of the project.
-`cd or-else`
-Run the backend.
-`go run main.go`
+```bash
+cd or-else
+go run main.go
+```
+## Lint the Files
+```bash
+yarn lint
+# or
+npm run lint
+```
+## Format the Files
+```bash
+yarn format
+# or
+npm run format
+```
+## Customize the configuration
+See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
