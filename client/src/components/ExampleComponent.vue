@@ -3,7 +3,8 @@
     <p>{{ title }}</p>
     <ul>
       <li v-for="todo in todos" :key="todo.id ?? undefined" @click="increment">
-        {{ todo.id }} - {{ todo.title }} - {{ todo.times_completed / todo.times_sampled }}
+        {{ todo.id }} - {{ todo.title }} -
+        {{ todo.times_completed / todo.times_sampled }}
       </li>
     </ul>
     <p>Count: {{ todoCount }} / {{ meta.totalCount }}</p>
@@ -13,30 +14,23 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  PropType,
-  computed,
-  ref,
-  toRef,
-  Ref,
-} from 'vue';
-import { Meta } from './models';
-import { Habit } from 'src/stores/habit/habit';
+import { defineComponent, PropType, computed, ref, toRef, Ref } from 'vue'
+import { Meta } from './models'
+import { Habit } from 'src/stores/habit/habit'
 
 function useClickCount() {
-  const clickCount = ref(0);
+  const clickCount = ref(0)
   function increment() {
     clickCount.value += 1
-    return clickCount.value;
+    return clickCount.value
   }
 
-  return { clickCount, increment };
+  return { clickCount, increment }
 }
 
 function useDisplayTodo(todos: Ref<Habit[]>) {
-  const todoCount = computed(() => todos.value.length);
-  return { todoCount };
+  const todoCount = computed(() => todos.value.length)
+  return { todoCount }
 }
 
 export default defineComponent({
@@ -44,22 +38,22 @@ export default defineComponent({
   props: {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     todos: {
       type: Array as PropType<Habit[]>,
-      default: () => []
+      default: () => [],
     },
     meta: {
       type: Object as PropType<Meta>,
-      required: true
+      required: true,
     },
     active: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
-  setup (props) {
-    return { ...useClickCount(), ...useDisplayTodo(toRef(props, 'todos')) };
+  setup(props) {
+    return { ...useClickCount(), ...useDisplayTodo(toRef(props, 'todos')) }
   },
-});
+})
 </script>
