@@ -7,7 +7,6 @@ export default class AxiosPiniaCRUD {
       ...useStoreActions(),
       async axios_createItem(this: M, obj: M) {
 				return new Promise((resolve, reject) => {
-					///TODO: does this technically mean any AxiosModel could be passed as argument into any other AxiosModel's actions?
 					api.post(`/${endpoint}`, obj, {
 						headers: {
 							/*Authorization: authenticationStore.getBearerToken*/
@@ -21,13 +20,10 @@ export default class AxiosPiniaCRUD {
 				})
 			},
       async axios_getAll(this: M) {
-        console.log({'Model': this})
-        console.log({'entity name': endpoint})
         const response = await api.get(`/${endpoint}`, {
           headers: {/*Authorization: authenticationStore.getBearerToken*/},
           params: {}
         })
-        console.log({'response data': response.data})
         this.fresh(response.data)
         return response
       },
