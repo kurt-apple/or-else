@@ -22,3 +22,9 @@ go.work
 
 # db
 *.db
+
+# Quasar Project
+client/.editorconfig
+client/.gitignore
+client/.npmrc
+client/.vscode
