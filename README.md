@@ -15,3 +15,21 @@ Hunger is a potent catalyst for behavior change. Your brain wants you to survive
 - Your ration is `baseline daily ration` * `qty of completed habits yesterday` / `qty of sampled habits yesterday`
 - optional: `baseline daily ration` varies depending on if you gain or lose weight the day prior - intended to calibrate `baseline` to prevent calorie deficit or surplus
 - Set a minimum ration to prevent weird days with unforseen obligations from needlessly punishing you; not exactly the point of the game to punish you for things outside your control.
+
+# Installation
+Navigate to a directory you can clone a repo folder.
+Clone the project into your folder of choice.
+`git clone git@github.com:kurt-apple/or-else.git or-else`
+Navigate into the project directory.
+`cd or-else`
+Create a habits.db file in the main directory of the project.
+`touch habits.db`
+Navigate to client folder and install packages. Yarn is recommended (by Quasar docs)
+`cd client`
+`yarn`
+Run the frontend.
+`quasar dev`
+In another terminal window, navigate to the main directory of the project.
+`cd or-else`
+Run the backend.
+`go run main.go`
