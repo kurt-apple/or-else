@@ -65,3 +65,56 @@ npm run format
 ```
 ## Customize the configuration
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+
+# TODOs
+- [ ] left menu:
+  - [ ] Dashboard
+  - [ ] Habits List
+  - [ ] Daily Accomplishments
+  - [ ] Food Log
+  - [ ] Weight Log
+  - [ ] Settings
+- [ ] Dashboard
+  - [ ] Section for Most Consistent Habits - 95% completion rate threshold? user configurable
+  - [ ] Section for Top X habits to focus on (x) based on your activity level yesterday
+    - [ ] Nice cards in a list for each habit
+    - [ ] Click to expand other habits not in focus today
+  - [ ] Section for Ration
+    - [ ] How your ration was calculated
+    - [ ] Progress toward ration today
+    - [ ] Baseline
+  - [ ] Cards/nice UI/UX for each 
+- [ ] Habits List
+  - [ ] Make it slick
+  - [ ] Plus Sign to Add
+- [ ] Add Habit Screen
+  - [ ] Title
+  - [ ] Description - how to measure
+  - [ ] Tags - could be useful for visualizations later on
+- [ ] Daily Accomplishments
+  - [ ] Graphs of completion statistics
+  - [ ] Access the Logs of previous days
+  - [ ] What the current Daily Log looks like
+  - [ ] Place food log in Daily Log Entries
+- [ ] Food Log
+  - [ ] Put today's food in focus
+  - [ ] Access prior food logs using a calendar
+- [ ] Add Food Item to DB
+  - [ ] Calories, Unit
+  - [ ] Scrape MFP?
+- [ ] Add Food Item To Daily Log
+  - [ ] Item (with quick add)
+  - [ ] QTY (pull units in from food item Model)
+- [ ] Weight Log
+  - [ ] Graph over time
+  - [ ] Add weigh ins at any time (mind user-configured time zone)
+  - [ ] future goal: integrate into withings
+- [ ] Settings
+  - [ ] Time Zone
+  - [ ] Name
+  - [ ] Completion Rate Threshold for Top Performers List
+  - [ ] Max habits in focus per day
+  - [ ] Baseline Calories
+    - [ ] Basic Quiz to set default
+  - [ ] Dynamic adjustment of calorie baseline (slide to enable)
+  - [ ] authentication settings

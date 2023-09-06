@@ -17,7 +17,6 @@ import ExampleComponent from 'components/ExampleComponent.vue'
 import { defineComponent, ref } from 'vue'
 import { Habit } from 'stores/habit/habit'
 import { mapRepos, useRepo } from 'pinia-orm'
-//import { useHabitsStore } from 'stores/habit/habit-store'
 
 export default defineComponent({
   name: 'IndexPage',
