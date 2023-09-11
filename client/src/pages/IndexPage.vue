@@ -15,6 +15,8 @@ import { Habit } from 'stores/habit/habit'
 import { mapRepos, useRepo } from 'pinia-orm'
 import { User } from 'src/stores/user/user'
 import HabitCard from 'components/HabitCard.vue'
+import CompletionEntry from 'src/stores/completion/completion'
+import DailyLog from 'src/stores/daily-log/daily-log'
 
 export default defineComponent({
   name: 'IndexPage',
@@ -28,7 +30,9 @@ export default defineComponent({
   computed: {
     ...mapRepos({
       habitRepo: Habit,
-      userRepo: User
+      userRepo: User,
+      completionRepo: CompletionEntry,
+      dailyLogRepo: DailyLog
     }),
     defaultUser(): User {
       const defaultUser = this.userRepo.where('name', 'DEFAULT').first()

@@ -92,7 +92,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
         - [ ] From dashboard
           - [x] place headings and lists on their own lines
           - [ ] add checkbox on the habit
-            - [ ] map completion repo to index
+            - [x] map completion repo to index
               - [x] create completion repo
                 - [x] on frontend
                 - [x] on backend
