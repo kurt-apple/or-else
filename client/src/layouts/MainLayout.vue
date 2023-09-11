@@ -13,11 +13,12 @@
 
         <q-toolbar-title> Quasar App </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <existential-dread></existential-dread>
       </q-toolbar>
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+      <existential-dread></existential-dread>
       <q-list>
 
         <EssentialLink
@@ -37,6 +38,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
+import ExistentialDread from 'components/ExistendialDread.vue'
 
 const linksList = [
   {
@@ -81,6 +83,7 @@ export default defineComponent({
 
   components: {
     EssentialLink,
+    ExistentialDread
   },
 
   setup() {

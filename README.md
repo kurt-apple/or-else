@@ -108,7 +108,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
                     - [x] make ADD DEMO HABIT in habits page
 
             - [ ] query completion repo for current user's complete habits for today
-              - [ ] add daily log repo (has many completions)
+              - [x] add daily log repo (has many completions)
               - [ ] add new daily log if it's a new day (compare today against last log's date)
               - [ ] seed daily log
                 - [ ] create daily log when new user is created

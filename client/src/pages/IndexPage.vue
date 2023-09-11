@@ -24,7 +24,7 @@ export default defineComponent({
     HabitCard
   },
   async setup() {
-    let du = await useRepo(User).piniaStore().axios_getAll()
+    await useRepo(User).piniaStore().axios_getAll()
     await useRepo(Habit).piniaStore().axios_getAll()
   },
   computed: {

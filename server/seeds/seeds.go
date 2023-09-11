@@ -48,7 +48,10 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		})
 	}
 
-	firstDailyLog := &models.DailyLog{}
+	// firstDailyLog := &models.DailyLog{
+	// 	UserID: 1,
+	// 	Date:
+	// }
 
 	fmt.Println("pushing default user to db")
 	db.Create(&defaultUser)
