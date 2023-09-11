@@ -67,18 +67,56 @@ npm run format
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
 
 # TODOs
-- [ ] left menu:
-  - [ ] Dashboard
-  - [ ] Habits List
-  - [ ] Daily Accomplishments
-  - [ ] Food Log
-  - [ ] Weight Log
-  - [ ] Settings
+- [x] left menu:
+  - [x] Dashboard
+  - [x] Habits List
+  - [x] Daily Accomplishments
+  - [x] Food Log
+  - [x] Weight Log
+  - [x] Settings
+  - [x] Populate Icons and text fields with good data
+    - [x] Mock the different menu pages and route to them
 - [ ] Dashboard
-  - [ ] Section for Most Consistent Habits - 95% completion rate threshold? user configurable
+  - [x] Section for Most Consistent Habits - 95% completion rate threshold? user configurable
+    - [x] Make user configuration
+      - [x] Make default user on db (persisted)
+      - [x] Prop up a first draft settings page
+    - [x] Make getter for list
   - [ ] Section for Top X habits to focus on (x) based on your activity level yesterday
-    - [ ] Nice cards in a list for each habit
-    - [ ] Click to expand other habits not in focus today
+    - [x] Make store for value X
+    - [x] Make getter for list
+    - [x] Nice cards in a list for each habit
+    - [x] Click to expand other habits not in focus today
+    - [ ] Daily Logs
+      - [ ] Able to mark a habit complete for a given day
+        - [ ] From dashboard
+          - [x] place headings and lists on their own lines
+          - [ ] add checkbox on the habit
+            - [ ] map completion repo to index
+              - [x] create completion repo
+                - [x] on frontend
+                - [x] on backend
+                  - [x] create other necessary repos
+                    - [x] daily log repo
+                      - [x] on frontend
+                      - [x] on backend
+                  - [x] link habits to users from now on, even if it's just a default user
+                    - [x] Make get_default_user getter on repo if possible
+                    - [x] make ADD USER button in super page
+                      - [x] better yet: add seeds to db
+                    - [x] strip debug code in index
+                    - [x] make ADD DEMO HABIT in habits page
+
+            - [ ] query completion repo for current user's complete habits for today
+              - [ ] add daily log repo (has many completions)
+              - [ ] add new daily log if it's a new day (compare today against last log's date)
+              - [ ] seed daily log
+                - [ ] create daily log when new user is created
+                  - [ ] add startDate to user model and set it during creation
+                  - [ ] create new daily log on new user (in create function)
+        - [ ] From Daily Logs
+        - [ ] From Habits
+    - [ ] Habit Details Dialog
   - [ ] Section for Ration
     - [ ] How your ration was calculated
     - [ ] Progress toward ration today
@@ -118,3 +156,8 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
     - [ ] Basic Quiz to set default
   - [ ] Dynamic adjustment of calorie baseline (slide to enable)
   - [ ] authentication settings
+- [ ] Authentication
+  - [ ] have some
+  - [ ] pin to lock ui?
+- [ ] Styling
+  - [ ] Toggle Dark Theme in Settings

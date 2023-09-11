@@ -6,6 +6,7 @@ export default class AxiosPiniaCRUD {
     return {
       ...useStoreActions(),
       async axios_createItem(this: M, obj: M) {
+        console.log("createItem: ", obj)
         return new Promise((resolve, reject) => {
           api
             .post(`/${endpoint}`, obj, {
@@ -14,10 +15,12 @@ export default class AxiosPiniaCRUD {
               },
             })
             .then((response) => {
-              this.save(response.data)
+              console.log("createItem response from backend: ", response)
+              this.save([response.data])
               resolve(response)
             }),
             (error: any) => {
+              console.log("there was an error creating the item: ", error)
               reject(error)
             }
         })
@@ -29,10 +32,11 @@ export default class AxiosPiniaCRUD {
           },
           params: {},
         })
+        console.log("debug axios getAll: ", response.data)
         this.fresh(response.data)
         return response
       },
-      async axios_getId(this: M, id: number) {
+      async axios_getID(this: M, id: number) {
         const response = await api.get(`/${endpoint}/${id}`, {
           headers: {
             /*Authorization: authenticationStore.getBearerToken*/
@@ -40,7 +44,7 @@ export default class AxiosPiniaCRUD {
           params: {},
         })
         this.save(response.data)
-        return response
+        return response.data
       },
       async axios_updateItem(this: M, obj: M) {
         if (obj.id == null) throw new Error('Axios Update Item must have ID')

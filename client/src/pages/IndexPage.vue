@@ -1,55 +1,65 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <example-component
-      title="Example component"
-      active
-      :todos="todos"
-      :meta="meta"
-      v-if="todos.length > 0"
-    ></example-component>
-    <h1 v-if="todos.length == 0">no habits</h1>
-  </q-page>
+    <q-page class="row items-center justify-evenly">
+      <div>
+        <habit-card title="Your Best Habits" :habits="roses"></habit-card>
+        <habit-card title="Areas to Improve" :habits="thorns"></habit-card>
+        <q-btn v-if="habits.length" @click="nav('habits')" icon="list">See All Habits</q-btn>
+        <h1 v-if="habits.length == 0">no habits</h1>
+      </div>
+    </q-page>
 </template>
 
 <script lang="ts">
-import { Meta } from 'components/models'
-import ExampleComponent from 'components/ExampleComponent.vue'
 import { defineComponent, ref } from 'vue'
 import { Habit } from 'stores/habit/habit'
 import { mapRepos, useRepo } from 'pinia-orm'
+import { User } from 'src/stores/user/user'
+import HabitCard from 'components/HabitCard.vue'
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { ExampleComponent },
-  setup() {
-    const repo = useRepo(Habit)
-    console.log({ repo: repo })
-    try {
-      repo.piniaStore()
-    } catch (error: any) {
-      console.error('error accessing pinia store.', error)
-    }
-    if (repo.piniaStore() == null || typeof repo.piniaStore() === 'undefined') {
-      throw new Error('Pinia Store is not found')
-    } else {
-      console.log({ 'pinia store': repo.piniaStore() })
-      console.log('custom options: ', repo.getModel().$piniaOptions())
-    }
-    const habitStore = repo.piniaStore()
-    const habits = habitStore.axios_getAll()
-    console.log({ repo: repo, habits: habits })
-    const meta = ref<Meta>({
-      totalCount: 1200,
-    })
-    return { meta }
+  components: {
+    HabitCard
+  },
+  async setup() {
+    let du = await useRepo(User).piniaStore().axios_getAll()
+    await useRepo(Habit).piniaStore().axios_getAll()
   },
   computed: {
     ...mapRepos({
       habitRepo: Habit,
+      userRepo: User
     }),
-    todos(): Habit[] {
+    defaultUser(): User {
+      const defaultUser = this.userRepo.where('name', 'DEFAULT').first()
+      if(defaultUser == null) throw new Error('default user was not found')
+      return defaultUser
+    },
+    habits(): Habit[] {
       return this.habitRepo.all()
     },
+    roses(): Habit[] {
+      const threshold = this.defaultUser.completionRateThreshold
+      if(typeof threshold === 'undefined') {
+        throw new Error('completion rate threshold of default user is undefined')
+      }
+      return this.habitRepo.where('completionRate', (value: number) => { 
+        return value >= threshold
+      })
+      .orderBy('completionRate', 'desc')
+      .get()
+    },
+    thorns(): Habit[] {
+      return this.habitRepo
+      .orderBy('completionRate')
+      .limit(this.defaultUser.currentSampleRate)
+      .get()
+    }
   },
+  methods: {
+    nav(link: string) {
+      this.$router.push(`${link}`)
+    }
+  }
 })
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <q-item clickable tag="a" target="_blank" :href="link">
+  <q-item clickable tag="a" target="_blank" @click="nav(link)">
     <q-item-section v-if="icon" avatar>
       <q-icon :name="icon" />
     </q-item-section>
@@ -37,5 +37,10 @@ export default defineComponent({
       default: '',
     },
   },
+  methods: {
+    nav(link: string) {
+      this.$router.push(`${link}`)
+    }
+  }
 })
 </script>
