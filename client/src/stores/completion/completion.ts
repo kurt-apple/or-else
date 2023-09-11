@@ -12,5 +12,5 @@ export default class CompletionEntry extends Model {
   @Attr(null) declare dailyLogId: string | null
   @Bool(true) declare completed: boolean
   @BelongsTo(() => Habit, 'habitId') declare habit: Habit | null
-  @BelongsTo(() => DailyLog, 'dayId') declare date: DailyLog | null
+  @BelongsTo(() => DailyLog, 'dailyLogId') declare date: DailyLog | null
 }
