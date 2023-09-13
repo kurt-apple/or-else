@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"or-else/models"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -46,11 +45,14 @@ func CreateUser(db *gorm.DB) http.HandlerFunc {
 		var item User
 		json.NewDecoder(r.Body).Decode(&item)
 		fmt.Println("User: ", item)
-		newID := db.Create(&item)
-		firstDailyLog := &models.DailyLog{
-			UserID: newID,
-			LogDate: 
+		db.Create(&item)
+		firstDailyLog := &DailyLog{
+			UserID:           item.ID,
+			LogDate:          item.StartDate,
+			TodaysRation:     item.StartingRation,
+			TodaysSampleRate: item.CurrentSampleRate,
 		}
+		db.Create(firstDailyLog)
 		json.NewEncoder(w).Encode(item)
 	}
 }

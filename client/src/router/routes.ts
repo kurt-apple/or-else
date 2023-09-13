@@ -33,6 +33,14 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/AccountSettings.vue')
       },
       {
+        path: 'completions',
+        component: () => import('pages/CompletionsPage.vue')
+      },
+      {
+        path: 'daily-logs',
+        component: () => import('pages/DailyLogsPage.vue')
+      },
+      {
         path: 'super',
         component: () => import('pages/SuperPage.vue')
       }

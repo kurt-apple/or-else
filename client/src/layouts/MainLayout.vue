@@ -72,6 +72,16 @@ const linksList = [
     link: 'settings',
   },
   {
+    title: 'All Daily Logs',
+    icon: 'checklist',
+    link: 'daily-logs'
+  },
+  {
+    title: 'Completion Entries',
+    icon: 'checklist',
+    link: 'completions'
+  },
+  {
     title: 'Super User',
     icon: 'edit',
     link: 'super'

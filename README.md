@@ -125,7 +125,8 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
                     - [x] best way to handle dates within sqlite?
                     - [x] set start date during creation
                   - [x] create new daily log on new user (in create function) //in seed right now; worry about auto generate on user create later.
-              - [ ] review hasMany and BelongsTo specifically for Pinia-ORM
+              - [x] review hasMany and BelongsTo specifically for Pinia-ORM
+              - [ ] figure out how to generate completion logs when a daily log is made (go)
         - [ ] From Daily Logs
         - [ ] From Habits
     - [ ] Habit Details Dialog

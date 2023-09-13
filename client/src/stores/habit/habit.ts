@@ -24,6 +24,9 @@ export class Habit extends Model {
     return this.times_completed / this.times_sampled
   }
   get latestCompletionEntry () {
+    if(typeof this.completionEntries === 'undefined' || this.completionEntries == null) {
+      return null
+    }
     if(this.completionEntries.length == 0) {
       return null
     }
@@ -33,5 +36,13 @@ export class Habit extends Model {
     const latest = this.latestCompletionEntry
     if(latest == null) return false
     else return latest.complete
+  }
+  set wasCompletedToday(value) {
+    console.log("set wasCompletedToday to ", value)
+    const latest = this.latestCompletionEntry
+    console.log("completion entry: ", latest)
+    ///todo: generate new completion record and/or daily log if null
+    if(latest == null) throw new Error("There is no latest entry for this habit.")
+    latest.complete = value
   }
 }
