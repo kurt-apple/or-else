@@ -4,7 +4,7 @@
     <q-btn :icon="editModeToggle ? 'visibility' : 'edit'" @click="toggleEditMode"></q-btn>
     <q-list v-if="!editModeToggle">
       <q-item v-for="h, index in habits" :key="index">
-        
+        <q-checkbox v-model="h.wasCompletedToday"></q-checkbox>
         <q-item-section>
           <q-item-label> {{ h.title }}</q-item-label>
         </q-item-section>
@@ -35,8 +35,7 @@
 
 <script lang="ts">
 import { mapRepos } from 'pinia-orm';
-import DailyLog from 'src/pages/DailyLog.vue';
-import CompletionEntry from 'src/stores/completion/completion';
+import DailyLog from 'src/stores/daily-log/daily-log'
 import { Habit } from 'src/stores/habit/habit';
 import { PropType, defineComponent, ref } from 'vue';
 export default defineComponent({
@@ -61,6 +60,9 @@ export default defineComponent({
       habitRepo: Habit,
       dailyLogRepo: DailyLog
     }),
+    latestLog() {
+      return this.dailyLogRepo.orderBy('logDate', 'desc').limit(1)
+    }
   },
   methods: {
     async deleteHabit(habit: Habit) {
@@ -68,9 +70,9 @@ export default defineComponent({
       let result;
       if(habit.id != null) {
         result = await this.habitRepo.piniaStore().axios_deleteItem(habit.id)
+        console.log("result: ", result)
+        this.habitRepo.piniaStore().axios_getAll()
       }
-      console.log("result: ", result)
-      this.habitRepo.piniaStore().axios_getAll()
     },
     toggleEditMode() {
       this.editModeToggle = !this.editModeToggle

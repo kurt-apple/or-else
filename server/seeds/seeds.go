@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"or-else/models"
 	"os"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -36,6 +37,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		CurrentSampleRate:       2,
 		TimeZoneOffset:          -8,
 		StartingRation:          2000,
+		StartDate:               time.Now(),
 	}
 
 	defaultHabits := []models.Habit{}
@@ -48,10 +50,12 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		})
 	}
 
-	// firstDailyLog := &models.DailyLog{
-	// 	UserID: 1,
-	// 	Date:
-	// }
+	firstDailyLog := models.DailyLog{
+		UserID:           defaultUser.ID,
+		LogDate:          defaultUser.StartDate,
+		TodaysRation:     defaultUser.StartingRation,
+		TodaysSampleRate: defaultUser.CurrentSampleRate,
+	}
 
 	fmt.Println("pushing default user to db")
 	db.Create(&defaultUser)
@@ -60,6 +64,9 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	for _, habit := range defaultHabits {
 		db.Create(&habit)
 	}
+
+	fmt.Println("pushing first daily log")
+	db.Create(&firstDailyLog)
 
 	fmt.Println("Database reset and re-seeded successfully.")
 	return nil

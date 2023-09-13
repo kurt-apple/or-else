@@ -11,6 +11,7 @@ export class User extends Model {
   @Num(2) declare currentSampleRate: number
   @Num(0) declare timeZoneOffset: number
   @Num(2000) declare startingRation: number
+  @Attr() declare startDate: Date
   static piniaOptions = {
     actions: {
       ...AxiosPiniaCRUD.generateActions<User>(this.entity),

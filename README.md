@@ -106,14 +106,26 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
                       - [x] better yet: add seeds to db
                     - [x] strip debug code in index
                     - [x] make ADD DEMO HABIT in habits page
-
             - [ ] query completion repo for current user's complete habits for today
               - [x] add daily log repo (has many completions)
-              - [ ] add new daily log if it's a new day (compare today against last log's date)
-              - [ ] seed daily log
-                - [ ] create daily log when new user is created
-                  - [ ] add startDate to user model and set it during creation
-                  - [ ] create new daily log on new user (in create function)
+              - [x] add new daily log if it's a new day (compare today against last log's date)
+                - [x] completions ought not be created until habit is complete for the day
+                  - [x] get sampled habits needs to be dynamic on daily log
+                    - [x] create default completions on log create
+                  - [x] nevermind... completion needs that boolean
+              - [x] seed daily log
+                - [x] create daily log when new user is created
+                  - [x] add startDate to user model and set it during creation
+                    - [x] best date format for pinia orm stores?
+                      - [x] Date objects (@Attr)
+                    - [x] best way to handle dates for go and/or gorm?
+                      - [x] time.Time
+                        - [x] user model
+                        - [x] dailylog model
+                    - [x] best way to handle dates within sqlite?
+                    - [x] set start date during creation
+                  - [x] create new daily log on new user (in create function) //in seed right now; worry about auto generate on user create later.
+              - [ ] review hasMany and BelongsTo specifically for Pinia-ORM
         - [ ] From Daily Logs
         - [ ] From Habits
     - [ ] Habit Details Dialog
@@ -161,3 +173,4 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
   - [ ] pin to lock ui?
 - [ ] Styling
   - [ ] Toggle Dark Theme in Settings
+- [ ] Create user should create first daily log
