@@ -8,11 +8,11 @@ export default class CompletionEntry extends Model {
   static entity = 'completions'
 
   @Attr(null) declare id: number | null
-  @Attr() declare habitId: number
-  @Attr() declare dailyLogId: number
-  @Bool(false) declare complete: boolean
-  @BelongsTo(() => Habit, 'habitId') declare habit: Habit
-  @BelongsTo(() => DailyLog, 'dailyLogId') declare log: DailyLog
+  @Attr(null) declare habitID: number | null
+  @Attr(null) declare dailyLogID: number | null
+  @Bool(false) declare completed: boolean
+  @BelongsTo(() => Habit, 'habitID') declare habit: Habit | null
+  @BelongsTo(() => DailyLog, 'dailyLogID') declare log: DailyLog | null
   static piniaOptions = {
     actions: {
       ...AxiosPiniaCRUD.generateActions<CompletionEntry>(this.entity)

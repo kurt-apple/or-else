@@ -4,12 +4,12 @@
     <q-btn :icon="editModeToggle ? 'visibility' : 'edit'" @click="toggleEditMode"></q-btn>
     <q-list v-if="!editModeToggle">
       <q-item v-for="h, index in completionEntries" :key="index">
-        <q-checkbox v-model="h.complete"></q-checkbox>
+        <q-checkbox v-model="h.completed"></q-checkbox>
         <q-item-section>
-          <q-item-label> {{ h.habit.title }}</q-item-label>
+          <q-item-label> {{ h.habit?.title ? h.habit.title : 'undefined' }}</q-item-label>
         </q-item-section>
         <q-item-section>
-          <q-item-label> {{ h.log.logDate }}</q-item-label>
+          <q-item-label> {{ h.log?.logDate ? h.log.logDate : 'undefined' }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>

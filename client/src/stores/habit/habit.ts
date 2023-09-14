@@ -1,4 +1,4 @@
-import { Attr, Num, Str, BelongsTo, HasMany } from 'pinia-orm/dist/decorators'
+import { Attr, Num, Str, BelongsTo, HasMany, OnDelete } from 'pinia-orm/dist/decorators'
 import { Model } from 'pinia-orm'
 import AxiosPiniaCRUD from '../AxiosPiniaCRUD'
 import { User } from '../user/user'
@@ -8,12 +8,12 @@ import CompletionEntry from '../completion/completion'
 export class Habit extends Model {
   static entity = 'habits'
   @Attr(null) declare id: number | null
-  @Attr(null) declare userID: number
+  @Attr(null) declare userID: number | null
   @Str('') declare title: string
   @Num(0) declare times_sampled: number
   @Num(0) declare times_completed: number
   @BelongsTo(() => User, 'userID') declare user: User | null
-  @HasMany(() => CompletionEntry, 'habitId') declare completionEntries: CompletionEntry[]
+  @HasMany(() => CompletionEntry, 'habitID') @OnDelete('cascade') declare completionEntries: CompletionEntry[]
   static piniaOptions = {
     actions: {
       ...AxiosPiniaCRUD.generateActions<Habit>(this.entity)
@@ -30,7 +30,10 @@ export class Habit extends Model {
     if(this.completionEntries.length == 0) {
       return null
     }
-    return this.completionEntries.sort((a, b) => b.log.logDate.getTime() - a.log.logDate.getTime())[0]
+    return this.completionEntries.sort((a, b) => {
+      if(b.log == null || a.log == null) return 0
+      return b.log.logDate.getTime() - a.log.logDate.getTime()
+    })[0]
   }
   get wasCompletedToday() {
     const latest = this.latestCompletionEntry

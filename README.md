@@ -126,9 +126,17 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
                     - [x] set start date during creation
                   - [x] create new daily log on new user (in create function) //in seed right now; worry about auto generate on user create later.
               - [x] review hasMany and BelongsTo specifically for Pinia-ORM
-              - [ ] figure out how to generate completion logs when a daily log is made (go)
-                - [ ] figure out how to automatically sync to backend upon frontend state change
-                  - [ ] review pinia persisted state plugin offerings
+              - [x] figure out how to generate completion logs when a daily log is made (go)
+                - [x] figure out how to automatically sync to backend upon frontend state change
+                  - [x] review pinia persisted state plugin offerings
+                  - [x] use the axios functions, and in those functions, sync to local stores.
+              - [x] re-seed
+              - [x] completion entries need to be created when the daily log is
+                - [x] check the Go seeds file to make sure habits -> log, no outdated completion entry creators.
+              - [ ] consider adding a null for completed boolean property
+                - [ ] completion entries need to properly link back to the Habit object, by habitId
+                  - [ ] figure out why computed getter lacks model properties
+              - [ ] track which habits were sampled when
         - [ ] From Daily Logs
         - [ ] From Habits
     - [ ] Habit Details Dialog

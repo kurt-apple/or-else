@@ -18,6 +18,7 @@ type DailyLog struct {
 	LogDate          time.Time `json:"logDate"`
 	TodaysRation     uint      `json:"todaysRation"`
 	TodaysSampleRate uint      `json:"todaysSampleRate"`
+	PreviousLogID    uint      `json:"previousLogID"`
 }
 
 func GetDailyLogs(db *gorm.DB) http.HandlerFunc {
@@ -39,13 +40,27 @@ func GetDailyLog(db *gorm.DB) http.HandlerFunc {
 	}
 }
 
+func CreateLog(db *gorm.DB, dl *DailyLog) {
+	fmt.Println("createLog", dl)
+	db.Create(dl)
+	var habits []Habit
+	db.Where(&Habit{UserID: dl.UserID}).Find(&habits)
+	for _, habit := range habits {
+		completion := &Completion{
+			HabitID:    habit.ID,
+			DailyLogID: dl.ID,
+			Completed:  false,
+		}
+		db.Create(completion)
+	}
+}
+
 func CreateDailyLog(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("createDailyLog:")
 		var item DailyLog
 		json.NewDecoder(r.Body).Decode(&item)
-		fmt.Println("DailyLog: ", item)
-		db.Create(&item)
+		CreateLog(db, &item)
 		json.NewEncoder(w).Encode(item)
 	}
 }

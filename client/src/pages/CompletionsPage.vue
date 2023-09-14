@@ -14,6 +14,7 @@ import { defineComponent } from 'vue'
 import CompletionEntryCard from 'src/components/CompletionEntryCard.vue';
 import { User } from 'src/stores/user/user';
 import CompletionEntry from 'src/stores/completion/completion';
+import DailyLog from 'src/stores/daily-log/daily-log';
 export default defineComponent({
   name: 'CompletionsPage',
   components: {
@@ -32,16 +33,25 @@ export default defineComponent({
     const userRepo = useRepo(User)
     await userRepo.piniaStore().axios_getAll()
     console.log("default user: ", useRepo(User).where('name', 'DEFAULT').first())
+    await useRepo(Habit).piniaStore().axios_getAll()
     const completionStore = repo.piniaStore()
     await completionStore.axios_getAll()
-    console.log("completion repo: ", repo.withAll().all())
+    await useRepo(DailyLog).piniaStore().axios_getAll()
   },
   computed: {
     ...mapRepos({
       completionRepo: CompletionEntry,
+      habitRepo: Habit,
+      dailyLogRepo: DailyLog
     }),
     completions(): CompletionEntry[] {
-      return this.completionRepo.all()
+      const habits = this.habitRepo.with('completionEntries').get()
+      console.log("habits in computed function: ", habits.slice(0, 10), ` and ${habits.length-10} more`)
+      const logs = this.dailyLogRepo.all()
+      console.log("logs in computed function: ", logs.slice(0, 10), `and ${logs.length-10} more`)
+      const completions = this.completionRepo.with('habit').with('log').get()
+      console.log("completions in computed function: ", completions.slice(0, 10), ` and ${completions.length-10} more`)
+      return completions
     }
   },
   methods: {

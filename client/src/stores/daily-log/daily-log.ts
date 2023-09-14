@@ -9,13 +9,13 @@ import { Habit } from '../habit/habit'
 export default class DailyLog extends Model {
   static entity = 'daily-logs'
   @Attr(null) declare id: number | null
-  @Attr(null) declare previousLogId: number | null
-  @Attr() declare userId: number
+  @Attr(null) declare previousLogID: number | null
+  @Attr() declare userID: number
   @Attr() declare logDate: Date
-  @BelongsTo(() => User, 'userId') declare user: User
-  @HasOne(() => DailyLog, 'previousLogId') declare previousLog: DailyLog | null
-  @HasMany(() => CompletionEntry, 'dailyLogId') declare completionEntries: CompletionEntry[]
-  @HasMany(() => WeightEntry, 'dailyLogId') declare weightEntries: WeightEntry[]
+  @BelongsTo(() => User, 'userID') declare user: User
+  @HasOne(() => DailyLog, 'previousLogID') declare previousLog: DailyLog | null
+  @HasMany(() => CompletionEntry, 'dailyLogID') declare completionEntries: CompletionEntry[]
+  @HasMany(() => WeightEntry, 'dailyLogID') declare weightEntries: WeightEntry[]
   get dateValue () {
     ///TODO: what is the best way to handle dates and timezone offset in js nowadays?
     ///TODO: can I use a Date object as a property of a pinia-orm model when it goes back and forth from a backend?

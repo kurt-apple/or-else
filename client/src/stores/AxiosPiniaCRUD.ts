@@ -32,7 +32,7 @@ export default class AxiosPiniaCRUD {
           },
           params: {},
         })
-        console.log("debug axios getAll: ", response.data)
+        console.log(`debug axios getAll (${endpoint}): `, response.data ? response.data[0] : 'response.data is null', ` and ${response.data.length - 1} more`)
         this.fresh(response.data)
         return response
       },
