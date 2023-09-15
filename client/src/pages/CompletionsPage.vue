@@ -31,14 +31,14 @@ export default defineComponent({
       dailyLogRepo: DailyLog
     }),
     completions(): CompletionEntry[] {
-      const habits = this.habitRepo.with('completionEntries').get()
-      console.log("habits in computed function: ", habits.slice(0, 10), ` and ${habits.length-10} more`)
-      const logs = this.dailyLogRepo.all()
-      console.log("logs in computed function: ", logs.slice(0, 10), `and ${logs.length-10} more`)
-      const completions = this.completionRepo.with('habit').with('log').get()
-      console.log("completions in computed function: ", completions.slice(0, 10), ` and ${completions.length-10} more`)
+      const habits = this.habitRepo.all()
+      //console.log("habits in computed function: ", habits.slice(0, 10), ` and ${habits.length-10} more`)
+      const logs = this.dailyLogRepo.withAll().get()
+      //console.log("logs in computed function: ", logs.slice(0, 10), `and ${logs.length-10} more`)
+      const completions = this.completionRepo.all()
+      //console.log("completions in computed function: ", completions.slice(0, 10), ` and ${completions.length-10} more`)
       const id_to_find = completions[0].dailyLogID ?? -1
-      const loggy = this.dailyLogRepo.find(id_to_find)
+      const loggy = this.dailyLogRepo.find('2')
       console.log("linked log is ", loggy, "; id ", id_to_find, "; meanwhile logs has this in its store: ", this.dailyLogRepo.all())
       const foo = this.dailyLogRepo.where((log) => {
         return log.id == completions[0].dailyLogID

@@ -9,7 +9,7 @@
           <q-item-label> {{ h.habit?.title ? h.habit.title : 'undefined' }}</q-item-label>
         </q-item-section>
         <q-item-section>
-          <q-item-label> {{ h.log?.logDate ? h.log.logDate : 'undefined' }}</q-item-label>
+          <q-item-label> {{ h.dailyLog.logDate ? h.dailyLog.logDate : 'undefined' }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>
@@ -19,10 +19,10 @@
           {{  h.complete }}
         </q-item-section>
         <q-item-section>
-          <q-item-label> edit mode: {{ h.habit.title }}</q-item-label>
+          <q-item-label> edit mode: {{ h.habit?.title || 'reeeee' }}</q-item-label>
         </q-item-section>
         <q-item-section>
-          <q-item-label> {{ h.log.logDate }}</q-item-label>
+          <q-item-label> {{ h.dailyLog.logDate || 'reeee' }}</q-item-label>
         </q-item-section>
         <q-item-section>
           <q-btn icon="delete" @click="deleteEntry(h)" color="negative"/>

@@ -1,5 +1,5 @@
 import { Model, useRepo } from 'pinia-orm'
-import { Attr, BelongsTo, HasOne, HasMany } from 'pinia-orm/dist/decorators'
+import { Attr, BelongsTo, HasOne, HasMany, Uid } from 'pinia-orm/dist/decorators'
 import { User } from '../user/user'
 import CompletionEntry from '../completion/completion'
 import AxiosPiniaCRUD from '../AxiosPiniaCRUD'
@@ -8,13 +8,13 @@ import { Habit } from '../habit/habit'
 
 export default class DailyLog extends Model {
   static entity = 'daily-logs'
-  static primaryKey: string | string[] = 'id'
-  @Attr(null) declare id: number | null
-  @Attr(null) declare previousLogID: number | null
+  //static primaryKey: string | string[] = 'id'
+  @Uid() declare id: string
+  //@Attr(null) declare previousLogID: number | null
   @Attr() declare userID: number
   @Attr() declare logDate: Date
   @BelongsTo(() => User, 'userID') declare user: User
-  @HasOne(() => DailyLog, 'previousLogID') declare previousLog: DailyLog | null
+  //@HasOne(() => DailyLog, 'previousLogID') declare previousLog: DailyLog | null
   @HasMany(() => CompletionEntry, 'dailyLogID') declare completionEntries: CompletionEntry[]
   @HasMany(() => WeightEntry, 'dailyLogID') declare weightEntries: WeightEntry[]
   get dateValue () {
@@ -92,14 +92,14 @@ export default class DailyLog extends Model {
     if(this.previousLog == null) return 0
     return this.maxWeightEntry - this.previousLog?.maxWeightEntry
   }
-  get generateTomorrow(): DailyLog {
-    const oneDayFromNow = new Date(this.logDate.getTime() + 86400000)
-    return {
-      previousLogId: this.id,
-      userID: this.userId,
-      logDate: oneDayFromNow
-    }
-  }
+  // get generateTomorrow(): DailyLog {
+  //   const oneDayFromNow = new Date(this.logDate.getTime() + 86400000)
+  //   return {
+  //     previousLogId: this.id,
+  //     userID: this.userId,
+  //     logDate: oneDayFromNow
+  //   }
+  // }
   static piniaOptions = {
     actions: {
       ...AxiosPiniaCRUD.generateActions<DailyLog>(this.entity),

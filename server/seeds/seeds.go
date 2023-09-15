@@ -37,7 +37,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		CurrentSampleRate:       2,
 		TimeZoneOffset:          -8,
 		StartingRation:          2000,
-		StartDate:               time.Now(),
+		StartDate:               time.Now().AddDate(0, 0, -1),
 	}
 
 	fmt.Println("pushing default user to db")
@@ -66,8 +66,16 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		TodaysSampleRate: defaultUser.CurrentSampleRate,
 	}
 
+	secondDailyLog := models.DailyLog{
+		UserID:           defaultUser.ID,
+		LogDate:          defaultUser.StartDate.AddDate(0, 0, 1),
+		TodaysRation:     defaultUser.StartingRation,
+		TodaysSampleRate: defaultUser.CurrentSampleRate,
+	}
+
 	fmt.Println("pushing first daily log - should auto generate completion entries")
 	models.CreateLog(db, &firstDailyLog)
+	models.CreateLog(db, &secondDailyLog)
 
 	fmt.Println("Database reset and re-seeded successfully.")
 	return nil

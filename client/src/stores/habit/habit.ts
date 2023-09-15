@@ -1,4 +1,4 @@
-import { Attr, Num, Str, BelongsTo, HasMany, OnDelete } from 'pinia-orm/dist/decorators'
+import { Attr, Num, Str, BelongsTo, HasMany, OnDelete, Uid } from 'pinia-orm/dist/decorators'
 import { Model } from 'pinia-orm'
 import AxiosPiniaCRUD from '../AxiosPiniaCRUD'
 import { User } from '../user/user'
@@ -7,8 +7,8 @@ import CompletionEntry from '../completion/completion'
 
 export class Habit extends Model {
   static entity = 'habits'
-  static primaryKey: string | string[] = 'id'
-  @Attr(null) declare id: number | null
+  //static primaryKey: string | string[] = 'id'
+  @Uid() declare id: string
   @Attr(null) declare userID: number | null
   @Str('') declare title: string
   @Num(0) declare times_sampled: number
