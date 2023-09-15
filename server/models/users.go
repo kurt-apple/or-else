@@ -14,7 +14,7 @@ type User struct {
 	ID                      uint      `gorm:"primaryKey" json:"id"`
 	Name                    string    `json:"name"`
 	CompletionRateThreshold float32   `json:"completionRateThreshold"`
-	CurrentSampleRate       uint      `json:"currentSampleRate"`
+	StartingSampleRate      uint      `json:"startingSampleRate"`
 	TimeZoneOffset          int       `json:"timeZoneOffset"`
 	StartingRation          uint      `json:"startingRation"`
 	StartDate               time.Time `json:"startDate"`
@@ -47,10 +47,9 @@ func CreateUser(db *gorm.DB) http.HandlerFunc {
 		fmt.Println("User: ", item)
 		db.Create(&item)
 		firstDailyLog := &DailyLog{
-			UserID:           item.ID,
-			LogDate:          item.StartDate,
-			TodaysRation:     item.StartingRation,
-			TodaysSampleRate: item.CurrentSampleRate,
+			UserID:       item.ID,
+			LogDate:      item.StartDate,
+			TodaysRation: item.StartingRation,
 		}
 		db.Create(firstDailyLog)
 		json.NewEncoder(w).Encode(item)

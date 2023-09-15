@@ -9,7 +9,7 @@ export class User extends Model {
   @Uid() declare id: string
   @Str('DEFAULT') declare name: string
   @Num(0.95) declare completionRateThreshold: number
-  @Num(2) declare currentSampleRate: number
+  @Num(2) declare startingSampleRate: number
   @Num(0) declare timeZoneOffset: number
   @Num(2000) declare startingRation: number
   @Attr() declare startDate: Date

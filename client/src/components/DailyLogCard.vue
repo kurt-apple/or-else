@@ -10,6 +10,9 @@
         <q-item-section>
           <q-item-label> completion entries: {{ h.completionEntries ? h.completionEntries.length : 0 }}</q-item-label>
         </q-item-section>
+        <q-item-section>
+          <q-item-label> sample size: {{  h.sampleRate }}</q-item-label>
+        </q-item-section>
       </q-item>
     </q-list>
     <q-list v-else>

@@ -17,6 +17,7 @@ import { User } from 'src/stores/user/user'
 import HabitCard from 'components/HabitCard.vue'
 import CompletionEntry from 'src/stores/completion/completion'
 import DailyLog from 'src/stores/daily-log/daily-log'
+import TheGreatHydrator from 'src/stores/TheGreatHydrator'
 
 export default defineComponent({
   name: 'IndexPage',
@@ -24,8 +25,7 @@ export default defineComponent({
     HabitCard
   },
   async setup() {
-    await useRepo(User).piniaStore().axios_getAll()
-    await useRepo(Habit).piniaStore().axios_getAll()
+    await TheGreatHydrator.hydratify([useRepo(Habit), useRepo(User)])
   },
   computed: {
     ...mapRepos({

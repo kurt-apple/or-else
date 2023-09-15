@@ -1,19 +1,21 @@
 import { Model, useRepo } from 'pinia-orm'
-import { Attr, BelongsTo, HasOne, HasMany, Uid } from 'pinia-orm/dist/decorators'
+import { Attr, BelongsTo, HasOne, HasMany, Uid, Num } from 'pinia-orm/dist/decorators'
 import { User } from '../user/user'
 import CompletionEntry from '../completion/completion'
 import AxiosPiniaCRUD from '../AxiosPiniaCRUD'
 import WeightEntry from '../weight-entry/weight-entry'
 import { Habit } from '../habit/habit'
+import NotAnORM from '../NotAnORM'
+import { useRouter } from 'vue-router'
 
 export default class DailyLog extends Model {
   static entity = 'daily-logs'
   //static primaryKey: string | string[] = 'id'
   @Uid() declare id: string
-  //@Attr(null) declare previousLogID: number | null
-  @Attr() declare userID: number
+  @Num(-1) declare previousLogID: number
+  @Num(-1) declare userID: number
   @Attr() declare logDate: Date
-  @BelongsTo(() => User, 'userID') declare user: User
+  //@BelongsTo(() => User, 'userID') declare user: User
   //@HasOne(() => DailyLog, 'previousLogID') declare previousLog: DailyLog | null
   @HasMany(() => CompletionEntry, 'dailyLogID') declare completionEntries: CompletionEntry[]
   @HasMany(() => WeightEntry, 'dailyLogID') declare weightEntries: WeightEntry[]
@@ -22,15 +24,33 @@ export default class DailyLog extends Model {
     ///TODO: can I use a Date object as a property of a pinia-orm model when it goes back and forth from a backend?
     return new Date(this.date)
   }
+
+  get notCompleted() {
+    return this.completionEntries.filter((x) => x.status == 1)
+  }
+
   get totalCompletedHabits() {
-    ///todo: do has_many completions
     return this.completionEntries
       //completed habits that day
-      .filter((x) => x.completed).length
+      .filter((x) => x.status == 2).length
   }
+
+  get user() {
+    if(this.userID <= 0) throw new Error(`userID of daily log ${this.id} is null.`)
+    const usr = NotAnORM.getRelated(useRepo(User), this.userID)
+    console.log("linked user: ", usr)
+    return usr
+  }
+
+  get previousLog() {
+    if(this.previousLogID <= 0) return null
+    const prev = NotAnORM.getRelated(useRepo(DailyLog), this.previousLogID)
+    console.log("previous log: ", prev)
+    return prev
+  }
+
   get sampleRate() {
-    if(this.previousLog == null) return this.user.currentSampleRate
-    else this.user.currentSampleRate = this.previousLog.totalImprovedHabits + 1
+    if(this.previousLog == null) return this.user?.startingSampleRate || 999
     return this.previousLog.totalImprovedHabits + 1
   }
   get sampleHabits() {
@@ -38,23 +58,22 @@ export default class DailyLog extends Model {
     ///to refresh in case of revising yesterday's log:
     ///1. re-sample
     ///2. delete any completion entries that are not marked complete and also not in the new sample list
-    return useRepo(Habit).orderBy('completionRate', 'asc').limit(this.sampleRate)
+    
+    return useRepo(Habit).orderBy('completionRate', 'asc').limit(this.sampleRate).get()
   }
   get reSampleHabits() {
-    const newSample = this.sampleHabits.all()
-    const toDelete = this.completionEntries
-      .filter((x) => !x.complete)
-      .filter((y) => newSample.find((z) => z.id == y.habitId))
-    const toCreate = newSample
-      .filter((x) => typeof this.completionEntries.find((y) => y.habitId == x.id) === 'undefined')
-    useRepo(CompletionEntry).piniaStore().axios_deleteItems(toDelete)
-    toCreate.forEach((x) => {
-      useRepo(CompletionEntry).piniaStore().axios_createItem({
-        habitId: x.id,
-        dailyLogId: this.id,
-        complete: false
-      })
-    })
+    //1. get all completion entries marked notcompleted
+    const notcompleted = this.notCompleted
+    //2. reset to unspecified //todo: this could lose data
+    notcompleted.forEach((x) => x.status = 0)
+    //3. get all new samples excluding ones that are already completed
+    const newSample = useRepo(CompletionEntry)
+      .where((x) => x.status != 2)
+      .orderBy('habit.completionRate', 'asc')
+      .limit(this.sampleRate)
+      .get()
+    //4. mark as notcompleted
+    newSample.forEach((x) => x.status = 1)
     return this.completionEntries
   }
   get totalSampledHabits() {
@@ -102,7 +121,7 @@ export default class DailyLog extends Model {
   // }
   static piniaOptions = {
     actions: {
-      ...AxiosPiniaCRUD.generateActions<DailyLog>(this.entity),
+      ...AxiosPiniaCRUD.generateActions<DailyLog>(this.entity)
     }
   }
 }

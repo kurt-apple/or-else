@@ -34,7 +34,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	defaultUser := models.User{
 		Name:                    "DEFAULT",
 		CompletionRateThreshold: 0.95,
-		CurrentSampleRate:       2,
+		StartingSampleRate:      2,
 		TimeZoneOffset:          -8,
 		StartingRation:          2000,
 		StartDate:               time.Now().AddDate(0, 0, -1),
@@ -60,17 +60,15 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	}
 
 	firstDailyLog := models.DailyLog{
-		UserID:           defaultUser.ID,
-		LogDate:          defaultUser.StartDate,
-		TodaysRation:     defaultUser.StartingRation,
-		TodaysSampleRate: defaultUser.CurrentSampleRate,
+		UserID:       defaultUser.ID,
+		LogDate:      defaultUser.StartDate,
+		TodaysRation: defaultUser.StartingRation,
 	}
 
 	secondDailyLog := models.DailyLog{
-		UserID:           defaultUser.ID,
-		LogDate:          defaultUser.StartDate.AddDate(0, 0, 1),
-		TodaysRation:     defaultUser.StartingRation,
-		TodaysSampleRate: defaultUser.CurrentSampleRate,
+		UserID:       defaultUser.ID,
+		LogDate:      defaultUser.StartDate.AddDate(0, 0, 1),
+		TodaysRation: defaultUser.StartingRation,
 	}
 
 	fmt.Println("pushing first daily log - should auto generate completion entries")

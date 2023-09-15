@@ -14,28 +14,18 @@ import DailyLogCard from 'src/components/DailyLogCard.vue';
 import { User } from 'src/stores/user/user';
 import CompletionEntry from 'src/stores/completion/completion';
 import DailyLog from 'src/stores/daily-log/daily-log';
+import TheGreatHydrator from 'src/stores/TheGreatHydrator';
 export default defineComponent({
   name: 'CompletionsPage',
   components: {
     DailyLogCard
   },
   async setup() {
-    const repo = useRepo(DailyLog)
-    try {
-      repo.piniaStore()
-    } catch (error: any) {
-      console.error('error accessing pinia store.', error)
-    }
-    if (repo.piniaStore() == null || typeof repo === 'undefined') {
-      throw new Error('Pinia store is not found')
-    }
-    const userRepo = useRepo(User)
-    await userRepo.piniaStore().axios_getAll()
-    console.log("default user: ", useRepo(User).where('name', 'DEFAULT').first())
-    await useRepo(Habit).piniaStore().axios_getAll()
-    const logStore = repo.piniaStore()
-    await logStore.axios_getAll()
-    console.log("daily log repo: ", repo.with('completionEntries').get())
+    const dlrepo = useRepo(DailyLog)
+    const cerepo = useRepo(CompletionEntry)
+    const usrepo = useRepo(User)
+    const harepo = useRepo(Habit)
+    await TheGreatHydrator.hydratify([dlrepo, cerepo, usrepo, harepo])
   },
   computed: {
     ...mapRepos({

@@ -4,7 +4,7 @@
     <q-btn :icon="editModeToggle ? 'visibility' : 'edit'" @click="toggleEditMode"></q-btn>
     <q-list v-if="!editModeToggle">
       <q-item v-for="h, index in completionEntries" :key="index">
-        <q-checkbox v-model="h.completed"></q-checkbox>
+        <q-checkbox v-model="h.completed" @click="updateCompletedStatus(h)"></q-checkbox>
         <q-item-section>
           <q-item-label> {{ h.habit?.title ? h.habit.title : 'undefined' }}</q-item-label>
         </q-item-section>
@@ -79,6 +79,13 @@ export default defineComponent({
     toggleEditMode() {
       this.editModeToggle = !this.editModeToggle
       console.log("edit mode is now ", this.editModeToggle ? "enabled" : "disabled")
+    },
+    async updateCompletedStatus(r: CompletionEntry) {
+      console.log("about to update status on ", r)
+      if(r.status != 2) r.status = 2
+      else r.status = 1
+      const result = await this.completionEntryRepo.piniaStore().axios_updateItem(r)
+      console.log(`${r.id} status is now ${r.status} - api result: `, result)
     }
   }
 })

@@ -133,10 +133,15 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
               - [x] re-seed
               - [x] completion entries need to be created when the daily log is
                 - [x] check the Go seeds file to make sure habits -> log, no outdated completion entry creators.
-              - [ ] consider adding a null for completed boolean property
-                - [ ] completion entries need to properly link back to the Habit object, by habitId
-                  - [ ] figure out why computed getter lacks model properties
+              - [x] consider adding a null for completed boolean property
+                - [x] completion entries need to properly link back to the Habit object, by habitId
+                  - [x] figure out why computed getter lacks model properties
               - [ ] track which habits were sampled when
+                - [ ] if sampled, specify habit as notcompleted instead of unspecified
+                  - [x] pseudocode for resampling today (if user updates yesterday)
+                    - [x] change user current sample rate to starting sample rate
+                    - [x] validate daily log sample rate getter
+                  - [ ] refactor checkbox on all completions page
         - [ ] From Daily Logs
         - [ ] From Habits
     - [ ] Habit Details Dialog

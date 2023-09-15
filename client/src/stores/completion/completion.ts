@@ -1,10 +1,14 @@
 import { HasMany, Model, useRepo } from 'pinia-orm'
-import { BelongsTo, Attr, Bool, Uid } from 'pinia-orm/dist/decorators'
+import { BelongsTo, Attr, Bool, Uid, Num } from 'pinia-orm/dist/decorators'
 import { Habit } from '../habit/habit'
 import DailyLog from '../daily-log/daily-log'
 import AxiosPiniaCRUD from '../AxiosPiniaCRUD'
 import TheGreatHydrator from '../TheGreatHydrator'
 import NotAnORM from '../NotAnORM'
+
+// UNSPECIFIED = 0
+// COMPLETED = 2
+// NOTCOMPLETED = 1
 
 export default class CompletionEntry extends Model {
   static entity = 'completions'
@@ -12,7 +16,7 @@ export default class CompletionEntry extends Model {
   @Uid() declare id: string
   @Attr(null) declare habitID: number
   @Attr(null) declare dailyLogID: number
-  @Bool(false) declare completed: boolean
+  @Num(0) declare status: 0 | 1 | 2
   //@BelongsTo(() => Habit, 'habitID') declare habit: Habit
   //@BelongsTo(() => DailyLog, 'dailyLogID') declare log: DailyLog
   static piniaOptions = {

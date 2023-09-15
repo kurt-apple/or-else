@@ -9,12 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
+type CompletionStatus uint
+
+const (
+	Completed    CompletionStatus = 2
+	NotCompleted CompletionStatus = 1
+	Unspecified  CompletionStatus = 0
+)
+
 type Completion struct {
 	///TODO: figure out best data type for date property
-	ID         uint `gorm:"primaryKey" json:"id"`
-	HabitID    uint `json:"habitID"`
-	DailyLogID uint `json:"dailyLogID"`
-	Completed  bool `json:"completed"`
+	ID         uint             `gorm:"primaryKey" json:"id"`
+	HabitID    uint             `json:"habitID"`
+	DailyLogID uint             `json:"dailyLogID"`
+	Status     CompletionStatus `json:"status"`
 }
 
 func GetCompletions(db *gorm.DB) http.HandlerFunc {
