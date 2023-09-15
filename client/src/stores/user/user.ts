@@ -5,6 +5,7 @@ import { api } from 'src/boot/axios'
 
 export class User extends Model {
   static entity = 'users'
+  static primaryKey: string | string[] = 'id'
   @Attr(null) declare id: number | null
   @Str('DEFAULT') declare name: string
   @Num(0.95) declare completionRateThreshold: number

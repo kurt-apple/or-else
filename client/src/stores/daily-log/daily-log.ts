@@ -8,6 +8,7 @@ import { Habit } from '../habit/habit'
 
 export default class DailyLog extends Model {
   static entity = 'daily-logs'
+  static primaryKey: string | string[] = 'id'
   @Attr(null) declare id: number | null
   @Attr(null) declare previousLogID: number | null
   @Attr() declare userID: number

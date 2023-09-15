@@ -2,7 +2,6 @@
   <q-page padding>
     <div>
       <completion-entry-card title="All Completions" :completionEntries="completions"></completion-entry-card>
-      
     </div>
   </q-page>
 </template>
@@ -15,28 +14,15 @@ import CompletionEntryCard from 'src/components/CompletionEntryCard.vue';
 import { User } from 'src/stores/user/user';
 import CompletionEntry from 'src/stores/completion/completion';
 import DailyLog from 'src/stores/daily-log/daily-log';
+import TheGreatHydrator from 'src/stores/TheGreatHydrator';
 export default defineComponent({
   name: 'CompletionsPage',
   components: {
     CompletionEntryCard
   },
   async setup() {
-    const repo = useRepo(CompletionEntry)
-    try {
-      repo.piniaStore()
-    } catch (error: any) {
-      console.error('error accessing pinia store.', error)
-    }
-    if (repo.piniaStore() == null || typeof repo === 'undefined') {
-      throw new Error('Pinia store is not found')
-    }
-    const userRepo = useRepo(User)
-    await userRepo.piniaStore().axios_getAll()
-    console.log("default user: ", useRepo(User).where('name', 'DEFAULT').first())
-    await useRepo(Habit).piniaStore().axios_getAll()
-    const completionStore = repo.piniaStore()
-    await completionStore.axios_getAll()
-    await useRepo(DailyLog).piniaStore().axios_getAll()
+    await TheGreatHydrator.hydratify([useRepo(User), useRepo(Habit), useRepo(DailyLog), useRepo(CompletionEntry)])
+    
   },
   computed: {
     ...mapRepos({
@@ -51,6 +37,13 @@ export default defineComponent({
       console.log("logs in computed function: ", logs.slice(0, 10), `and ${logs.length-10} more`)
       const completions = this.completionRepo.with('habit').with('log').get()
       console.log("completions in computed function: ", completions.slice(0, 10), ` and ${completions.length-10} more`)
+      const id_to_find = completions[0].dailyLogID ?? -1
+      const loggy = this.dailyLogRepo.find(id_to_find)
+      console.log("linked log is ", loggy, "; id ", id_to_find, "; meanwhile logs has this in its store: ", this.dailyLogRepo.all())
+      const foo = this.dailyLogRepo.where((log) => {
+        return log.id == completions[0].dailyLogID
+      }).get()
+      console.log("foo method: ", foo)
       return completions
     }
   },

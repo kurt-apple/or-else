@@ -32,16 +32,18 @@ export default defineComponent({
     const userRepo = useRepo(User)
     await userRepo.piniaStore().axios_getAll()
     console.log("default user: ", useRepo(User).where('name', 'DEFAULT').first())
+    await useRepo(Habit).piniaStore().axios_getAll()
     const logStore = repo.piniaStore()
     await logStore.axios_getAll()
-    console.log("daily log repo: ", repo.withAll().all())
+    console.log("daily log repo: ", repo.with('completionEntries').get())
   },
   computed: {
     ...mapRepos({
       logRepo: DailyLog,
     }),
     dailyLogs(): DailyLog[] {
-      return this.logRepo.all()
+      const logs = this.logRepo.with('completionEntries').get()
+      return logs
     }
   },
   methods: {

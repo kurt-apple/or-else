@@ -7,6 +7,7 @@ import CompletionEntry from '../completion/completion'
 
 export class Habit extends Model {
   static entity = 'habits'
+  static primaryKey: string | string[] = 'id'
   @Attr(null) declare id: number | null
   @Attr(null) declare userID: number | null
   @Str('') declare title: string
