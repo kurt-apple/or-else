@@ -28,3 +28,5 @@ client/.editorconfig
 client/.gitignore
 client/.npmrc
 client/.vscode
+
+.obsidian
