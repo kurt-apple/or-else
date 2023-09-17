@@ -10,11 +10,9 @@ import (
 )
 
 type Habit struct {
-	ID             uint   `gorm:"primaryKey" json:"id"`
-	UserID         uint   `json:"userID"`
-	Title          string `json:"title"`
-	TimesSampled   uint8  `json:"times_sampled"`
-	TimesCompleted uint8  `json:"times_completed"`
+	ID     uint   `gorm:"primaryKey" json:"id"`
+	UserID uint   `json:"userID"`
+	Title  string `json:"title"`
 }
 
 func GetHabits(db *gorm.DB) http.HandlerFunc {

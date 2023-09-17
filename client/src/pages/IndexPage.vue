@@ -3,14 +3,14 @@
       <div>
         <habit-card title="Your Best Habits" :habits="roses"></habit-card>
         <habit-card title="Areas to Improve" :habits="thorns"></habit-card>
-        <q-btn v-if="habits.length" @click="nav('habits')" icon="list">See All Habits</q-btn>
+        <q-btn @click="nav('habits')" icon="list">See All Habits</q-btn>
         <h1 v-if="habits.length == 0">no habits</h1>
       </div>
     </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { computed, defineComponent } from 'vue'
 import { Habit } from 'stores/habit/habit'
 import { mapRepos, useRepo } from 'pinia-orm'
 import { User } from 'src/stores/user/user'
@@ -25,39 +25,47 @@ export default defineComponent({
     HabitCard
   },
   async setup() {
-    await TheGreatHydrator.hydratify([useRepo(Habit), useRepo(User)])
-  },
-  computed: {
-    ...mapRepos({
-      habitRepo: Habit,
-      userRepo: User,
-      completionRepo: CompletionEntry,
-      dailyLogRepo: DailyLog
-    }),
-    defaultUser(): User {
-      const defaultUser = this.userRepo.where('name', 'DEFAULT').first()
+    await TheGreatHydrator.brrrrr()
+    const dailyLogRepo = useRepo(DailyLog)
+    const habitRepo = useRepo(Habit)
+    const userRepo = useRepo(User)
+    const habits = computed(() => {
+      return habitRepo.all()
+    })
+    const latestLog = computed(() => {
+      return dailyLogRepo.orderBy('logDate', 'desc').limit(1).get()[0]
+    })
+    const defaultUser = computed(() => {
+      const defaultUser = userRepo.where('name', 'DEFAULT').first()
       if(defaultUser == null) throw new Error('default user was not found')
       return defaultUser
-    },
-    habits(): Habit[] {
-      return this.habitRepo.all()
-    },
-    roses(): Habit[] {
-      const threshold = this.defaultUser.completionRateThreshold
+    })
+    const thorns = computed(() => {
+      console.log("latest log: ", latestLog.value.formattedDate)
+      console.log("sample rate: ", latestLog.value.sampleRate)
+      let habits = habitRepo.with('completionEntries').get()
+      habits.sort((a, b) => a.completionRate - b.completionRate)
+      return habits.slice(0, latestLog.value.sampleRate)
+    })
+    const roses = computed(() => {
+      const threshold = defaultUser.value.completionRateThreshold
       if(typeof threshold === 'undefined') {
         throw new Error('completion rate threshold of default user is undefined')
       }
-      return this.habitRepo.where('completionRate', (value: number) => { 
-        return value >= threshold
-      })
-      .orderBy('completionRate', 'desc')
-      .get()
-    },
-    thorns(): Habit[] {
-      return this.habitRepo
-      .orderBy('completionRate')
-      .limit(this.defaultUser.currentSampleRate)
-      .get()
+      let habits = habitRepo.with('completionEntries').get()
+      return habits.filter((x) => x.completionRate >= threshold)
+    })
+    const updateLists = () => {
+      console.log("whoopdiedoo why rtfm if you can loopdydoooooo")
+      thorns
+      roses
+      setTimeout(updateLists, 10000)
+    }
+    updateLists()
+    return {
+      roses,
+      thorns,
+      habits
     }
   },
   methods: {

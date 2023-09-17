@@ -4,12 +4,12 @@
     <q-btn :icon="editModeToggle ? 'visibility' : 'edit'" @click="toggleEditMode"></q-btn>
     <q-list v-if="!editModeToggle">
       <q-item v-for="h, index in completionEntries" :key="index">
-        <q-checkbox v-model="h.completed" @click="updateCompletedStatus(h)"></q-checkbox>
+        <q-checkbox v-model="h.status" @click="updateCompletedStatus(h)" :indeterminate-value="0" :true-value="2" :false-value="1" indeterminate-icon="check_box_outline_blank"></q-checkbox>
         <q-item-section>
           <q-item-label> {{ h.habit?.title ? h.habit.title : 'undefined' }}</q-item-label>
         </q-item-section>
         <q-item-section>
-          <q-item-label> {{ h.dailyLog.logDate ? h.dailyLog.logDate : 'undefined' }}</q-item-label>
+          <q-item-label> {{ h.dailyLog?.dateValue.toLocaleDateString() ? h.dailyLog.dateValue.toLocaleDateString() : 'undefined' }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>
@@ -52,6 +52,7 @@ export default defineComponent({
     }
   },
   setup() {
+    console.log("wee")
     return {
       editModeToggle: ref(false)
     }
@@ -63,17 +64,21 @@ export default defineComponent({
       completionEntryRepo: CompletionEntry
     }),
     latestLog() {
-      return this.dailyLogRepo.orderBy('logDate', 'desc').limit(1)
+      return this.dailyLogRepo.orderBy('logDate', 'desc').limit(1).get()
     }
   },
   methods: {
+    async updateCompletionEntries() {
+      console.log("updating completion entries")
+      await this.completionEntryRepo.piniaStore().axios_getAll()
+    },
     async deleteEntry(entry: CompletionEntry) {
       console.log("delete item id: ", entry.id)
       let result;
       if(entry.id != null) {
         result = await this.completionEntryRepo.piniaStore().axios_deleteItem(entry.id)
         console.log("result: ", result)
-        this.completionEntryRepo.piniaStore().axios_getAll()
+        await this.updateCompletionEntries()
       }
     },
     toggleEditMode() {
@@ -81,11 +86,14 @@ export default defineComponent({
       console.log("edit mode is now ", this.editModeToggle ? "enabled" : "disabled")
     },
     async updateCompletedStatus(r: CompletionEntry) {
-      console.log("about to update status on ", r)
-      if(r.status != 2) r.status = 2
-      else r.status = 1
       const result = await this.completionEntryRepo.piniaStore().axios_updateItem(r)
-      console.log(`${r.id} status is now ${r.status} - api result: `, result)
+      console.log(`#${r.id} status is now ${r.status} - api result: `, result)
+      const dateOf = r.dailyLog.dateValue
+      const logsToRefresh = this.dailyLogRepo.where((log) => {
+        return log.dateValue.getTime() > dateOf.getTime()
+      }).with('completionEntries').orderBy('logDate', 'asc').get()
+      logsToRefresh.forEach((x) => x.reSampleHabits())
+      await this.updateCompletionEntries()
     }
   }
 })

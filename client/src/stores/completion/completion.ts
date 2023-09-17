@@ -15,7 +15,7 @@ export default class CompletionEntry extends Model {
   //static primaryKey: string | string[] = 'id'
   @Uid() declare id: string
   @Attr(null) declare habitID: number
-  @Attr(null) declare dailyLogID: number
+  @Num(-1) declare dailyLogID: number
   @Num(0) declare status: 0 | 1 | 2
   //@BelongsTo(() => Habit, 'habitID') declare habit: Habit
   //@BelongsTo(() => DailyLog, 'dailyLogID') declare log: DailyLog
@@ -26,6 +26,9 @@ export default class CompletionEntry extends Model {
   }
   get dailyLog () {
     return NotAnORM.getRelated(useRepo(DailyLog), this.dailyLogID)
+  }
+  get dateValue () {
+    return this.dailyLog.dateValue
   }
   get habit () {
     return NotAnORM.getRelated(useRepo(Habit), this.habitID)

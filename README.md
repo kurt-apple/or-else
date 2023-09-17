@@ -91,7 +91,10 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
       - [ ] Able to mark a habit complete for a given day
         - [ ] From dashboard
           - [x] place headings and lists on their own lines
-          - [ ] add checkbox on the habit
+          - [x] make the timer create a new daily log on next tick > midnight if not exists
+            - [x] allow for Create function to accept a subset of model properties OR make all other properties nullable
+            - [x] fix timestamp 0 on new logs
+          - [x] add checkbox on the habit
             - [x] map completion repo to index
               - [x] create completion repo
                 - [x] on frontend
@@ -106,7 +109,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
                       - [x] better yet: add seeds to db
                     - [x] strip debug code in index
                     - [x] make ADD DEMO HABIT in habits page
-            - [ ] query completion repo for current user's complete habits for today
+            - [x] query completion repo for current user's complete habits for today
               - [x] add daily log repo (has many completions)
               - [x] add new daily log if it's a new day (compare today against last log's date)
                 - [x] completions ought not be created until habit is complete for the day
@@ -136,12 +139,20 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
               - [x] consider adding a null for completed boolean property
                 - [x] completion entries need to properly link back to the Habit object, by habitId
                   - [x] figure out why computed getter lacks model properties
-              - [ ] track which habits were sampled when
-                - [ ] if sampled, specify habit as notcompleted instead of unspecified
+              - [x] track which habits were sampled when
+                - [x] if sampled, specify habit as notcompleted instead of unspecified
                   - [x] pseudocode for resampling today (if user updates yesterday)
                     - [x] change user current sample rate to starting sample rate
                     - [x] validate daily log sample rate getter
-                  - [ ] refactor checkbox on all completions page
+                  - [x] refactor checkbox on all completions page
+          - [-] add log date to completion records on dashboard
+            - [-] convert dashboard to completion record lists?
+              - [x] decide whether to bind checkbox to completion record status or to make the whole list just of completion records
+                - [x] review getter (which query is simplest?)
+                  - [x] dailylog getter for low CR habits must exclude future completion logs
+                    - [x] habit needs a getter for completions prior to an input date
+          - [ ] habit card checkboxes need to properly set completion entry
+          - [ ] all completion ratio stuff needs to subtract today's sampling (so areas to improve isn't constantly restocked)
         - [ ] From Daily Logs
         - [ ] From Habits
     - [ ] Habit Details Dialog
@@ -190,3 +201,4 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 - [ ] Styling
   - [ ] Toggle Dark Theme in Settings
 - [ ] Create user should create first daily log
+- [ ] stackblitz - pinia-orm find() and (where) on @belongsTo bug

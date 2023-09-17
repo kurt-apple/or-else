@@ -5,13 +5,16 @@
     <q-list v-if="!editModeToggle">
       <q-item v-for="h, index in logs" :key="index">
         <q-item-section>
-          <q-item-label> {{ h.logDate }}</q-item-label>
+          <q-item-label> {{ h.dateValue.toLocaleDateString() }}</q-item-label>
         </q-item-section>
         <q-item-section>
           <q-item-label> completion entries: {{ h.completionEntries ? h.completionEntries.length : 0 }}</q-item-label>
         </q-item-section>
         <q-item-section>
           <q-item-label> sample size: {{  h.sampleRate }}</q-item-label>
+        </q-item-section>
+        <q-item-section>
+          <q-item-label> done: {{ h.totalImprovedHabits }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>

@@ -1,56 +1,35 @@
 <template>
   <q-page padding>
-    <div>
-      <daily-log-card title="All Daily Logs" :logs="dailyLogs"></daily-log-card>
-    </div>
+    <daily-log-card title="All Daily Logs" :logs="logs"></daily-log-card>
   </q-page>
 </template>
 
-<script lang="ts">
-import { mapRepos, useRepo } from 'pinia-orm';
-import { Habit } from 'src/stores/habit/habit';
-import { defineComponent } from 'vue'
-import DailyLogCard from 'src/components/DailyLogCard.vue';
-import { User } from 'src/stores/user/user';
-import CompletionEntry from 'src/stores/completion/completion';
+<script setup lang="ts">
+import { useRepo } from 'pinia-orm';
 import DailyLog from 'src/stores/daily-log/daily-log';
+import { ref } from 'vue';
+import DailyLogCard from 'src/components/DailyLogCard.vue';
+import CompletionEntry from 'src/stores/completion/completion';
 import TheGreatHydrator from 'src/stores/TheGreatHydrator';
-export default defineComponent({
-  name: 'CompletionsPage',
-  components: {
-    DailyLogCard
-  },
-  async setup() {
-    const dlrepo = useRepo(DailyLog)
-    const cerepo = useRepo(CompletionEntry)
-    const usrepo = useRepo(User)
-    const harepo = useRepo(Habit)
-    await TheGreatHydrator.hydratify([dlrepo, cerepo, usrepo, harepo])
-  },
-  computed: {
-    ...mapRepos({
-      logRepo: DailyLog,
-    }),
-    dailyLogs(): DailyLog[] {
-      const logs = this.logRepo.with('completionEntries').get()
-      return logs
-    }
-  },
-  methods: {
-    // async addDemoHabit() {
-    //   console.log("start async create")
-    //   let result = await this.habitRepo.piniaStore().axios_createItem({
-    //     userId: 1,
-    //     title: 'DEMO HABIT FROM BUTTON',
-    //     times_sampled: 10,
-    //     times_completed: 1
-    //   })
-    //   console.log("result is: ", result)
-    //   console.log("habit Repo: ", this.habitRepo.withAll().all())
-    //   console.log("refreshing habits repo")
-    //   this.habitRepo.piniaStore().axios_getAll()
-    //   return result
-    // }
-  }
-})
+import { User } from 'src/stores/user/user';
+import { Habit } from 'src/stores/habit/habit';
+
+const logRepo = useRepo(DailyLog)
+await TheGreatHydrator.hydratify([
+  logRepo, 
+  useRepo(CompletionEntry), 
+  useRepo(User), 
+  useRepo(Habit)])
+const reloadList = () => logRepo.withAll().get()
+
+const logs = ref<Array<DailyLog>>([...reloadList()])
+
+const updateLogs = () => {
+  console.log("updating logs.")
+  logs.value = reloadList()
+  setTimeout(updateLogs, 5000)
+}
+
+updateLogs()
+
 </script>

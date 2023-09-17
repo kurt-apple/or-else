@@ -38,7 +38,12 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
-import ExistentialDread from 'components/ExistendialDread.vue'
+import ExistentialDread from 'components/ExistentialDread.vue'
+import { mapRepos, useRepo } from 'pinia-orm'
+import DailyLog from 'src/stores/daily-log/daily-log'
+import TheGreatHydrator from 'src/stores/TheGreatHydrator'
+import NotAnORM from 'src/stores/NotAnORM'
+import { Habit } from 'src/stores/habit/habit'
 
 const linksList = [
   {
@@ -96,8 +101,34 @@ export default defineComponent({
     ExistentialDread
   },
 
-  setup() {
+  async setup() {
     const leftDrawerOpen = ref(false)
+
+    await useRepo(DailyLog).piniaStore().axios_getAll()
+    
+    const checkTime = async () => {let currentTime = new Date()
+      const repo = useRepo(DailyLog)
+      let latestLog = repo.orderBy('logDate', 'desc').limit(1).get()[0]
+      let latestLogTime = new Date(latestLog.logDate)
+      //console.log('latestlogtime: ', latestLogTime, ' is type of: ', typeof latestLogTime)
+      while(currentTime.getDate() !== latestLogTime.getDate()) {
+        console.log("conditions were met, we're adding a log")
+        let response = await repo.piniaStore().axios_createItem({
+          previousLogID: latestLog.id!,
+          userID: latestLog.userID,
+          logDate: new Date(latestLogTime.getTime() + 86400000)
+        })
+        latestLog = NotAnORM.getRelated<DailyLog>(repo, response.data.id)
+        latestLogTime.setTime(latestLogTime.getTime() + 86400000)
+        console.log(currentTime.getDate(), " vs ", latestLogTime.getDate())
+        //todo: I hate this
+      }
+      await repo.piniaStore().axios_getAll()
+      await useRepo(Habit).piniaStore().axios_getAll()
+      setTimeout(checkTime, 10000)
+    }
+
+    await checkTime()
 
     return {
       essentialLinks: linksList,
@@ -107,5 +138,11 @@ export default defineComponent({
       },
     }
   },
+
+  computed: {
+    ...mapRepos({
+      dailyLogRepo: DailyLog
+    })
+  }
 })
 </script>

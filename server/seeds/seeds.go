@@ -37,7 +37,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		StartingSampleRate:      2,
 		TimeZoneOffset:          -8,
 		StartingRation:          2000,
-		StartDate:               time.Now().AddDate(0, 0, -1),
+		StartDate:               time.Now().AddDate(0, 0, -3),
 	}
 
 	fmt.Println("pushing default user to db")
@@ -47,10 +47,8 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	defaultHabits := []models.Habit{}
 	for i := uint8(1); i <= 100; i += 2 {
 		defaultHabits = append(defaultHabits, models.Habit{
-			UserID:         defaultUser.ID,
-			Title:          "Another Default Habit",
-			TimesSampled:   100,
-			TimesCompleted: i,
+			UserID: defaultUser.ID,
+			Title:  "Randomized Habit " + fmt.Sprint(i),
 		})
 	}
 
@@ -73,6 +71,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 
 	fmt.Println("pushing first daily log - should auto generate completion entries")
 	models.CreateLog(db, &firstDailyLog)
+	secondDailyLog.PreviousLogID = firstDailyLog.ID
 	models.CreateLog(db, &secondDailyLog)
 
 	fmt.Println("Database reset and re-seeded successfully.")
