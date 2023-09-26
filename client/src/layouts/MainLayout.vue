@@ -11,7 +11,7 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title> OR ELSE </q-toolbar-title>
 
         <existential-dread></existential-dread>
       </q-toolbar>
@@ -20,7 +20,6 @@
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <existential-dread></existential-dread>
       <q-list>
-
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
@@ -39,11 +38,13 @@
 import { defineComponent, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import ExistentialDread from 'components/ExistentialDread.vue'
-import { mapRepos, useRepo } from 'pinia-orm'
-import DailyLog from 'src/stores/daily-log/daily-log'
+import {
+  DailyLog,
+  useDailyLogsStore,
+} from 'src/stores/daily-log/daily-log-store'
+import { User, useUsersStore } from 'src/stores/user/userStore'
+import Utils from 'src/util'
 import TheGreatHydrator from 'src/stores/TheGreatHydrator'
-import NotAnORM from 'src/stores/NotAnORM'
-import { Habit } from 'src/stores/habit/habit'
 
 const linksList = [
   {
@@ -79,18 +80,18 @@ const linksList = [
   {
     title: 'All Daily Logs',
     icon: 'checklist',
-    link: 'daily-logs'
+    link: 'daily-logs',
   },
   {
     title: 'Completion Entries',
     icon: 'checklist',
-    link: 'completions'
+    link: 'completions',
   },
   {
     title: 'Super User',
     icon: 'edit',
-    link: 'super'
-  }
+    link: 'super',
+  },
 ]
 
 export default defineComponent({
@@ -98,33 +99,46 @@ export default defineComponent({
 
   components: {
     EssentialLink,
-    ExistentialDread
+    ExistentialDread,
   },
 
   async setup() {
+    await TheGreatHydrator.brrrrr()
+    console.log(useDailyLogsStore().getAll())
     const leftDrawerOpen = ref(false)
 
-    await useRepo(DailyLog).piniaStore().axios_getAll()
-    
-    const checkTime = async () => {let currentTime = new Date()
-      const repo = useRepo(DailyLog)
-      let latestLog = repo.orderBy('logDate', 'desc').limit(1).get()[0]
-      let latestLogTime = new Date(latestLog.logDate)
-      //console.log('latestlogtime: ', latestLogTime, ' is type of: ', typeof latestLogTime)
-      while(currentTime.getDate() !== latestLogTime.getDate()) {
-        console.log("conditions were met, we're adding a log")
-        let response = await repo.piniaStore().axios_createItem({
-          previousLogID: latestLog.id!,
+    const checkTime = async () => {
+      const currentTime = new Date()
+      const repo = useDailyLogsStore()
+      const user: User = Utils.hardCheck(
+        useUsersStore().defaultUser(),
+        'default user not found'
+      )
+      let latestLog = Utils.hardCheck(
+        repo.latestLog(user.id),
+        'latest log for default user was not found'
+      )
+      console.log('latest log: ', latestLog)
+      let latestLogTime = Utils.d(latestLog.logDate)
+      // console.log('latestlogtime: ', latestLogTime, ' is type of: ', typeof latestLogTime)
+      while (currentTime.getDate() !== latestLogTime.getDate()) {
+        console.log(
+          "conditions were met, we're adding a log. latest log id is ",
+          latestLog.id
+        )
+        const newLog = new DailyLog({
+          previousLogID:
+            typeof latestLog !== 'undefined' ? latestLog.id : undefined,
           userID: latestLog.userID,
-          logDate: new Date(latestLogTime.getTime() + 86400000)
+          logDate: new Date(latestLogTime.getTime() + 86400000).toISOString(),
         })
-        latestLog = NotAnORM.getRelated<DailyLog>(repo, response.data.id)
-        latestLogTime.setTime(latestLogTime.getTime() + 86400000)
-        console.log(currentTime.getDate(), " vs ", latestLogTime.getDate())
-        //todo: I hate this
+        await repo.createItem(newLog)
+        latestLog = Utils.hardCheck(
+          repo.latestLog(user.id),
+          'latest log for default user was not found'
+        )
+        latestLogTime = Utils.d(latestLog.logDate)
       }
-      await repo.piniaStore().axios_getAll()
-      await useRepo(Habit).piniaStore().axios_getAll()
       setTimeout(checkTime, 10000)
     }
 
@@ -138,11 +152,5 @@ export default defineComponent({
       },
     }
   },
-
-  computed: {
-    ...mapRepos({
-      dailyLogRepo: DailyLog
-    })
-  }
 })
 </script>

@@ -76,7 +76,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
   - [x] Settings
   - [x] Populate Icons and text fields with good data
     - [x] Mock the different menu pages and route to them
-- [ ] Dashboard
+- [x] Dashboard
   - [x] Section for Most Consistent Habits - 95% completion rate threshold? user configurable
     - [x] Make user configuration
       - [x] Make default user on db (persisted)
@@ -89,7 +89,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
     - [x] Click to expand other habits not in focus today
     - [ ] Daily Logs
       - [ ] Able to mark a habit complete for a given day
-        - [ ] From dashboard
+        - [x] From dashboard
           - [x] place headings and lists on their own lines
           - [x] make the timer create a new daily log on next tick > midnight if not exists
             - [x] allow for Create function to accept a subset of model properties OR make all other properties nullable
@@ -151,10 +151,11 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
                 - [x] review getter (which query is simplest?)
                   - [x] dailylog getter for low CR habits must exclude future completion logs
                     - [x] habit needs a getter for completions prior to an input date
-          - [ ] habit card checkboxes need to properly set completion entry
-          - [ ] all completion ratio stuff needs to subtract today's sampling (so areas to improve isn't constantly restocked)
-        - [ ] From Daily Logs
-        - [ ] From Habits
+          - [x] habit card checkboxes need to properly set completion entry
+          - [x] all completion ratio stuff needs to subtract today's sampling (so areas to improve isn't constantly restocked)
+        - [-] From Daily Logs
+          - [x] is daily log just dashboard?
+        - [x] From Habits
     - [ ] Habit Details Dialog
   - [ ] Section for Ration
     - [ ] How your ration was calculated
@@ -202,3 +203,5 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
   - [ ] Toggle Dark Theme in Settings
 - [ ] Create user should create first daily log
 - [ ] stackblitz - pinia-orm find() and (where) on @belongsTo bug
+- [ ] make it so you don't have to refresh the homepage
+- [ ] make habits page so you don't have to refresh

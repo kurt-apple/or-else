@@ -1,17 +1,28 @@
-import { Model, Repository, useRepo } from 'pinia-orm';
-import DailyLog from './daily-log/daily-log';
-import { User } from './user/user';
-import CompletionEntry from './completion/completion';
-import { Habit } from './habit/habit';
+import { useDailyLogsStore } from './daily-log/daily-log-store'
+import { useUsersStore } from './user/userStore'
+import { useCompletionsStore } from './completion/completion-store'
+import { useHabitsStore } from './habit/habitStore'
+import { Store } from 'pinia'
 
 export default class TheGreatHydrator {
-  static async hydratify(repos: Repository[]) {
-    for(let i = 0; i < repos.length; i++) {
-      await repos[i].piniaStore().axios_getAll()
+  static async hydratify(repos: Store[]) {
+    //todo: need to shape the stores into customstore to guarantee it will have certain actions
+    //... or don't. that would be more fun.
+    for (let i = 0; i < repos.length; i++) {
+      //await repos[i].fetchAll()
     }
   }
   static async brrrrr() {
-    const repos = [useRepo(DailyLog), useRepo(User), useRepo(CompletionEntry), useRepo(Habit)]
-    await this.hydratify(repos)
+    // const repos = [
+    //   useDailyLogsStore(),
+    //   useUsersStore(),
+    //   useCompletionsStore(),
+    //   useHabitsStore(),
+    // ]
+    // await this.hydratify(repos)
+    await useDailyLogsStore().fetchAll()
+    await useUsersStore().fetchAll()
+    await useCompletionsStore().fetchAll()
+    await useHabitsStore().fetchAll()
   }
 }

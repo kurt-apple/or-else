@@ -5,35 +5,18 @@
 </template>
 
 <script lang="ts">
-import { mapRepos, useRepo } from 'pinia-orm';
 import { defineComponent } from 'vue'
-import UserListCard from 'src/components/UserListCard.vue';
-import { User } from 'src/stores/user/user';
+import UserListCard from 'src/components/UserListCard.vue'
+import { User, useUsersStore } from '@/stores/user/userStore'
 export default defineComponent({
   name: 'SuperPage',
   components: {
-    UserListCard
-  },
-  setup() {
-    const repo = useRepo(User)
-    try {
-      repo.piniaStore()
-    } catch (error: any) {
-      console.error('error accessing pinia store.', error)
-    }
-    if (repo.piniaStore() == null || typeof repo === 'undefined') {
-      throw new Error('Pinia store is not found')
-    }
-    const userStore = repo.piniaStore()
-    userStore.axios_getAll()
+    UserListCard,
   },
   computed: {
-    ...mapRepos({
-      userRepo: User
-    }),
     users(): User[] {
-      return this.userRepo.all()
-    }
-  }
+      return useUsersStore().getAll()
+    },
+  },
 })
 </script>

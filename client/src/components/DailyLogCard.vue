@@ -14,7 +14,7 @@
           <q-item-label> sample size: {{  h.sampleRate }}</q-item-label>
         </q-item-section>
         <q-item-section>
-          <q-item-label> done: {{ h.totalImprovedHabits }}</q-item-label>
+          <q-item-label> done: {{ h.totalCompletedHabits }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>

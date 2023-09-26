@@ -1,10 +1,10 @@
-import { Model, useStoreActions } from 'pinia-orm'
 import { api } from 'src/boot/axios'
+import { Record, State } from './PiniaGenerics'
+import { StoreDefinition } from 'pinia'
 
 export default class AxiosPiniaCRUD {
-  static generateActions<M extends Model>(endpoint: string) {
+  static generateActions<M extends Record>(this: StoreDefinition, endpoint: string) {
     return {
-      ...useStoreActions(),
       async axios_createItem(this: M, obj: M) {
         console.log("createItem: ", obj)
         return new Promise((resolve, reject) => {
@@ -17,7 +17,7 @@ export default class AxiosPiniaCRUD {
             .then((response) => {
               console.log("createItem response from backend: ", response)
               //todo: does this actually save to the repo?
-              this.save([response.data])
+              
               resolve(response)
             }),
             (error: any) => {
@@ -26,7 +26,7 @@ export default class AxiosPiniaCRUD {
             }
         })
       },
-      async axios_getAll(this: M) {
+      async fetchAll() {
         const response = await api.get(`/${endpoint}`, {
           headers: {
             /*Authorization: authenticationStore.getBearerToken*/
@@ -34,8 +34,10 @@ export default class AxiosPiniaCRUD {
           params: {},
         })
         //console.log(`debug axios getAll (${endpoint}): `, response.data ? response.data[0] : 'response.data is null', ` and ${response.data.length - 1} more`)
-        this.fresh(response.data)
-        return response
+        //todo: how to replace this.fresh with this.items = blah? How to define `this` here?
+        state.items = response.data
+        //return response
+        
       },
       async axios_getID(this: M, id: number) {
         const response = await api.get(`/${endpoint}/${id}`, {

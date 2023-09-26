@@ -3,6 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "useDefineForClassFields": false,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
   }
 }

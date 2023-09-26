@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts">
-import DailyLog from 'src/stores/daily-log/daily-log';
 import { defineComponent } from 'vue';
 
 export default defineComponent({

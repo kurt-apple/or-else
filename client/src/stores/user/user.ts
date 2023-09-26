@@ -3,7 +3,7 @@ import { Num, Attr, Str, Uid } from 'pinia-orm/dist/decorators'
 import AxiosPiniaCRUD from '../AxiosPiniaCRUD'
 import { api } from 'src/boot/axios'
 
-export class User extends Model {
+class User extends Model {
   static entity = 'users'
   //static primaryKey: string | string[] = 'id'
   @Uid() declare id: string
@@ -15,7 +15,7 @@ export class User extends Model {
   @Attr() declare startDate: Date
   static piniaOptions = {
     actions: {
-      ...AxiosPiniaCRUD.generateActions<User>(this.entity),
+      //...AxiosPiniaCRUD.generateActions<User>(this.entity),
       async getDefaultUser() {
         const response = await api.get(`/${User.entity}/1`, {
           headers: {
@@ -23,7 +23,7 @@ export class User extends Model {
           },
           params: {},
         })
-        this.save(response.data)
+        //this.save(response.data)
         return response
       }
     }
