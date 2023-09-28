@@ -3,7 +3,7 @@
     <div>
       <completion-entry-card
         title="All Completions"
-        :completionEntries="completions"
+        :completion-entries="completions"
       ></completion-entry-card>
     </div>
   </q-page>
@@ -15,7 +15,7 @@ import CompletionEntryCard from 'src/components/CompletionEntryCard.vue'
 import {
   CompletionEntry,
   useCompletionsStore,
-} from '@/stores/completion/completion-store'
+} from 'src/stores/completion/completionStore'
 export default defineComponent({
   name: 'CompletionsPage',
   components: {

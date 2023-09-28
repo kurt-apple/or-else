@@ -1,3 +1,26 @@
+<script setup lang="ts">
+import axios, { AxiosError } from 'axios'
+import { useUsersStore } from 'src/stores/user/userStore'
+import { ref } from 'vue'
+
+const userStore = useUsersStore()
+const user = ref(userStore.gimmeUser())
+console.log('default user: ', user)
+const saveUserSettings = async () => {
+  try {
+    await useUsersStore().updateItem(user.value)
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.warn(`Axios Error - ${error.message}`)
+      console.log(error)
+    } else {
+      console.warn(`Error on Axios usage, possibly not Axios fault - ${error}`)
+      console.log(error)
+    }
+  }
+}
+</script>
+
 <template>
   <q-page padding>
     <br />
@@ -21,32 +44,6 @@
       :min="1400"
       :max="3000"
     />
-    <q-btn @click="saveUserSettings" icon="save">Save</q-btn>
+    <q-btn icon="save" @click="saveUserSettings">Save</q-btn>
   </q-page>
 </template>
-
-<script lang="ts">
-import { useUsersStore } from '@/stores/user/userStore'
-import Utils from '@/util'
-import { defineComponent, ref } from 'vue'
-export default defineComponent({
-  name: 'AccountSettings',
-  async setup() {
-    const userStore = useUsersStore()
-    let user = Utils.hardCheck(
-      userStore.defaultUser(),
-      'default user was not found'
-    )
-    console.log('default user: ', user)
-    return {
-      user: ref(user),
-    }
-  },
-  methods: {
-    async saveUserSettings() {
-      let result = await useUsersStore().updateItem(this.user)
-      console.log(result)
-    },
-  },
-})
-</script>

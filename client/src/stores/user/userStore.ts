@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record, State } from '../PiniaGenerics'
 import { api } from 'src/boot/axios'
-import { DailyLog, useDailyLogsStore } from '../daily-log/daily-log-store'
+import { DailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
 import { Habit, useHabitsStore } from '../habit/habitStore'
 import Utils from 'src/util'
 
@@ -93,6 +93,12 @@ export const useUsersStore = defineStore('users', {
           return Utils.mddl(a, b, 'desc')
         })[0]
     },
+    dailyLogs: () => (userID?: number) => {
+      if (typeof userID === 'undefined')
+        throw new Error('userID is not defined')
+      const dailyLogStore = useDailyLogsStore()
+      return dailyLogStore.allItemsForUser(userID)
+    },
   },
   actions: {
     // todo: make these generic
@@ -124,16 +130,20 @@ export const useUsersStore = defineStore('users', {
     },
     async updateItem(item: User) {
       const index = this.items.findIndex((x) => x.id === item.id)
+      let result
       if (index !== -1) {
-        await api
+        console.log('user is: ', this.items[index])
+        result = await api
           .patch(`/users/${item.id}`, item, {
             headers: {},
           })
           .then((response) => {
+            console.log('then...')
             this.items[index] = { ...this.items[index], ...item }
-            return response
+            console.log('response is: ', response)
           }, Utils.handleError('Error updating item.'))
-      }
+        return result
+      } else throw new Error('user was not found by its id')
     },
     async deleteItem(id: number) {
       const index = this.items.findIndex((x) => x.id === id)

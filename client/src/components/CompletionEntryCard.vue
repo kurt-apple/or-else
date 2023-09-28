@@ -1,100 +1,110 @@
+<script setup lang="ts">
+import CompletionsPage from 'src/pages/CompletionsPage.vue'
+import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
+import {
+  CompletionEntry,
+  useCompletionsStore,
+} from 'src/stores/completion/completionStore'
+import { computed, ref } from 'vue'
+
+const dailyLogStore = useDailyLogsStore()
+const completionStore = useCompletionsStore()
+
+export interface Props {
+  title?: string
+  completionEntries?: Array<CompletionEntry>
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: 'Completion Entries',
+  completionEntries: () => [],
+})
+
+const editModeToggle = ref(false)
+
+const latestLog = computed(() => dailyLogStore.latestLog())
+
+const dateOf = computed((completion: CompletionEntry) =>
+  completionStore.dateValueFromDailyLog(completion.id)
+)
+
+const deleteEntry = async (entry: CompletionEntry) => {
+  console.log('delete item id: ', entry.id)
+  let result
+  if (entry.id != null) {
+    result = await completionStore.deleteItem(entry.id)
+    console.log('result: ', result)
+  }
+}
+
+const toggleEditMode = () => {
+  editModeToggle.value = !editModeToggle.value
+}
+
+const updateCompletedStatus = async (r: CompletionEntry) => {
+  const result = await completionStore.updateItem(r)
+  console.log(`#${r.id} status is now ${r.status} - api result: `, result)
+  const dateOf = completionStore.dateValueFromDailyLog(r.id)
+  await dailyLogStore.reSampleHabitsGivenDate(dateOf)
+}
+</script>
+
 <template>
   <div>
     <h1>{{ title }}</h1>
-    <q-btn :icon="editModeToggle ? 'visibility' : 'edit'" @click="toggleEditMode"></q-btn>
+    <q-btn
+      :icon="editModeToggle ? 'visibility' : 'edit'"
+      @click="toggleEditMode"
+    ></q-btn>
     <q-list v-if="!editModeToggle">
-      <q-item v-for="h, index in completionEntries" :key="index">
-        <q-checkbox v-model="h.status" @click="updateCompletedStatus(h)" :indeterminate-value="0" :true-value="2" :false-value="1" indeterminate-icon="check_box_outline_blank"></q-checkbox>
+      <q-item v-for="(h, index) in completionEntries" :key="index">
+        <q-checkbox
+          v-model="h.status"
+          :indeterminate-value="0"
+          :true-value="2"
+          :false-value="1"
+          indeterminate-icon="check_box_outline_blank"
+          @click="updateCompletedStatus(h)"
+        ></q-checkbox>
         <q-item-section>
-          <q-item-label> {{ h.habit?.title ? h.habit.title : 'undefined' }}</q-item-label>
+          <q-item-label>
+            {{
+              completionStore.getHabit(h)?.title
+                ? completionStore.getHabit(h)?.title
+                : 'undefined'
+            }}
+          </q-item-label>
         </q-item-section>
         <q-item-section>
-          <q-item-label> {{ h.dailyLog?.dateValue.toLocaleDateString() ? h.dailyLog.dateValue.toLocaleDateString() : 'undefined' }}</q-item-label>
+          <q-item-label>
+            {{
+              completionStore.dateValueFromDailyLog(h.id).toLocaleDateString()
+                ? completionStore
+                    .dateValueFromDailyLog(h.id)
+                    .toLocaleDateString()
+                : 'undefined'
+            }}</q-item-label
+          >
         </q-item-section>
       </q-item>
     </q-list>
     <q-list v-else>
-      <q-item v-for="h in completionEntries" :key="h.title">
+      <q-item v-for="(h, index) in completionEntries" :key="index">
         <q-item-section>
-          {{  h.complete }}
+          {{ h.status }}
         </q-item-section>
         <q-item-section>
-          <q-item-label> edit mode: {{ h.habit?.title || 'reeeee' }}</q-item-label>
+          <q-item-label>
+            edit mode: {{ h.habit?.title || 'reeeee' }}</q-item-label
+          >
         </q-item-section>
         <q-item-section>
           <q-item-label> {{ h.dailyLog.logDate || 'reeee' }}</q-item-label>
         </q-item-section>
         <q-item-section>
-          <q-btn icon="delete" @click="deleteEntry(h)" color="negative"/>
+          <q-btn icon="delete" color="negative" @click="deleteEntry(h)" />
         </q-item-section>
       </q-item>
     </q-list>
   </div>
-  
 </template>
-
-<script lang="ts">
-import { mapRepos } from 'pinia-orm';
-import CompletionEntry from 'src/stores/completion/completion';
-import DailyLog from 'src/stores/daily-log/daily-log'
-import { Habit } from 'src/stores/habit/habit';
-import { PropType, defineComponent, ref } from 'vue';
-export default defineComponent({
-  name: 'CompletionEntryCard',
-  props: {
-    title: {
-      type: String,
-      default: 'Completion Entries'
-    },
-    completionEntries: {
-      type: Array as PropType<CompletionEntry[]>,
-      default: () => []
-    }
-  },
-  setup() {
-    console.log("wee")
-    return {
-      editModeToggle: ref(false)
-    }
-  },
-  computed: {
-    ...mapRepos ({
-      habitRepo: Habit,
-      dailyLogRepo: DailyLog,
-      completionEntryRepo: CompletionEntry
-    }),
-    latestLog() {
-      return this.dailyLogRepo.orderBy('logDate', 'desc').limit(1).get()
-    }
-  },
-  methods: {
-    async updateCompletionEntries() {
-      console.log("updating completion entries")
-      await this.completionEntryRepo.piniaStore().axios_getAll()
-    },
-    async deleteEntry(entry: CompletionEntry) {
-      console.log("delete item id: ", entry.id)
-      let result;
-      if(entry.id != null) {
-        result = await this.completionEntryRepo.piniaStore().axios_deleteItem(entry.id)
-        console.log("result: ", result)
-        await this.updateCompletionEntries()
-      }
-    },
-    toggleEditMode() {
-      this.editModeToggle = !this.editModeToggle
-      console.log("edit mode is now ", this.editModeToggle ? "enabled" : "disabled")
-    },
-    async updateCompletedStatus(r: CompletionEntry) {
-      const result = await this.completionEntryRepo.piniaStore().axios_updateItem(r)
-      console.log(`#${r.id} status is now ${r.status} - api result: `, result)
-      const dateOf = r.dailyLog.dateValue
-      const logsToRefresh = this.dailyLogRepo.where((log) => {
-        return log.dateValue.getTime() > dateOf.getTime()
-      }).with('completionEntries').orderBy('logDate', 'asc').get()
-      logsToRefresh.forEach((x) => x.reSampleHabits())
-      await this.updateCompletionEntries()
-    }
-  }
-})
-</script>

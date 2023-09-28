@@ -5,11 +5,11 @@
 </template>
 
 <script setup lang="ts">
-import { DailyLog, useDailyLogsStore } from 'src/stores/daily-log/daily-log-store';
-import { ref } from 'vue';
+import { DailyLog, useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
+import { ref } from 'vue'
+import DailyLogCard from 'src/components/DailyLogCard.vue'
 
 const logRepo = useDailyLogsStore()
 
 const logs = ref<Array<DailyLog>>([...logRepo.getAll()])
-
 </script>

@@ -17,6 +17,7 @@ export class PiniaGenerics {
   static getByID<R extends Record>(state: State<R>, id: number) {
     return state.items.find((x) => x.id === id)
   }
+
   static generateStoreGetters<R extends Record>() {
     return {
       getByID: (state: State<R>) => (id: number) => {
@@ -27,6 +28,7 @@ export class PiniaGenerics {
       },
     }
   }
+
   static stateTree<R extends Record>() {
     return {
       state: (): State<R> => {
@@ -36,9 +38,10 @@ export class PiniaGenerics {
       },
     }
   }
-  //todo: this seems to be the right direction however trouble since 'this' will be undefined.
-  //other option is to wrap the defineStore method however I ran into issues where R wasn't the right shape
-  /*static generateStoreActions<R extends Record>(
+
+  // todo: this seems to be the right direction however trouble since 'this' will be undefined.
+  // other option is to wrap the defineStore method however I ran into issues where R wasn't the right shape
+  /* static generateStoreActions<R extends Record>(
     endpoint: string, 
     fresh: (items: R[]) => void,
     push: (item: R) => void,
@@ -56,7 +59,8 @@ export class PiniaGenerics {
         }), Utils.handleError('Error creating item.')
       }
     }
-  }*/
+  } */
+
   static defineStoreCustom<R extends Record>(name: string) {
     return defineStore(name, {
       ...PiniaGenerics.stateTree<R>(),

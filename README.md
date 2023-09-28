@@ -1,72 +1,100 @@
 # DO NOT USE
+
 the utmost caution needs to be taken to protect life and health. I built this for personal use. This is a dangerous app. I cannot recommend anybody use it.
 
 # or-else
+
 A Pavlovian torture bot. DO NOT USE. I will not be held liable.
 
 # Behavior Change
+
 Hunger is a potent catalyst for behavior change. Your brain wants you to survive, so if food becomes scarce, all sorts of new behavior may emerge in order to stay alive. As uncomfortable as it is to discuss, modern life dulls our survival instincts. Money buys food, but even if you run out of money, there are probably resources in your community to obtain food for free. There are safety nets built into society. By extension, our behavior is not dictated by any immediate basic need anymore. This presents its own set of challenges. Bad habits can be hard to break because it just doesn't feel meaningful enough to change. The only way to tap into this esoteric brain function is to emulate scarcity. I have built a "game" that helps you bring this onto yourself.
 
 # Features and How To Use
+
 - Set a `baseline daily ration` of x calories
 - Add **habits** or **daily recurring tasks** to the main list.
 - Each day, you will receive a sampling of the items in the list, comprised of your most frequently completed and/or your least frequently completed.
 - The quantity of items sampled each day depends on the quantity of completed items on the previous day.
-- Your ration is `baseline daily ration` * `qty of completed habits yesterday` / `qty of sampled habits yesterday`
+- Your ration is `baseline daily ration` \* `qty of completed habits yesterday` / `qty of sampled habits yesterday`
 - optional: `baseline daily ration` varies depending on if you gain or lose weight the day prior - intended to calibrate `baseline` to prevent calorie deficit or surplus
 - Set a minimum ration to prevent weird days with unforseen obligations from needlessly punishing you; not exactly the point of the game to punish you for things outside your control.
 
 # Installation
+
 ## Find a Good Spot
+
 Navigate to a directory you can clone a repo folder.
 Clone the project into your folder of choice.
+
 ```bash
 git clone git@github.com:kurt-apple/or-else.git or-else
 ```
+
 Navigate into the project directory.
+
 ```bash
 cd or-else
 ```
+
 ## Initialize the SQLite Database
+
 Create a habits.db file in the main directory of the project.
+
 ```bash
 touch habits.db
 ```
+
 ## Set Up The Client
+
 Navigate to client folder and install dependencies. Yarn is recommended (by Quasar docs)
+
 ```bash
 cd client
 yarn
 # or
 npm install
 ```
+
 ## Start the app in development mode (hot-code reloading, error reporting, etc.)
+
 ### Run the Frontend
+
 ```bash
 quasar dev
 ```
+
 ### Run the Backend (no hot reloading for Golang)
+
 In another terminal window, navigate to the main directory of the project.
+
 ```bash
 cd or-else
 go run main.go
 ```
+
 ## Lint the Files
+
 ```bash
 yarn lint
 # or
 npm run lint
 ```
+
 ## Format the Files
+
 ```bash
 yarn format
 # or
 npm run format
 ```
+
 ## Customize the configuration
+
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
 
 # TODOs
+
 - [x] left menu:
   - [x] Dashboard
   - [x] Habits List
@@ -82,13 +110,13 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
       - [x] Make default user on db (persisted)
       - [x] Prop up a first draft settings page
     - [x] Make getter for list
-  - [ ] Section for Top X habits to focus on (x) based on your activity level yesterday
+  - [x] Section for Top X habits to focus on (x) based on your activity level yesterday
     - [x] Make store for value X
     - [x] Make getter for list
     - [x] Nice cards in a list for each habit
     - [x] Click to expand other habits not in focus today
-    - [ ] Daily Logs
-      - [ ] Able to mark a habit complete for a given day
+    - [x] Daily Logs
+      - [x] Able to mark a habit complete for a given day
         - [x] From dashboard
           - [x] place headings and lists on their own lines
           - [x] make the timer create a new daily log on next tick > midnight if not exists
@@ -156,12 +184,12 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
         - [-] From Daily Logs
           - [x] is daily log just dashboard?
         - [x] From Habits
-    - [ ] Habit Details Dialog
+    - [x] Habit Details Dialog
   - [ ] Section for Ration
     - [ ] How your ration was calculated
     - [ ] Progress toward ration today
     - [ ] Baseline
-  - [ ] Cards/nice UI/UX for each 
+  - [ ] Cards/nice UI/UX for each
 - [ ] Habits List
   - [ ] Make it slick
   - [ ] Plus Sign to Add
@@ -205,3 +233,5 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 - [ ] stackblitz - pinia-orm find() and (where) on @belongsTo bug
 - [ ] make it so you don't have to refresh the homepage
 - [ ] make habits page so you don't have to refresh
+- [ ] accordian on completion entries list
+- [ ] times completed / times sampled shows as only 0 or 1

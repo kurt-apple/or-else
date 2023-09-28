@@ -1,22 +1,15 @@
+<script setup lang="ts">
+import UserListCard from 'src/components/UserListCard.vue'
+import { useUsersStore } from 'src/stores/user/userStore'
+
+const userStore = useUsersStore()
+</script>
+
 <template>
   <q-page padding>
-    <user-list-card title="All Users" :users="users"></user-list-card>
+    <user-list-card
+      title="All Users"
+      :users="userStore.getAll()"
+    ></user-list-card>
   </q-page>
 </template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
-import UserListCard from 'src/components/UserListCard.vue'
-import { User, useUsersStore } from '@/stores/user/userStore'
-export default defineComponent({
-  name: 'SuperPage',
-  components: {
-    UserListCard,
-  },
-  computed: {
-    users(): User[] {
-      return useUsersStore().getAll()
-    },
-  },
-})
-</script>

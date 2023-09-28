@@ -1,12 +1,17 @@
-<script setup lang="ts" name="HabitCard2">
+<script setup lang="ts">
 import {
   CompletionEntry,
   useCompletionsStore,
-} from 'src/stores/completion/completion-store'
-import { useDailyLogsStore } from 'src/stores/daily-log/daily-log-store'
+} from 'src/stores/completion/completionStore'
+import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import { Habit, useHabitsStore } from 'src/stores/habit/habitStore'
 import Utils from 'src/util'
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
+
+const HabitCard = defineComponent({
+  name: 'HabitCard',
+})
+
 const habitsStore = useHabitsStore()
 const completionsStore = useCompletionsStore()
 export interface Props {
@@ -19,21 +24,27 @@ const props = withDefaults(defineProps<Props>(), {
   habits: () => [],
 })
 
+console.log('bloop')
+
 const editModeToggle = ref(false)
+const viewDetailsToggle = ref(false)
+const currentHabit = ref<Habit>()
 
 const toggleEditMode = () => (editModeToggle.value = !editModeToggle.value)
 
-const logDate = (h: Habit) => {
-  const latestLog = habitsStore.latestDailyLog(
-    Utils.hardCheck(h.id, 'habit id is not known')
-  )
-  return Utils.d(
-    Utils.hardCheck(
-      latestLog,
-      'could not retrieve the daily log from latest completion entry of habit'
-    ).logDate
-  )
-}
+// const logDate = (h: Habit) => {
+//   const latestLog = habitsStore.latestDailyLog(
+//     Utils.hardCheck(h.id, 'habit id is not known')
+//   )
+//   return Utils.d(
+//     Utils.hardCheck(
+//       latestLog,
+//       'could not retrieve the daily log from latest completion entry of habit'
+//     ).logDate
+//   )
+// }
+
+console.log('bloop')
 const updateCompletedStatus = async (h: { h: Habit; ce: CompletionEntry }) => {
   const latest = Utils.hardCheck(h.ce, 'Could not find latest log for habit')
   const result = await useCompletionsStore().updateItem(latest)
@@ -67,10 +78,31 @@ const deleteHabit = async (habit: Habit) => {
   }
 }
 console.log('hi')
+
+const viewDetails = (h: Habit) => {
+  currentHabit.value = h
+  viewDetailsToggle.value = !viewDetailsToggle.value
+}
 </script>
 
 <template>
   <div>
+    <q-dialog v-model="viewDetailsToggle">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Habit Details</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          Habit name is {{ currentHabit?.title }}. Completion Rate is
+          {{ habitsStore.completionRate(currentHabit?.id) }}.
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn v-close-popup flat label="OK" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <h2>{{ title }}</h2>
     <h4 v-if="habits.length == 0">None Yet</h4>
     <q-btn
@@ -90,7 +122,7 @@ console.log('hi')
         :key="index"
       >
         <q-item-section>
-          {{ logDate(h.h) }}
+          <q-btn icon="info" @click="viewDetails(h.h)">DETAILS</q-btn>
         </q-item-section>
         <q-checkbox
           v-model="h.ce.status"

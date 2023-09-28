@@ -5,9 +5,9 @@ import { api } from 'src/boot/axios'
 import {
   CompletionEntry,
   useCompletionsStore,
-} from '../completion/completion-store'
+} from '../completion/completionStore'
 import Utils from 'src/util'
-import { useDailyLogsStore } from '../daily-log/daily-log-store'
+import { useDailyLogsStore } from '../dailyLog/dailyLogStore'
 
 export class Habit extends Record implements HasUser {
   userID = -1

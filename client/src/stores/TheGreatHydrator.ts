@@ -1,17 +1,18 @@
-import { useDailyLogsStore } from './daily-log/daily-log-store'
+import { useDailyLogsStore } from './dailyLog/dailyLogStore'
 import { useUsersStore } from './user/userStore'
-import { useCompletionsStore } from './completion/completion-store'
+import { useCompletionsStore } from './completion/completionStore'
 import { useHabitsStore } from './habit/habitStore'
 import { Store } from 'pinia'
 
 export default class TheGreatHydrator {
   static async hydratify(repos: Store[]) {
-    //todo: need to shape the stores into customstore to guarantee it will have certain actions
-    //... or don't. that would be more fun.
+    // todo: need to shape the stores into customstore to guarantee it will have certain actions
+    // ... or don't. that would be more fun.
     for (let i = 0; i < repos.length; i++) {
-      //await repos[i].fetchAll()
+      // await repos[i].fetchAll()
     }
   }
+
   static async brrrrr() {
     // const repos = [
     //   useDailyLogsStore(),

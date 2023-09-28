@@ -4,7 +4,7 @@ import {
   // DailyLogGenerics,
   HasDailyLog,
   useDailyLogsStore,
-} from '../daily-log/daily-log-store'
+} from '../dailyLog/dailyLogStore'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
 import {
   /* HabitGenerics, */ HasHabit,
@@ -52,7 +52,6 @@ export const useCompletionsStore = defineStore('completion-entries', {
         throw new Error('cannot retrieve related records off of undefined id')
       const logsStore = useDailyLogsStore()
       const latestLog = logsStore.latestLog()
-      // console.log(latestLog)
       const entriesOfLog = state.items.filter(
         (x) => x.dailyLogID === latestLog.id
       )
@@ -73,6 +72,10 @@ export const useCompletionsStore = defineStore('completion-entries', {
         .filter((x) => x.dailyLogID === logID)
         .filter((x) => x.status !== 2)
     },
+    getHabit: () => (c: CompletionEntry) => {
+      const habitStore = useHabitsStore()
+      return habitStore.getByID(c.habitID)
+    },
   },
   actions: {
     resetFailedFromLog(logID: number) {
@@ -85,11 +88,15 @@ export const useCompletionsStore = defineStore('completion-entries', {
         throw new Error('cannot find items based on undefined habit id')
       return this.items.filter((x) => x.habitID === habitID)
     },
-    allItemsForDailyLog(dailyLogID: number) {
+    allItemsForDailyLog(dailyLogID?: number) {
+      if (typeof dailyLogID === 'undefined')
+        throw new Error('cannot do math on undefined id')
       console.log('getting all completion entries for daily log ', dailyLogID)
       return this.items.filter((x) => x.dailyLogID === dailyLogID)
     },
-    dateValueFromDailyLog(completionEntryID: number) {
+    dateValueFromDailyLog(completionEntryID?: number) {
+      if (typeof completionEntryID === 'undefined')
+        throw new Error('completionEntryID is undefined')
       const completion = Utils.hardCheck(
         this.getByID(completionEntryID),
         'completion from id argument is not found'

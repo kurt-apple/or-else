@@ -1,49 +1,51 @@
 import { RouteRecordRaw } from 'vue-router'
+import AccountSettings from 'src/pages/AccountSettings.vue'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [{
+    component: () => import('src/layouts/MainLayout.vue'),
+    children: [
+      {
         path: '',
-        component: () => import('pages/IndexPage.vue')
+        component: () => import('src/pages/IndexPage.vue'),
       },
-      { 
-        path: 'dashboard', 
-        component: () => import('pages/IndexPage.vue') 
+      {
+        path: 'dashboard',
+        component: () => import('src/pages/IndexPage.vue'),
       },
       {
         path: 'habits',
-        component: () => import('pages/HabitsPage.vue')
+        component: () => import('src/pages/HabitsPage.vue'),
       },
       {
         path: 'logs',
-        component: () => import('pages/DailyLog.vue')
+        component: () => import('src/pages/DailyLog.vue'),
       },
       {
         path: 'food-logs',
-        component: () => import('pages/FoodLog.vue')
+        component: () => import('src/pages/FoodLog.vue'),
       },
       {
         path: 'weight-logs',
-        component: () => import('pages/WeightLog.vue')
+        component: () => import('src/pages/WeightLog.vue'),
       },
       {
         path: 'settings',
-        component: () => import('pages/AccountSettings.vue')
+        component: AccountSettings,
       },
       {
         path: 'completions',
-        component: () => import('pages/CompletionsPage.vue')
+        component: () => import('src/pages/CompletionsPage.vue'),
       },
       {
         path: 'daily-logs',
-        component: () => import('pages/DailyLogsPage.vue')
+        component: () => import('src/pages/DailyLogsPage.vue'),
       },
       {
         path: 'super',
-        component: () => import('pages/SuperPage.vue')
-      }
+        component: () => import('src/pages/SuperPage.vue'),
+      },
     ],
   },
 
@@ -51,7 +53,7 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('src/pages/ErrorNotFound.vue'),
   },
 ]
 

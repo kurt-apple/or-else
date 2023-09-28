@@ -1,15 +1,10 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record, State } from 'src/stores/PiniaGenerics'
-import {
-  HasUser,
-  User,
-  UserGenerics,
-  useUsersStore,
-} from 'src/stores/user/userStore'
+import { HasUser, useUsersStore } from 'src/stores/user/userStore'
 import {
   CompletionEntry,
   useCompletionsStore,
-} from '../completion/completion-store'
+} from '../completion/completionStore'
 import { api } from 'src/boot/axios'
 import Utils from 'src/util'
 import { useHabitsStore } from '../habit/habitStore'
@@ -63,13 +58,6 @@ export class DailyLog extends Record implements HasUser {
   get formattedDate() {
     return Utils.d(this.logDate).toLocaleDateString()
   }
-
-  get user(): User {
-    return Utils.hardCheck(
-      useDailyLogsStore().user(this),
-      'no user found for daily log'
-    )
-  }
 }
 
 export interface HasDailyLog extends Record {
@@ -95,7 +83,12 @@ export const useDailyLogsStore = defineStore('daily-logs', {
   ...PiniaGenerics.stateTree<DailyLog>(),
   getters: {
     ...PiniaGenerics.generateStoreGetters<DailyLog>(),
-    ...UserGenerics.generateUserGetters<DailyLog>(),
+    // ...UserGenerics.generateUserGetters<DailyLog>(),
+    allItemsForUser: (state) => (userID?: number) => {
+      if (typeof userID === 'undefined')
+        throw new Error('cannot fetch related records of undefined')
+      return state.items.filter((x) => x.userID === userID)
+    },
     latestLog: (state) => (userID?: number) => {
       const id =
         typeof userID === 'undefined'
@@ -110,14 +103,17 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       // console.log('all logs for user', logs)
       return logs.sort((a, b) => Utils.mddl(a, b, 'desc'))[0]
     },
-    qtyImprovedHabits: () => (logID: number, userID?: number) => {
+    qtyImprovedHabits: () => (logID?: number, userID?: number) => {
+      if (typeof logID === 'undefined')
+        throw new Error('cannot do math on undefined record')
       const completionStore = useCompletionsStore()
       const completed = completionStore.getCompletedFromLog(logID)
       const userStore = useUsersStore()
       const user = userStore.gimmeUser(userID)
       const habitStore = useHabitsStore()
       return completed.filter(
-        (x) => habitStore.completionRate(x.id) <= user.completionRateThreshold
+        (x) =>
+          habitStore.completionRate(x.habitID) <= user.completionRateThreshold
       ).length
     },
     formattedDate: () => (item: DailyLog) => {
@@ -128,6 +124,15 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       (item: DailyLog): Date => {
         return Utils.d(item.logDate)
       },
+    getUserFromLog: () => (log?: DailyLog) => {
+      if (typeof log === 'undefined')
+        throw new Error('cannot retrieve related records of undefined')
+      const userStore = useUsersStore()
+      return Utils.hardCheck(
+        userStore.getByID(log.userID),
+        'user not found for dailylog'
+      )
+    },
   },
   actions: {
     sampleRate(dailyLogID?: number) {
@@ -155,11 +160,12 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     async reSampleHabits(dailyLogID?: number) {
       if (typeof dailyLogID === 'undefined')
         throw new Error('resample failed because id was undefined.')
+
       const dailyLog = Utils.hardCheck(
         this.items.find((x) => x.id === dailyLogID),
         'daily log does not come up by this id'
       )
-      console.log('re-sampling ', this.formattedDate(dailyLog))
+      console.log('RE-SAMPLING DAILY LOG ', this.formattedDate(dailyLog))
       const completionStore = useCompletionsStore()
       completionStore.resetFailedFromLog(dailyLogID)
       const notcompleted =
@@ -179,14 +185,20 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       })
       habits = habits.slice(0, this.sampleRate(dailyLogID) - 1)
       for (let i = 0; i < habits.length; i++) {
-        const relatedDailyLogs = habits[i].completionEntries.filter(
-          (y) => y.dailyLogID === dailyLog.id
-        )
-        for (let j = 0; j < relatedDailyLogs.length; j++) {
-          relatedDailyLogs[j].status = 1
-          await useCompletionsStore().updateItem(relatedDailyLogs[j])
+        const completionEntriesOfHabit = completionStore
+          .allItemsForHabit(habits[i].id)
+          .filter((y) => y.dailyLogID === dailyLog.id)
+        for (let j = 0; j < completionEntriesOfHabit.length; j++) {
+          completionEntriesOfHabit[j].status = 1
+          await useCompletionsStore().updateItem(completionEntriesOfHabit[j])
         }
       }
+    },
+    async reSampleHabitsGivenDate(fromDate: Date) {
+      const toReSample = this.items
+        .filter((x) => Utils.t(x.logDate) > fromDate.getTime())
+        .sort((a, b) => Utils.mddl(a, b, 'asc'))
+      toReSample.forEach(async (x) => await this.reSampleHabits(x.id))
     },
     // todo: make these generic
     // problem is 'this' is possibly undefined
@@ -230,7 +242,9 @@ export const useDailyLogsStore = defineStore('daily-logs', {
           }, Utils.handleError('Error updating item.'))
       }
     },
-    async deleteItem(id: number) {
+    async deleteItem(id?: number) {
+      if (typeof id === 'undefined')
+        throw new Error('cannot delete undefined. skill issue lol')
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
         await api
