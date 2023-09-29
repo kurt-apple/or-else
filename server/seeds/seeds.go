@@ -58,21 +58,42 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	}
 
 	firstDailyLog := models.DailyLog{
-		UserID:       defaultUser.ID,
-		LogDate:      defaultUser.StartDate,
-		TodaysRation: defaultUser.StartingRation,
+		UserID:            defaultUser.ID,
+		LogDate:           defaultUser.StartDate,
+		RationStoredValue: defaultUser.StartingRation,
 	}
 
 	secondDailyLog := models.DailyLog{
-		UserID:       defaultUser.ID,
-		LogDate:      defaultUser.StartDate.AddDate(0, 0, 1),
-		TodaysRation: defaultUser.StartingRation,
+		UserID:            defaultUser.ID,
+		LogDate:           defaultUser.StartDate.AddDate(0, 0, 1),
+		RationStoredValue: defaultUser.StartingRation,
 	}
 
 	fmt.Println("pushing first daily log - should auto generate completion entries")
 	models.CreateLog(db, &firstDailyLog)
 	secondDailyLog.PreviousLogID = firstDailyLog.ID
 	models.CreateLog(db, &secondDailyLog)
+
+	fmt.Println("pushing some food items")
+	fakeFoods := []models.FoodItem{}
+	for i := uint8(1); i <= 10; i += 1 {
+		fakeFoods = append(fakeFoods, models.FoodItem{
+			Name:            "Yummy Treat " + fmt.Sprint(i),
+			Unit:            "Quart",
+			CaloriesPerUnit: i * 100,
+		})
+	}
+	for _, foodItem := range fakeFoods {
+		db.Create(&foodItem)
+	}
+
+	fmt.Println("pushing one food log")
+	log := models.FoodEntry{
+		DailyLogID: firstDailyLog.ID,
+		FoodItemID: fakeFoods[4].ID,
+		QTY:        2,
+	}
+	db.Create(&log)
 
 	fmt.Println("Database reset and re-seeded successfully.")
 	return nil

@@ -12,12 +12,13 @@ import (
 
 type DailyLog struct {
 	///TODO: figure out best data type for date property
-	ID            uint      `gorm:"primaryKey" json:"id"`
-	UserID        uint      `json:"userID"`
-	User          User      `gorm:"foreignKey:UserID"`
-	LogDate       time.Time `json:"logDate"`
-	TodaysRation  uint      `json:"todaysRation"`
-	PreviousLogID uint      `json:"previousLogID"`
+	ID                uint      `gorm:"primaryKey" json:"id"`
+	UserID            uint      `json:"userID"`
+	User              User      `gorm:"foreignKey:UserID"`
+	LogDate           time.Time `json:"logDate"`
+	RationStoredValue uint      `json:"rationStoredValue"`
+	PreviousLogID     uint      `json:"previousLogID"`
+	LastModified      time.Time `json:"lastModified"`
 }
 
 func GetDailyLogs(db *gorm.DB) http.HandlerFunc {
@@ -40,6 +41,7 @@ func GetDailyLog(db *gorm.DB) http.HandlerFunc {
 }
 
 func CreateLog(db *gorm.DB, dl *DailyLog) {
+	dl.LastModified = time.Now()
 	fmt.Println("createLog", dl)
 	db.Create(dl)
 	var habits []Habit
@@ -70,6 +72,7 @@ func UpdateDailyLog(db *gorm.DB) http.HandlerFunc {
 		var item DailyLog
 		db.First(&item, params["id"])
 		json.NewDecoder(r.Body).Decode(&item)
+		item.LastModified = time.Now()
 		db.Save(&item)
 		json.NewEncoder(w).Encode(item)
 	}

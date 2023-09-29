@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record, State } from 'src/stores/PiniaGenerics'
 import { HasUser, useUsersStore } from 'src/stores/user/userStore'
-import {
-  CompletionEntry,
-  useCompletionsStore,
-} from '../completion/completionStore'
+import { useCompletionsStore } from '../completion/completionStore'
 import { api } from 'src/boot/axios'
 import Utils from 'src/util'
 import { useHabitsStore } from '../habit/habitStore'
+import { useWeightEntryStore } from '../weight-entry/weightEntryStore'
+import { useFoodEntryStore } from '../foodEntry/foodEntryStore'
+import { type } from 'os'
 
 export class DailyLog extends Record implements HasUser {
   id?: number | undefined
@@ -18,45 +18,21 @@ export class DailyLog extends Record implements HasUser {
   userID = -1
   logDate = ''
   previousLogID?: number | undefined
+  rationStoredValue: number | undefined
+  lastModified?: string | undefined
   constructor(options: {
     userID?: number
     logDate?: string
     previousLogID?: number | undefined
+    rationStoredValue?: number | undefined
+    lastModified?: string
   }) {
     super({})
     this.userID = options.userID ?? -1
     this.logDate = options.logDate ?? ''
     this.previousLogID = options.previousLogID
-  }
-
-  get completionEntries(): CompletionEntry[] {
-    return useCompletionsStore().allItemsForDailyLog(this.getID())
-  }
-
-  get previousLog(): DailyLog | undefined {
-    if (this.previousLogID) {
-      return useDailyLogsStore().getByID(this.previousLogID)
-    }
-  }
-
-  get incompleteHabits() {
-    return this.completionEntries.filter((x) => x.status === 1)
-  }
-
-  get qtyIncompleteHabits() {
-    return this.incompleteHabits.length
-  }
-
-  get completedHabits() {
-    return this.completionEntries.filter((x) => x.status === 2)
-  }
-
-  get qtyCompletedHabits() {
-    return this.completedHabits.length
-  }
-
-  get formattedDate() {
-    return Utils.d(this.logDate).toLocaleDateString()
+    this.rationStoredValue = options.rationStoredValue ?? 2000
+    this.lastModified = options.lastModified ?? new Date().toISOString()
   }
 }
 
@@ -133,8 +109,66 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         'user not found for dailylog'
       )
     },
+    getWeightEntries: () => (dailyLogID?: number) => {
+      if (typeof dailyLogID === 'undefined')
+        throw new Error('daily log id is undefined')
+      return useWeightEntryStore().allItemsForDailyLog(dailyLogID)
+    },
+    getCompletionEntries: () => (DailyLogID?: number) => {
+      if (typeof DailyLogID === 'undefined')
+        throw new Error('daily log id is undefined')
+      return useCompletionsStore().allItemsForDailyLog(DailyLogID)
+    },
+    allFoodEntries: () => (dailyLogID?: number) => {
+      if (typeof dailyLogID === 'undefined')
+        throw new Error('daily log ID is undefined')
+      return useFoodEntryStore().allItemsForDailyLog(dailyLogID)
+    },
+    previousLog: (state) => (log: DailyLog) => {
+      if (
+        typeof log.previousLogID === 'undefined' ||
+        log.previousLogID === null ||
+        log.previousLogID < 1
+      ) {
+        throw new Error(
+          'the previous log id either does not exist yet or is set to bogus value'
+        )
+      }
+      return state.items.find((x) => x.id === log.previousLogID)
+    },
   },
   actions: {
+    countCompleted(log: DailyLog) {
+      return this.getCompletionEntries(log.id).filter((x) => x.status === 2)
+        .length
+    },
+    successRate(log: DailyLog) {
+      const completed = this.countCompleted(log)
+      const habitsInPlay = this.getCompletionEntries(log.id).filter(
+        (x) => x.status !== 0
+      ).length
+      return completed / habitsInPlay
+    },
+    maxWeight(log: DailyLog) {
+      const entries = this.getWeightEntries(log.id).map((x) => x.weight)
+      return Math.max(...entries)
+    },
+    weightDelta(log: DailyLog) {
+      const previous = this.getByID(log.previousLogID)
+      if (typeof previous === 'undefined') return 0
+      const beforeThat = this.getByID(previous.previousLogID)
+      if (typeof beforeThat === 'undefined') return 0
+      return this.maxWeight(beforeThat) - this.maxWeight(previous)
+    },
+    totalCaloriesConsumed(dailyLogID?: number) {
+      const foodEntryStore = useFoodEntryStore()
+      const entries = this.allFoodEntries(dailyLogID)
+      let sum = 0
+      for (let i = 0; i < entries.length; i++) {
+        sum += foodEntryStore.totalCalories(entries[i])
+      }
+      return sum
+    },
     sampleRate(dailyLogID?: number) {
       const log = Utils.hardCheck(
         this.getByID(
@@ -155,6 +189,64 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       } else {
         const prevImproved = this.qtyImprovedHabits(log.previousLogID)
         return Math.max(prevImproved + 1, user.startingSampleRate)
+      }
+    },
+    calculateBaseRation(log: DailyLog) {
+      const user = useUsersStore().gimmeUser(log.userID)
+      // 1. get previous ration or default to user starting ration
+      // 1.a. get previous logs
+      const priorLogs = this.items
+        .filter((x) => Utils.d(x.logDate) < Utils.d(log.logDate))
+        .sort((a, b) => Utils.mddl(a, b, 'asc'))
+      priorLogs.push(log)
+      // 1.b. tail it
+      for (let i = 0; i < priorLogs.length; i++) {
+        if (typeof priorLogs[i].previousLogID === 'undefined') {
+          // not sure where to take the database-backed optimization of this query.
+          // todo: optimize, perhaps with a 'dirty' flag to indicate which need to be recalculated
+          // for now, recalculate all
+          priorLogs[i].rationStoredValue = user.startingRation
+          priorLogs[i].lastModified = new Date().toISOString()
+        } else {
+          const previousRation = Utils.hardCheck(
+            this.previousLog(priorLogs[i])?.rationStoredValue,
+            'previous log not found'
+          )
+          // todo: validate previous log has an up to date value etc etc
+          let newRation = previousRation ?? user.startingRation
+          if (this.weightDelta(priorLogs[i]) > 0) newRation -= 100
+          // todo: add weight status as default habit, auto-tracked
+          // todo: add calorie count status as default habit, auto-tracked
+          else {
+            newRation += 100
+          }
+          priorLogs[i].rationStoredValue = newRation
+          priorLogs[i].lastModified = new Date().toISOString()
+        }
+      }
+
+      // 2. if auto size base ration: if weight up, reduce by x; else increase by x
+      // todo: make this a toggle. Currently only enabled.
+      // todo: have a min weight user setting. If below min weight, add calories no matter the delta
+      // if at min weight, do not change ration
+      // 3. compute total completed / total sampled for previous day
+      // 4. multiply base ration by completion ratio
+      const ration = priorLogs.pop()?.rationStoredValue
+      if (typeof ration === 'undefined') {
+        console.warn('ration is undefined.')
+        return user.startingRation
+      } else return ration
+    },
+    calculateActualRation(log: DailyLog) {
+      const base = this.calculateBaseRation(log)
+      if (typeof log.previousLogID === 'undefined') {
+        return base
+      } else {
+        const prev = Utils.hardCheck(
+          this.previousLog(log),
+          'should have returned previous log object'
+        )
+        return base * this.successRate(prev)
       }
     },
     async reSampleHabits(dailyLogID?: number) {

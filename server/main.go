@@ -25,7 +25,7 @@ func main() {
 		_ = sqlDB.Close()
 	}()
 
-	listOfModels := []interface{}{&models.Habit{}, &models.User{}, &models.DailyLog{}, &models.Completion{}}
+	listOfModels := []interface{}{&models.Habit{}, &models.User{}, &models.DailyLog{}, &models.Completion{}, &models.FoodEntry{}, &models.FoodItem{}}
 	seeds.SeedDatabase(db, listOfModels)
 
 	router := mux.NewRouter()
@@ -53,6 +53,18 @@ func main() {
 	router.HandleFunc("/completions", models.CreateCompletion(db)).Methods("POST")
 	router.HandleFunc("/completions/{id}", models.UpdateCompletion(db)).Methods("PATCH")
 	router.HandleFunc("/completions/{id}", models.DeleteCompletion(db)).Methods("DELETE")
+
+	router.HandleFunc("/food-entries", models.GetFoodEntries(db)).Methods("GET")
+	router.HandleFunc("/food-entries/{id}", models.GetFoodEntry(db)).Methods("GET")
+	router.HandleFunc("/food-entries", models.CreateFoodEntry(db)).Methods("POST")
+	router.HandleFunc("/food-entries/{id}", models.UpdateFoodEntry(db)).Methods("PATCH")
+	router.HandleFunc("/food-entries/{id}", models.DeleteFoodEntry(db)).Methods("DELETE")
+
+	router.HandleFunc("/food-items", models.GetFoodItems(db)).Methods("GET")
+	router.HandleFunc("/food-items/{id}", models.GetFoodItem(db)).Methods("GET")
+	router.HandleFunc("/food-items", models.CreateFoodItem(db)).Methods("POST")
+	router.HandleFunc("/food-items/{id}", models.UpdateFoodItem(db)).Methods("PATCH")
+	router.HandleFunc("/food-items/{id}", models.DeleteFoodItem(db)).Methods("DELETE")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:9000"},

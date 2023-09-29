@@ -20,7 +20,9 @@ export class PiniaGenerics {
 
   static generateStoreGetters<R extends Record>() {
     return {
-      getByID: (state: State<R>) => (id: number) => {
+      getByID: (state: State<R>) => (id?: number) => {
+        if (typeof id === 'undefined')
+          throw new Error('cannot retrieve record with undefined id')
         return this.getByID<R>(state, id)
       },
       getAll: (state: State<R>) => (): R[] => {

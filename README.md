@@ -187,6 +187,19 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
     - [x] Habit Details Dialog
   - [ ] Section for Ration
     - [ ] How your ration was calculated
+      - [x] FoodLogEntry model
+        - [x] frontend
+        - [x] backend
+          - [x] Models
+          - [x] Routing
+          - [x] Seeds
+            - [x] Draft
+            - [x] Basic Test
+      - [x] FoodItem model
+        - [x] frontend
+        - [x] backend
+      - [ ] page for all food log entries
+      - [ ] page for food log form
     - [ ] Progress toward ration today
     - [ ] Baseline
   - [ ] Cards/nice UI/UX for each
