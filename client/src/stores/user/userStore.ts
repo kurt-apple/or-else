@@ -42,6 +42,7 @@ export class User extends Record {
   timeZoneOffset = 0
   startingRation = 2000
   startDate = ''
+  minRation = 1500
   get dailyLogs(): DailyLog[] {
     console.log('getting all user daily logs')
     return useDailyLogsStore().allItemsForUser(

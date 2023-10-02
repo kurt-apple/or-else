@@ -17,7 +17,6 @@ type Habit struct {
 
 func GetHabits(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("getItems")
 		var items []Habit
 		db.Find(&items)
 		json.NewEncoder(w).Encode(items)

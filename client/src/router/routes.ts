@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'food-logs',
-        component: () => import('src/pages/FoodLog.vue'),
+        component: () => import('src/pages/FoodLogs.vue'),
       },
       {
         path: 'weight-logs',
@@ -45,6 +45,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'super',
         component: () => import('src/pages/SuperPage.vue'),
+      },
+      {
+        path: 'food-entry',
+        component: () => import('src/pages/FoodEntryForm.vue'),
       },
     ],
   },

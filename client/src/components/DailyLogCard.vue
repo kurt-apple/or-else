@@ -39,11 +39,20 @@ const completionStore = useCompletionsStore()
         </q-item-section>
         <q-item-section>
           <q-item-label>
-            completion entries:
-            {{
-              h.completionEntries ? h.completionEntries.length : 0
-            }}</q-item-label
+            ration:
+            {{ dailyLogStore.calculateActualRation(h) }}</q-item-label
           >
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>
+            food entries:
+            {{ dailyLogStore.allFoodEntries(h.id).length }}</q-item-label
+          >
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>
+            calories: {{ dailyLogStore.totalCaloriesConsumed(h.id) }}
+          </q-item-label>
         </q-item-section>
         <q-item-section>
           <q-item-label>
@@ -52,7 +61,7 @@ const completionStore = useCompletionsStore()
         </q-item-section>
         <q-item-section>
           <q-item-label>
-            done: {{ dailyLogStore.qtyImprovedHabits(h.id) }}</q-item-label
+            done: {{ dailyLogStore.countCompleted(h) }}</q-item-label
           >
         </q-item-section>
       </q-item>

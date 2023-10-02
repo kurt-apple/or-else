@@ -3,6 +3,8 @@ import { useUsersStore } from './user/userStore'
 import { useCompletionsStore } from './completion/completionStore'
 import { useHabitsStore } from './habit/habitStore'
 import { Store } from 'pinia'
+import { useFoodEntryStore } from './foodEntry/foodEntryStore'
+import { useFoodItemStore } from './foodItem/foodItemStore'
 
 export default class TheGreatHydrator {
   static async hydratify(repos: Store[]) {
@@ -25,5 +27,7 @@ export default class TheGreatHydrator {
     await useUsersStore().fetchAll()
     await useCompletionsStore().fetchAll()
     await useHabitsStore().fetchAll()
+    await useFoodEntryStore().fetchAll()
+    await useFoodItemStore().fetchAll()
   }
 }

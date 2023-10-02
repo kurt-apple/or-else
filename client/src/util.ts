@@ -43,4 +43,21 @@ export default class Utils {
       (this.t(one.logDate) - this.t(two.logDate)) * (dir === 'asc' ? 1 : -1)
     )
   }
+
+  static same24(a: Date, b: Date) {
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    )
+  }
+
+  static same24s(a: string, b: string) {
+    return this.same24(new Date(a), new Date(b))
+  }
+
+  // thank you https://stackoverflow.com/a/7228322
+  static randbetween(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  }
 }

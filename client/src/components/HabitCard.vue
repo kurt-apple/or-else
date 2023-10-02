@@ -7,6 +7,7 @@ import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import { Habit, useHabitsStore } from 'src/stores/habit/habitStore'
 import Utils from 'src/util'
 import { defineComponent, ref } from 'vue'
+import HabitDetails from './HabitDetails.vue'
 
 const HabitCard = defineComponent({
   name: 'HabitCard',
@@ -87,22 +88,10 @@ const viewDetails = (h: Habit) => {
 
 <template>
   <div>
-    <q-dialog v-model="viewDetailsToggle">
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Habit Details</div>
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-          Habit name is {{ currentHabit?.title }}. Completion Rate is
-          {{ habitsStore.completionRate(currentHabit?.id) }}.
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn v-close-popup flat label="OK" color="primary" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <habit-details
+      v-if="viewDetailsToggle"
+      :habit="currentHabit"
+    ></habit-details>
     <h2>{{ title }}</h2>
     <h4 v-if="habits.length == 0">None Yet</h4>
     <q-btn

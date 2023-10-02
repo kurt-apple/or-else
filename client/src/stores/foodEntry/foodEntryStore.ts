@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
-import { DailyLogGenerics, HasDailyLog } from '../dailyLog/dailyLogStore'
-import { api } from '@/boot/axios'
-import Utils from '@/util'
+import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
+import { api } from 'src/boot/axios'
+import Utils from 'src/util'
 import { HasFoodItem, useFoodItemStore } from '../foodItem/foodItemStore'
 
 export class FoodEntry extends Record implements HasDailyLog, HasFoodItem {
@@ -16,24 +16,41 @@ export const useFoodEntryStore = defineStore('food-entry', {
   ...PiniaGenerics.stateTree<FoodEntry>(),
   getters: {
     ...PiniaGenerics.generateStoreGetters<FoodEntry>(),
-    ...DailyLogGenerics.generateDailyLogGetters<FoodEntry>(),
+    // ...DailyLogGenerics.generateDailyLogGetters<FoodEntry>(),
     // ...FoodItemGenerics.generateFoodItemGetters<FoodEntry>(),
     allFoodLogEntriesForFoodItem: (state) => (foodItemID?: number) => {
       if (typeof foodItemID === 'undefined')
         throw new Error('food item id is undefined')
       return state.items.filter((x) => x.foodItemID === foodItemID)
     },
-    foodItemForFoodEntry: () => (entry: FoodEntry) => {
+    foodItem: () => (entry: FoodEntry) => {
       const foodItemStore = useFoodItemStore()
-      return foodItemStore.getByID(entry.foodItemID)
+      console.log('finding food item for entry: ', entry)
+      const item = Utils.hardCheck(
+        foodItemStore.getByID(entry.foodItemID),
+        'could not find food item by id from food entry.'
+      )
+      console.log('found food item: ', item)
+      return item
+    },
+    allItemsForDailyLog: (state) => (dailyLogID?: number | undefined) => {
+      return state.items.filter((x) => x.dailyLogID === dailyLogID)
+    },
+    dailyLog: () => (item: FoodEntry) => {
+      const dailyLogStore = useDailyLogsStore()
+      return Utils.hardCheck(
+        dailyLogStore.getByID(item.dailyLogID),
+        'could not find daily log for provided daily log id of food entry'
+      )
     },
   },
   actions: {
     totalCalories(entry: FoodEntry) {
       const item = Utils.hardCheck(
-        this.foodItemForFoodEntry(entry),
+        this.foodItem(entry),
         'could not find the food item for food entry'
       )
+      console.log('food item for this entry: ', item)
       return entry.qty * item.caloriesPerUnit
     },
     // todo: make these generic
@@ -46,7 +63,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
           params: {},
         })
         .then((response) => {
-          console.log('createItem response from backend: ', response)
+          console.log('create food entry response from backend: ', response)
           newItem = response.data
           this.items.push(newItem)
         }, Utils.handleError('Error creating item.'))
@@ -56,6 +73,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
         headers: {},
         params: {},
       })
+      console.log(response.data)
       this.items = response.data
     },
     async fetchItem(id: number) {

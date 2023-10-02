@@ -198,17 +198,34 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
       - [x] FoodItem model
         - [x] frontend
         - [x] backend
-      - [ ] page for all food log entries
-      - [ ] page for food log form
-    - [ ] Progress toward ration today
-    - [ ] Baseline
-  - [ ] Cards/nice UI/UX for each
+      - [x] page for all food log entries
+        - [x] lower bound for actual and base rations in user settings
+      - [x] page for food log form
+        - [x] plus sign on food logs page
+        - [x] button produces dummy data first
+        - [x] then build a whole form
+          - [x] blank page
+          - [x] routing
+          - [x] button redirects to form
+          - [ ] form inputs
+            - [x] date - default to latest log date
+            - [x] fooditem - text
+              - [x] top 3 most common foods as chips
+              - [x] fuzzy search
+            - [x] make unit of fooditem pop up once selected
+            - [x] qty - text
+              - [x] top 3 most common quantities as chips
+          - [x] api call
+    - [x] Progress toward ration today
+    - [x] Baseline
 - [ ] Habits List
-  - [ ] Make it slick
   - [ ] Plus Sign to Add
-- [ ] Add Habit Screen
+- [ ] Add Habit Dialog
   - [ ] Title
   - [ ] Description - how to measure
+    - [ ] add description to model
+      - [ ] frontend
+      - [ ] backend
   - [ ] Tags - could be useful for visualizations later on
 - [ ] Daily Accomplishments
   - [ ] Graphs of completion statistics
@@ -248,3 +265,5 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 - [ ] make habits page so you don't have to refresh
 - [ ] accordian on completion entries list
 - [ ] times completed / times sampled shows as only 0 or 1
+- [ ] label everything in settings page
+- [ ] remove console logs that are stupid

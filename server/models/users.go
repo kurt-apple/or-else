@@ -18,6 +18,7 @@ type User struct {
 	TimeZoneOffset          int       `json:"timeZoneOffset"`
 	StartingRation          uint      `json:"startingRation"`
 	StartDate               time.Time `json:"startDate"`
+	MinRation               uint      `json:"minRation"`
 }
 
 func GetUsers(db *gorm.DB) http.HandlerFunc {
@@ -47,9 +48,9 @@ func CreateUser(db *gorm.DB) http.HandlerFunc {
 		fmt.Println("User: ", item)
 		db.Create(&item)
 		firstDailyLog := &DailyLog{
-			UserID:       item.ID,
-			LogDate:      item.StartDate,
-			TodaysRation: item.StartingRation,
+			UserID:            item.ID,
+			LogDate:           item.StartDate,
+			RationStoredValue: item.StartingRation,
 		}
 		db.Create(firstDailyLog)
 		json.NewEncoder(w).Encode(item)

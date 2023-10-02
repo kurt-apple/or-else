@@ -38,6 +38,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		TimeZoneOffset:          -8,
 		StartingRation:          2000,
 		StartDate:               time.Now().AddDate(0, 0, -3),
+		MinRation:               1500,
 	}
 
 	fmt.Println("pushing default user to db")
@@ -77,23 +78,23 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	fmt.Println("pushing some food items")
 	fakeFoods := []models.FoodItem{}
 	for i := uint8(1); i <= 10; i += 1 {
-		fakeFoods = append(fakeFoods, models.FoodItem{
+		foodItem := models.FoodItem{
 			Name:            "Yummy Treat " + fmt.Sprint(i),
 			Unit:            "Quart",
 			CaloriesPerUnit: i * 100,
-		})
-	}
-	for _, foodItem := range fakeFoods {
+		}
 		db.Create(&foodItem)
+		fakeFoods = append(fakeFoods, foodItem)
 	}
 
 	fmt.Println("pushing one food log")
 	log := models.FoodEntry{
 		DailyLogID: firstDailyLog.ID,
-		FoodItemID: fakeFoods[4].ID,
+		FoodItemID: fakeFoods[0].ID,
 		QTY:        2,
 	}
 	db.Create(&log)
+	fmt.Println(log.FoodItemID)
 
 	fmt.Println("Database reset and re-seeded successfully.")
 	return nil

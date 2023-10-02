@@ -27,7 +27,7 @@ func GetFoodItems(db *gorm.DB) http.HandlerFunc {
 func GetFoodItem(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		var item Completion
+		var item FoodItem
 		db.First(&item, params["id"])
 		json.NewEncoder(w).Encode(item)
 	}
@@ -35,10 +35,10 @@ func GetFoodItem(db *gorm.DB) http.HandlerFunc {
 
 func CreateFoodItem(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("createCompletion:")
-		var item Completion
+		fmt.Println("createFoodItem:")
+		var item FoodItem
 		json.NewDecoder(r.Body).Decode(&item)
-		fmt.Println("Completion: ", item)
+		fmt.Println("FoodItem: ", item)
 		db.Create(&item)
 		json.NewEncoder(w).Encode(item)
 	}
@@ -47,7 +47,7 @@ func CreateFoodItem(db *gorm.DB) http.HandlerFunc {
 func UpdateFoodItem(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		var item Completion
+		var item FoodItem
 		db.First(&item, params["id"])
 		json.NewDecoder(r.Body).Decode(&item)
 		db.Save(&item)
@@ -58,7 +58,7 @@ func UpdateFoodItem(db *gorm.DB) http.HandlerFunc {
 func DeleteFoodItem(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		var item Completion
+		var item FoodItem
 		result := db.First(&item, params["id"])
 		if result.Error != nil {
 			w.WriteHeader(http.StatusNotFound)
