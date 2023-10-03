@@ -77,7 +77,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 
 	fmt.Println("pushing some food items")
 	fakeFoods := []models.FoodItem{}
-	for i := uint8(1); i <= 10; i += 1 {
+	for i := uint(1); i <= 10; i += 1 {
 		foodItem := models.FoodItem{
 			Name:            "Yummy Treat " + fmt.Sprint(i),
 			Unit:            "Quart",
@@ -95,6 +95,18 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	}
 	db.Create(&log)
 	fmt.Println(log.FoodItemID)
+
+	fmt.Println("generating weight entries")
+	t := firstDailyLog.LogDate
+	for i := 1; i <= 10; i += 1 {
+		t = t.Add(time.Hour)
+		entry := models.WeightEntry{
+			DailyLogID: firstDailyLog.ID,
+			Weight:     180,
+			Time:       t,
+		}
+		db.Create(&entry)
+	}
 
 	fmt.Println("Database reset and re-seeded successfully.")
 	return nil

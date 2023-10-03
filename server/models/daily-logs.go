@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -38,6 +39,15 @@ func GetDailyLog(db *gorm.DB) http.HandlerFunc {
 		db.First(&item, params["id"])
 		json.NewEncoder(w).Encode(item)
 	}
+}
+
+func Latest(db *gorm.DB, UserID uint) DailyLog {
+	var logs []DailyLog
+	db.Find(&logs)
+	sort.Slice(logs, func(i, j int) bool {
+		return logs[i].LogDate.After(logs[j].LogDate)
+	})
+	return logs[0]
 }
 
 func CreateLog(db *gorm.DB, dl *DailyLog) {

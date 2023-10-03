@@ -13,6 +13,7 @@ import { useRouter } from 'vue-router'
 const foodEntryStore = useFoodEntryStore()
 const logs = ref<Array<FoodEntry>>([...foodEntryStore.getAll()])
 const router = useRouter()
+const todayOnly = ref(false)
 const redirectToForm = () => {
   router.push('food-entry')
 }
@@ -39,9 +40,11 @@ const addEntry = () => {
 </script>
 <template>
   <q-page padding>
+    today only?
+    <q-checkbox v-model="todayOnly"></q-checkbox>
     <food-entry-list
       title="All Food Entries"
-      :logs="foodEntryStore.getAll()"
+      :logs="todayOnly ? foodEntryStore.todayOnly() : foodEntryStore.getAll()"
     ></food-entry-list>
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
       <q-btn fab icon="add" color="accent" @click="redirectToForm" />

@@ -12,13 +12,13 @@ import { useDailyLogsStore } from '../dailyLog/dailyLogStore'
 export class Habit extends Record implements HasUser {
   userID = -1
   title = 'Untitled'
-  get completionEntries(): CompletionEntry[] {
-    return useCompletionsStore().allItemsForHabit(
-      Utils.hardCheck(
-        this.id,
-        'fetching records by associated habit ID before habit record has ID'
-      )
-    )
+
+  static defaults() {
+    const newHabit: Habit = {
+      userID: useUsersStore().gimmeUser().id ?? -1,
+      title: 'New Habit',
+    }
+    return newHabit
   }
 }
 
@@ -76,7 +76,7 @@ export const useHabitsStore = defineStore('habits', {
         )
         const latest = Utils.hardCheck(
           completionStore.latestCompletionEntryForHabit(id),
-          'cannot find latest entry for habit'
+          `cannot find latest entry for habit ${id}`
         )
         return entries.filter((x) => x.status !== 0).length - latest.status !==
           0
@@ -168,6 +168,8 @@ export const useHabitsStore = defineStore('habits', {
           console.log('createItem response from backend: ', response)
           this.items.push(item)
         }, Utils.handleError('Error creating item.'))
+      // const completionsStore = useCompletionsStore()
+      // await completionsStore.fetchAll()
     },
     async fetchAll() {
       const response = await api.get('/habits', {

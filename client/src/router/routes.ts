@@ -16,7 +16,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'habits',
-        component: () => import('src/pages/HabitsPage.vue'),
+        component: () => import('src/pages/HabitsPage2.vue'),
       },
       {
         path: 'logs',
@@ -27,8 +27,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/FoodLogs.vue'),
       },
       {
+        path: 'food-items',
+        component: () => import('src/pages/FoodItems.vue'),
+      },
+      {
         path: 'weight-logs',
-        component: () => import('src/pages/WeightLog.vue'),
+        component: () => import('src/pages/WeightList.vue'),
       },
       {
         path: 'settings',
@@ -36,7 +40,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: 'completions',
-        component: () => import('src/pages/CompletionsPage.vue'),
+        component: () => import('src/pages/CompletionsPage2.vue'),
       },
       {
         path: 'daily-logs',
@@ -49,6 +53,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'food-entry',
         component: () => import('src/pages/FoodEntryForm.vue'),
+      },
+      {
+        path: 'new-food-item',
+        component: () => import('src/pages/FoodItemForm.vue'),
       },
     ],
   },

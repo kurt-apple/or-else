@@ -4,56 +4,53 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
-type Habit struct {
-	ID     uint   `gorm:"primaryKey" json:"id"`
-	UserID uint   `json:"userID"`
-	Title  string `json:"title"`
+type WeightEntry struct {
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	DailyLogID uint      `json:"dailyLogID"`
+	Time       time.Time `json:"time"`
+	Weight     uint      `json:"weight"`
 }
 
-func GetHabits(db *gorm.DB) http.HandlerFunc {
+func GetWeightEntries(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var items []Habit
+		var items []WeightEntry
 		db.Find(&items)
+		fmt.Println(items[0].Weight)
 		json.NewEncoder(w).Encode(items)
 	}
 }
 
-func GetHabit(db *gorm.DB) http.HandlerFunc {
+func GetWeightEntry(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		var item Habit
+		var item WeightEntry
 		db.First(&item, params["id"])
+		fmt.Println(item.Weight)
 		json.NewEncoder(w).Encode(item)
 	}
 }
 
-func CreateHabit(db *gorm.DB) http.HandlerFunc {
+func CreateWeightEntry(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("createItem:")
-		var item Habit
+		fmt.Println("create weight entry from request: ", r.Body)
+		var item WeightEntry
 		json.NewDecoder(r.Body).Decode(&item)
-		fmt.Println("habit: ", item)
+		fmt.Println("Weight: ", item)
 		db.Create(&item)
-		newEntry := Completion{
-			HabitID:    item.ID,
-			DailyLogID: Latest(db, item.ID).ID,
-			Status:     0,
-		}
-		fmt.Println("generating new completion entry: ", newEntry, " whose latest daily log is ", newEntry.DailyLogID)
-		db.Create(&newEntry)
 		json.NewEncoder(w).Encode(item)
 	}
 }
 
-func UpdateHabit(db *gorm.DB) http.HandlerFunc {
+func UpdateWeightEntry(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		var item Habit
+		var item WeightEntry
 		db.First(&item, params["id"])
 		json.NewDecoder(r.Body).Decode(&item)
 		db.Save(&item)
@@ -61,10 +58,10 @@ func UpdateHabit(db *gorm.DB) http.HandlerFunc {
 	}
 }
 
-func DeleteHabit(db *gorm.DB) http.HandlerFunc {
+func DeleteWeightEntry(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		var item Habit
+		var item WeightEntry
 		result := db.First(&item, params["id"])
 		if result.Error != nil {
 			w.WriteHeader(http.StatusNotFound)

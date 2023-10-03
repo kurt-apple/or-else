@@ -6,6 +6,7 @@ import { DailyLog, useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import { User, useUsersStore } from 'src/stores/user/userStore'
 import Utils from 'src/util'
 import TheGreatHydrator from 'src/stores/TheGreatHydrator'
+import { join } from 'path'
 
 const linksList = [
   {
@@ -22,6 +23,11 @@ const linksList = [
     title: 'Food Logs',
     icon: 'tapas',
     link: '/food-logs',
+  },
+  {
+    title: 'Food Items',
+    icon: 'list',
+    link: '/food-items',
   },
   {
     title: 'Weight Logs',

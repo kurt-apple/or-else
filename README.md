@@ -185,8 +185,8 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
           - [x] is daily log just dashboard?
         - [x] From Habits
     - [x] Habit Details Dialog
-  - [ ] Section for Ration
-    - [ ] How your ration was calculated
+  - [x] Section for Ration
+    - [x] How your ration was calculated
       - [x] FoodLogEntry model
         - [x] frontend
         - [x] backend
@@ -207,7 +207,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
           - [x] blank page
           - [x] routing
           - [x] button redirects to form
-          - [ ] form inputs
+          - [x] form inputs
             - [x] date - default to latest log date
             - [x] fooditem - text
               - [x] top 3 most common foods as chips
@@ -218,52 +218,63 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
           - [x] api call
     - [x] Progress toward ration today
     - [x] Baseline
-- [ ] Habits List
-  - [ ] Plus Sign to Add
-- [ ] Add Habit Dialog
-  - [ ] Title
-  - [ ] Description - how to measure
-    - [ ] add description to model
-      - [ ] frontend
-      - [ ] backend
-  - [ ] Tags - could be useful for visualizations later on
-- [ ] Daily Accomplishments
-  - [ ] Graphs of completion statistics
-  - [ ] Access the Logs of previous days
-  - [ ] What the current Daily Log looks like
-  - [ ] Place food log in Daily Log Entries
-- [ ] Food Log
-  - [ ] Put today's food in focus
-  - [ ] Access prior food logs using a calendar
-- [ ] Add Food Item to DB
-  - [ ] Calories, Unit
-  - [ ] Scrape MFP?
-- [ ] Add Food Item To Daily Log
-  - [ ] Item (with quick add)
-  - [ ] QTY (pull units in from food item Model)
-- [ ] Weight Log
-  - [ ] Graph over time
-  - [ ] Add weigh ins at any time (mind user-configured time zone)
-  - [ ] future goal: integrate into withings
-- [ ] Settings
-  - [ ] Time Zone
-  - [ ] Name
-  - [ ] Completion Rate Threshold for Top Performers List
-  - [ ] Max habits in focus per day
-  - [ ] Baseline Calories
-    - [ ] Basic Quiz to set default
-  - [ ] Dynamic adjustment of calorie baseline (slide to enable)
-  - [ ] authentication settings
-- [ ] Authentication
-  - [ ] have some
-  - [ ] pin to lock ui?
-- [ ] Styling
-  - [ ] Toggle Dark Theme in Settings
-- [ ] Create user should create first daily log
-- [ ] stackblitz - pinia-orm find() and (where) on @belongsTo bug
-- [ ] make it so you don't have to refresh the homepage
-- [ ] make habits page so you don't have to refresh
-- [ ] accordian on completion entries list
+- [x] Habits List
+  - [x] Plus Sign to Add
+- [L] Add Habit Dialog (detail dialog with props)
+  - [x] Title
+  - [L] Description - how to measure
+    - [L] add description to model
+      - [L] frontend
+      - [L] backend
+  - [L] Tags - could be useful for visualizations later on
+- [L] Daily Accomplishments
+  - [L] Graphs of completion statistics
+  - [L] Access the Logs of previous days
+  - [L] What the current Daily Log looks like
+  - [L] Place food log in Daily Log Entries
+- [L] Food Log
+  - [x] Put today's food in focus
+  - [L] Access prior food logs using a calendar
+- [x] Add Food Item to DB
+  - [x] Calories, Unit
+  - [L] Scrape MFP?
+- [x] Add Food Item To Daily Log
+  - [x] Item (with quick add)
+  - [x] QTY (pull units in from food item Model)
+- [L] Weight Log
+  - [L] Graph over time
+  - [x] Add weigh ins at any time (mind user-configured time zone)
+  - [L] future goal: integrate into withings
+- [L] Settings
+  - [L] Time Zone
+  - [L] Name
+  - [x] Completion Rate Threshold for
+        Top Performers List
+  - [-] Max habits in focus per day
+  - [x] Baseline Calories
+    - [-] Basic Quiz to set default
+  - [-] Dynamic adjustment of calorie baseline (slide to enable)
+  - [L] authentication settings
+- [L] Authentication
+  - [L] have some
+  - [L] pin to lock ui?
+- [L] Styling
+  - [L] Toggle Dark Theme in Settings
+- [x] Create user should create first daily log
+- [L] stackblitz - pinia-orm find() and (where) on @belongsTo bug
+- [x] make it so you don't have to refresh the homepage
+- [L] make habits page so you don't have to refresh
+- [x] accordian on completion entries list
 - [ ] times completed / times sampled shows as only 0 or 1
 - [ ] label everything in settings page
 - [ ] remove console logs that are stupid
+- [ ] display something for 0% ration progress instead of blank screen
+- [ ] make fill color for remaining portion of ration visualizer
+- [ ] auto form generation
+- [ ] habit createdDate to avoid rewriting history on resamples
+- [ ] make habit page reactive on create or update
+  - [ ] try inlining the dialog NOT using dialog plugin
+- [ ] configure API and stores to only store one user's information
+- [ ] try to have dialog pass payload back to parent component when creating or updating.
+- [ ] add food item
+- [ ] add custom pretty components to completion entries tree again

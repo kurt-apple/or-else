@@ -13,7 +13,7 @@ type FoodItem struct {
 	ID              uint   `gorm:"primaryKey" json:"id"`
 	Name            string `json:"name"`
 	Unit            string `json:"unit"`
-	CaloriesPerUnit uint8  `json:"caloriesPerUnit"`
+	CaloriesPerUnit uint   `json:"caloriesPerUnit"`
 }
 
 func GetFoodItems(db *gorm.DB) http.HandlerFunc {

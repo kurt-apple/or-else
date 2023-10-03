@@ -1,28 +1,102 @@
 <template>
-  <q-dialog>
-    <q-card>
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
+    <q-card class="q-dialog-plugin">
       <q-card-section>
         <div class="text-h6">Habit Details</div>
       </q-card-section>
-
-      <q-card-section class="q-pt-none">
-        Habit name is {{ habit?.title }}. Completion Rate is
-        {{ habitsStore.completionRate(habit?.id) }}.
+      <q-card-section>
+        <q-item-label>TITLE</q-item-label>
+        <q-input
+          v-model="habitData.title"
+          @update:model-value="markUnsaved"
+        ></q-input>
       </q-card-section>
 
+      <q-card-section v-if="message" class="q-pt-none">
+        {{ message }}</q-card-section
+      >
+
       <q-card-actions align="right">
-        <q-btn v-close-popup flat label="OK" color="primary" />
+        <q-btn flat label="OK" color="primary" @click="onOKClick" />
+        <q-btn
+          v-if="unsavedChanges"
+          flat
+          label="SAVE"
+          color="primary"
+          @click="onSaveClick"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup lang="ts">
+import { useDialogPluginComponent } from 'quasar'
 import { Habit, useHabitsStore } from 'src/stores/habit/habitStore'
+import { computed, ref } from 'vue'
 
-const props = defineProps({
-  habit: Habit,
+const props = withDefaults(defineProps<{ habit: Habit | null }>(), {
+  habit: null,
 })
 
+defineEmits([
+  // REQUIRED; need to specify some events that your
+  // component will emit through useDialogPluginComponent()
+  ...useDialogPluginComponent.emits,
+])
+
+const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
+
 const habitsStore = useHabitsStore()
+
+const habitData =
+  props.habit === null || typeof props.habit === 'undefined'
+    ? ref<Habit>(Habit.defaults())
+    : ref<Habit>({
+        id: props.habit.id,
+        userID: props.habit.userID,
+        title: props.habit.title,
+      })
+
+console.log('funny business', {
+  habitData: habitData.value,
+  'habit prop': props.habit,
+})
+
+const unsavedChanges = ref(false)
+
+const markUnsaved = () => {
+  unsavedChanges.value = true
+}
+
+const onOKClick = () => {
+  console.log('ok')
+  onDialogOK()
+}
+
+const onSaveClick = async () => {
+  console.log('ree')
+  if (props.habit) {
+    console.log('update item', habitData.value)
+    await habitsStore.updateItem(habitData.value)
+  } else {
+    console.log('create item', habitData.value)
+    await habitsStore.createItem(habitData.value)
+  }
+  onDialogOK()
+}
+
+const message = computed(() => {
+  if (
+    typeof habitData.value.id === 'undefined' ||
+    habitData.value.id === null
+  ) {
+    return null
+  } else {
+    return (
+      'Habit completion rate is ' +
+      habitsStore.completionRate(habitData.value.id)
+    )
+  }
+})
 </script>

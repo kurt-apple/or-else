@@ -5,6 +5,7 @@ import { useHabitsStore } from './habit/habitStore'
 import { Store } from 'pinia'
 import { useFoodEntryStore } from './foodEntry/foodEntryStore'
 import { useFoodItemStore } from './foodItem/foodItemStore'
+import { useWeightEntryStore } from './weight-entry/weightEntryStore'
 
 export default class TheGreatHydrator {
   static async hydratify(repos: Store[]) {
@@ -29,5 +30,6 @@ export default class TheGreatHydrator {
     await useHabitsStore().fetchAll()
     await useFoodEntryStore().fetchAll()
     await useFoodItemStore().fetchAll()
+    await useWeightEntryStore().fetchAll()
   }
 }

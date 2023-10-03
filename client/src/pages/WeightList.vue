@@ -1,0 +1,53 @@
+<script setup lang="ts">
+import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
+import { useUsersStore } from 'src/stores/user/userStore'
+import {
+  WeightEntry,
+  useWeightEntryStore,
+} from 'src/stores/weight-entry/weightEntryStore'
+import Utils from 'src/util'
+import { ref } from 'vue'
+const weightEntryStore = useWeightEntryStore()
+const weight = ref<string>(weightEntryStore.latest().weight.toString())
+
+const userID = useUsersStore().gimmeUser().id
+
+const newEntry = async () => {
+  console.log('weight: ', weight.value)
+  if (parseInt(weight.value) < 1) throw new Error('weight value is not valid')
+  const entry: WeightEntry = {
+    dailyLogID: Utils.hardCheck(
+      useDailyLogsStore().latestLog(userID).id,
+      'no daily log for user.'
+    ),
+    time: new Date().toISOString(),
+    weight: parseInt(weight.value),
+  }
+  console.log('entry: ', entry)
+  await weightEntryStore.createItem(entry)
+}
+</script>
+
+<template>
+  <q-input
+    v-model="weight"
+    bottom-slots
+    label="Weigh-in"
+    counter
+    maxlength="12"
+    dense
+    filled
+    @keyup.enter="newEntry"
+  >
+    <template #hint> Quickly add a new weight entry here. </template>
+
+    <template #after>
+      <q-btn round dense flat icon="send" @click="newEntry" />
+    </template>
+  </q-input>
+  <q-list>
+    <q-item v-for="(w, i) in useWeightEntryStore().getAll()" :key="i">
+      {{ w.time }} - {{ w.weight }}
+    </q-item>
+  </q-list>
+</template>

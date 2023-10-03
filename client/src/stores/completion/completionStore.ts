@@ -47,16 +47,23 @@ export const useCompletionsStore = defineStore('completion-entries', {
     ...PiniaGenerics.generateStoreGetters<CompletionEntry>(),
     // ...HabitGenerics.generateHabitGetters<CompletionEntry>(),
     // ...DailyLogGenerics.generateDailyLogGetters<CompletionEntry>(),
-    latestCompletionEntryForHabit: (state) => (habitID?: number) => {
-      if (typeof habitID === 'undefined')
-        throw new Error('cannot retrieve related records off of undefined id')
-      const logsStore = useDailyLogsStore()
-      const latestLog = logsStore.latestLog()
-      const entriesOfLog = state.items.filter(
-        (x) => x.dailyLogID === latestLog.id
-      )
-      return entriesOfLog.find((x) => x.habitID === habitID)
-    },
+    latestCompletionEntryForHabit:
+      (state) =>
+      (habitID?: number): CompletionEntry => {
+        if (typeof habitID === 'undefined')
+          throw new Error(
+            'cannot retrieve related records off of undefined habit id'
+          )
+        const logsStore = useDailyLogsStore()
+        const latestLog = logsStore.latestLog()
+        const entriesOfLatestLog: CompletionEntry[] = state.items.filter(
+          (x) => x.dailyLogID === latestLog.id
+        )
+        return Utils.hardCheck(
+          entriesOfLatestLog.find((x) => x.habitID === habitID),
+          `completion entry from latest log was not found for habit id ${habitID}`
+        )
+      },
     getCompletedFromLog: (state) => (logID: number) => {
       return state.items
         .filter((x) => x.dailyLogID === logID)

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { DailyLog } from './stores/dailyLog/dailyLogStore'
+import { WeightEntry } from './stores/weight-entry/weightEntryStore'
 
 export default class Utils {
   static check<T>(t: T | undefined | null, mode: 'warn' | 'err', memo: string) {
@@ -42,6 +43,11 @@ export default class Utils {
     return (
       (this.t(one.logDate) - this.t(two.logDate)) * (dir === 'asc' ? 1 : -1)
     )
+  }
+
+  // sorting function for two weight entries
+  static mdwe(one: WeightEntry, two: WeightEntry, dir: 'asc' | 'desc') {
+    return (this.t(one.time) - this.t(two.time)) * (dir === 'asc' ? 1 : -1)
   }
 
   static same24(a: Date, b: Date) {

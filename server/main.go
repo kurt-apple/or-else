@@ -25,7 +25,7 @@ func main() {
 		_ = sqlDB.Close()
 	}()
 
-	listOfModels := []interface{}{&models.Habit{}, &models.User{}, &models.DailyLog{}, &models.Completion{}, &models.FoodEntry{}, &models.FoodItem{}}
+	listOfModels := []interface{}{&models.Habit{}, &models.User{}, &models.DailyLog{}, &models.Completion{}, &models.FoodEntry{}, &models.FoodItem{}, &models.WeightEntry{}}
 	seeds.SeedDatabase(db, listOfModels)
 
 	router := mux.NewRouter()
@@ -65,6 +65,12 @@ func main() {
 	router.HandleFunc("/food-items", models.CreateFoodItem(db)).Methods("POST")
 	router.HandleFunc("/food-items/{id}", models.UpdateFoodItem(db)).Methods("PATCH")
 	router.HandleFunc("/food-items/{id}", models.DeleteFoodItem(db)).Methods("DELETE")
+
+	router.HandleFunc("/weight-entries", models.GetWeightEntries(db)).Methods("GET")
+	router.HandleFunc("/weight-entries/{id}", models.GetWeightEntry(db)).Methods("GET")
+	router.HandleFunc("/weight-entries", models.CreateWeightEntry(db)).Methods("POST")
+	router.HandleFunc("/weight-entries/{id}", models.UpdateWeightEntry(db)).Methods("PATCH")
+	router.HandleFunc("/weight-entries/{id}", models.DeleteWeightEntry(db)).Methods("DELETE")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:9000"},

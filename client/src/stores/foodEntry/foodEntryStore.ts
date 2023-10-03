@@ -43,6 +43,10 @@ export const useFoodEntryStore = defineStore('food-entry', {
         'could not find daily log for provided daily log id of food entry'
       )
     },
+    todayOnly: (state) => () => {
+      const latestLog = useDailyLogsStore().latestLog()
+      return state.items.filter((x) => x.dailyLogID === latestLog.id)
+    },
   },
   actions: {
     totalCalories(entry: FoodEntry) {

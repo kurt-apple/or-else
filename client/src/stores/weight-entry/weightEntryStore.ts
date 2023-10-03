@@ -3,16 +3,13 @@ import { PiniaGenerics, Record } from '../PiniaGenerics'
 import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
 import Utils from 'src/util'
 import { api } from 'src/boot/axios'
+import { useUsersStore } from '../user/userStore'
 
 export class WeightEntry extends Record implements HasDailyLog {
   id?: number | undefined
   dailyLogID = -1
-  time = new Date()
+  time = new Date().toLocaleDateString()
   weight = -1
-
-  getID(): number {
-    throw new Error('Method not implemented')
-  }
 }
 
 export const useWeightEntryStore = defineStore('weight-entries', {
@@ -34,6 +31,14 @@ export const useWeightEntryStore = defineStore('weight-entries', {
       )
       return weightEntries
     },
+    latest:
+      (state) =>
+      (userID?: number): WeightEntry => {
+        if (typeof userID === 'undefined') {
+          userID = useUsersStore().gimmeUser().id
+        }
+        return state.items.sort((a, b) => Utils.mdwe(a, b, 'desc'))[0]
+      },
   },
   actions: {
     // todo: make these generic
@@ -57,6 +62,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
         params: {},
       })
       this.items = response.data
+      console.log('weights: ', this.items)
     },
     async fetchItem(id: number) {
       const response = await api.get(`/weight-entries/${id}`, {

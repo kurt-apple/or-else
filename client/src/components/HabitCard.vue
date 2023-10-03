@@ -8,6 +8,7 @@ import { Habit, useHabitsStore } from 'src/stores/habit/habitStore'
 import Utils from 'src/util'
 import { defineComponent, ref } from 'vue'
 import HabitDetails from './HabitDetails.vue'
+import { useQuasar } from 'quasar'
 
 const HabitCard = defineComponent({
   name: 'HabitCard',
@@ -24,8 +25,6 @@ const props = withDefaults(defineProps<Props>(), {
   title: 'Habits',
   habits: () => [],
 })
-
-console.log('bloop')
 
 const editModeToggle = ref(false)
 const viewDetailsToggle = ref(false)
@@ -45,7 +44,6 @@ const toggleEditMode = () => (editModeToggle.value = !editModeToggle.value)
 //   )
 // }
 
-console.log('bloop')
 const updateCompletedStatus = async (h: { h: Habit; ce: CompletionEntry }) => {
   const latest = Utils.hardCheck(h.ce, 'Could not find latest log for habit')
   const result = await useCompletionsStore().updateItem(latest)
@@ -78,20 +76,41 @@ const deleteHabit = async (habit: Habit) => {
     console.log('result: ', result)
   }
 }
-console.log('hi')
+
+const $q = useQuasar()
 
 const viewDetails = (h: Habit) => {
-  currentHabit.value = h
-  viewDetailsToggle.value = !viewDetailsToggle.value
+  console.log('clicked details button for ', h.title)
+  $q.dialog({
+    component: HabitDetails,
+    componentProps: {
+      habit: h,
+    },
+  })
+    .onOk(() => {
+      console.log('OK')
+    })
+    .onCancel(() => {
+      console.log('Cancel')
+    })
+    .onDismiss(() => {
+      console.log('Dismissed Dialog')
+    })
 }
+
+const habitMap = ref<{ h: Habit; ce: CompletionEntry }[]>(
+  props.habits.map((x) => ({
+    h: x,
+    ce: Utils.hardCheck(
+      completionsStore.latestCompletionEntryForHabit(x.id),
+      'oops'
+    ),
+  }))
+)
 </script>
 
 <template>
   <div>
-    <habit-details
-      v-if="viewDetailsToggle"
-      :habit="currentHabit"
-    ></habit-details>
     <h2>{{ title }}</h2>
     <h4 v-if="habits.length == 0">None Yet</h4>
     <q-btn
@@ -100,19 +119,11 @@ const viewDetails = (h: Habit) => {
       @click="toggleEditMode"
     ></q-btn>
     <q-list v-if="!editModeToggle">
-      <q-item
-        v-for="(h, index) in habits.map((x) => ({
-          h: x,
-          ce: Utils.hardCheck(
-            completionsStore.latestCompletionEntryForHabit(x.id),
-            'oops'
-          ),
-        }))"
-        :key="index"
-      >
+      <q-item v-for="(h, index) in habitMap" :key="index">
         <q-item-section>
-          <q-btn icon="info" @click="viewDetails(h.h)">DETAILS</q-btn>
+          <q-btn icon="info" @click="viewDetails(h.h)" />
         </q-item-section>
+        {{ h.ce.status }}
         <q-checkbox
           v-model="h.ce.status"
           :indeterminate-value="0"
@@ -134,16 +145,7 @@ const viewDetails = (h: Habit) => {
       </q-item>
     </q-list>
     <q-list v-else>
-      <q-item
-        v-for="(h, index) in habits.map((x) => ({
-          h: x,
-          ce: Utils.hardCheck(
-            completionsStore.latestCompletionEntryForHabit(x.id),
-            'oops'
-          ),
-        }))"
-        :key="index"
-      >
+      <q-item v-for="(h, index) in habitMap" :key="index">
         <q-item-section>
           {{ h.h.id }}
         </q-item-section>
