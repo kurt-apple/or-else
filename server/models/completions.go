@@ -23,6 +23,7 @@ type Completion struct {
 	HabitID    uint             `json:"habitID"`
 	DailyLogID uint             `json:"dailyLogID"`
 	Status     CompletionStatus `json:"status"`
+	Sampled    bool             `json:"sampled"`
 }
 
 func GetCompletions(db *gorm.DB) http.HandlerFunc {

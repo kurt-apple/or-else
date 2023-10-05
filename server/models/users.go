@@ -49,9 +49,9 @@ func CreateUser(db *gorm.DB) http.HandlerFunc {
 		fmt.Println("User: ", item)
 		db.Create(&item)
 		firstDailyLog := &DailyLog{
-			UserID:            item.ID,
-			LogDate:           item.StartDate,
-			RationStoredValue: item.StartingRation,
+			UserID:     item.ID,
+			LogDate:    item.StartDate,
+			BaseRation: item.StartingRation,
 		}
 		db.Create(firstDailyLog)
 		json.NewEncoder(w).Encode(item)

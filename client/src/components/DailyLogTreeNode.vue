@@ -63,4 +63,7 @@ const log = ref<DailyLog>(
       {{ Math.round(dailyLogStore.successRate(log) * 100) + '%' }}
     </q-item-label>
   </q-item-section>
+  <q-item-section>
+    <q-item-label> {{ dailyLogStore.maxWeight(log) }} lbs </q-item-label>
+  </q-item-section>
 </template>

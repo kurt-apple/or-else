@@ -296,16 +296,36 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 - [x] implement reset on the food entry form
 - [-] add edit/details functionality on the food items list
 - [x] weigh-in input needs the up/down arrows of an input of type number
-- [ ] set minimum weight
+- [x] set minimum weight
   - [x] ensure it is in backend model
   - [x] ensure it is in frontend model
   - [x] add setting to settings page
-  - [ ] add logic to ration calculation
+  - [x] add logic to ration calculation
 - [ ] make sure auto sizing actual ration works
-- [ ] add weight to all daily logs table
-- [ ] daily logs: use a table instead?
-- [ ] auto adjust calories based on conformity to ration
-- [ ] add ration back in to daily log record. prevent resampling of old rations.
+  - [ ] improve performance of daily logs page
+    - [x] store sampled y/n on completion entry records. ugh.
+      - [x] re-seed
+      - [x] check each file to figure out all the areas the value will need to be re-calculated.
+        - [x] completionStore
+          - [x] squint at get failed from log (called from resample habits)
+            - [x] rewrite calculateBaseRation with a clear head
+              - [x] get yesterday's base ration
+                - [x] rename rationStoredValue to baseRation
+                - [x] recurse until base ration is stored
+            - [x] store base ration in baseRation property
+              - [x] figure out where I will need to recalculate base ration
+            - [x] rewrite calculateActualRation
+            - [x] rewrite successRate
+              - [x] include ration conformity
+              - [x] don't forget to count incomplete sampled as bad
+                - looks like everything that isn't indeterminate is counted.
+    - [ ] debug daily logs page ration always returns +100
+- [x] add weight to all daily logs table
+- [L] daily logs: use a table instead?
+- [x] auto adjust calories based on conformity to ration
+- [x] add ration back in to daily log record. prevent resampling of old rations.
 - [ ] sample rate must consist of the total improved habits from yesterday plus one, plus any additional that today was logged.
-  - [ ] have a function on the completion stores repo to determine if a habit was either sampled or taken off indeterminate
-    - [ ] store sampled y/n on completion entry records. ugh.
+  - [x] have a function on the completion stores repo to determine if a habit was either sampled or taken off indeterminate
+- [ ] complete vs incomplete top performing habits should implicitly be considered 'sampled' too
+  - [ ] multiple sample types as string propety or enum of the completion entry model?
+    - [ ] tidy up the code

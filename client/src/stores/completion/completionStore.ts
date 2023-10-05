@@ -1,10 +1,5 @@
 import { defineStore } from 'pinia'
-import {
-  DailyLog,
-  // DailyLogGenerics,
-  HasDailyLog,
-  useDailyLogsStore,
-} from '../dailyLog/dailyLogStore'
+import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
 import {
   /* HabitGenerics, */ HasHabit,
@@ -17,12 +12,14 @@ export class CompletionEntry extends Record implements HasDailyLog, HasHabit {
   habitID = -1
   dailyLogID = -1
   status: 0 | 1 | 2 = 0
+  sampled = false
 
   static defaults(): CompletionEntry {
     const temp: CompletionEntry = {
       habitID: -1,
       dailyLogID: -1,
       status: 0,
+      sampled: false,
     }
     return temp
   }
@@ -76,6 +73,12 @@ export const useCompletionsStore = defineStore('completion-entries', {
         .filter((x) => x.dailyLogID === logID)
         .filter((x) => x.status !== 2)
     },
+    getIncompleteSampledFromLog: (state) => (logID: number) => {
+      return state.items
+        .filter((x) => x.dailyLogID === logID)
+        .filter((x) => x.sampled)
+        .filter((x) => x.status !== 2)
+    },
     getHabit: () => (c: CompletionEntry) => {
       const habitStore = useHabitsStore()
       return habitStore.getByID(c.habitID)
@@ -85,6 +88,14 @@ export const useCompletionsStore = defineStore('completion-entries', {
     resetFailedFromLog(logID: number) {
       this.getFailedFromLog(logID).forEach((x) => {
         x.status = 0
+      })
+    },
+    resetIncompleteSampledFromLog(logID: number) {
+      const incompleteSampled = this.getIncompleteSampledFromLog(logID)
+      incompleteSampled.forEach(async (x) => {
+        x.status = 0
+        x.sampled = false
+        await this.updateItem(x)
       })
     },
     allItemsForHabit(habitID?: number) {
@@ -139,6 +150,11 @@ export const useCompletionsStore = defineStore('completion-entries', {
       return response.data
     },
     async updateItem(item: CompletionEntry) {
+      const dailyLogStore = useDailyLogsStore()
+      const log = Utils.hardCheck(
+        dailyLogStore.getByID(item.dailyLogID),
+        'daily log for completion entry not found somehow'
+      )
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
         await api
@@ -147,6 +163,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
           })
           .then((response) => {
             this.items[index] = { ...this.items[index], ...item }
+            dailyLogStore.reSampleHabitsGivenDate(Utils.d(log.logDate))
             return response
           }, Utils.handleError('Error updating completion entry'))
       }
@@ -168,6 +185,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
         const item: CompletionEntry = this.items[index]
+
         if (status) item.status = status
         else if (this.items[index].status !== 2) this.items[index].status = 2
         else this.items[index].status = 1

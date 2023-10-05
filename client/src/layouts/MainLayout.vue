@@ -78,11 +78,18 @@ const checkTime = async () => {
       logDate: new Date(latestLogTime.getTime() + 86400000).toISOString(),
     })
     await repo.createItem(newLog)
+    const createdLog = Utils.hardCheck(
+      repo.queryDate(newLog.logDate),
+      'newly created log is not able to be retrieved'
+    )
+    await repo.reSampleHabits(createdLog.id)
     latestLog = Utils.hardCheck(
       repo.latestLog(user.id),
       'latest log for default user was not found'
     )
     latestLogTime = Utils.d(latestLog.logDate)
+    repo.calculateBaseRation(latestLog)
+    repo.reSampleHabits(latestLog.id)
   }
   setTimeout(checkTime, 10000)
 }

@@ -43,6 +43,7 @@ func CreateHabit(db *gorm.DB) http.HandlerFunc {
 			HabitID:    item.ID,
 			DailyLogID: Latest(db, item.ID).ID,
 			Status:     0,
+			Sampled:    false,
 		}
 		fmt.Println("generating new completion entry: ", newEntry, " whose latest daily log is ", newEntry.DailyLogID)
 		db.Create(&newEntry)

@@ -17,7 +17,7 @@ export class DailyLog extends Record implements HasUser {
   userID = -1
   logDate = ''
   previousLogID?: number | undefined
-  rationStoredValue: number | undefined
+  baseRation: number | undefined
   lastModified?: string | undefined
   constructor(options: {
     userID?: number
@@ -30,7 +30,7 @@ export class DailyLog extends Record implements HasUser {
     this.userID = options.userID ?? -1
     this.logDate = options.logDate ?? ''
     this.previousLogID = options.previousLogID
-    this.rationStoredValue = options.rationStoredValue ?? 2000
+    this.baseRation = options.rationStoredValue ?? 2000
     this.lastModified = options.lastModified ?? new Date().toISOString()
   }
 }
@@ -61,6 +61,9 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     // ...UserGenerics.generateUserGetters<DailyLog>(),
     allDesc: (state) => () => {
       return state.items.sort((a, b) => Utils.mddl(a, b, 'desc'))
+    },
+    allAsc: (state) => () => {
+      return state.items.sort((a, b) => Utils.mddl(a, b, 'asc'))
     },
     allItemsForUser: (state) => (userID?: number) => {
       if (typeof userID === 'undefined')
@@ -136,10 +139,23 @@ export const useDailyLogsStore = defineStore('daily-logs', {
           `the previous log id either does not exist yet or is set to bogus value - ${log.previousLogID}`
         )
       }
-      return state.items.find((x) => x.id === log.previousLogID)
+      return Utils.hardCheck(
+        state.items.find((x) => x.id === log.previousLogID),
+        'no previous log found'
+      )
     },
     queryDate: (state) => (dateStr: string) => {
       return state.items.find((x) => Utils.same24s(x.logDate, dateStr))
+    },
+    allLogsPrior: (state) => (log: DailyLog) => {
+      return state.items.filter(
+        (x) => Utils.d(log.logDate).getTime() > Utils.d(x.logDate).getTime()
+      )
+    },
+    allLogsAfter: (state) => (log: DailyLog) => {
+      return state.items.filter(
+        (x) => Utils.d(log.logDate).getTime() < Utils.d(x.logDate).getTime()
+      )
     },
   },
   actions: {
@@ -147,25 +163,38 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       return this.getCompletionEntries(log.id).filter((x) => x.status === 2)
         .length
     },
-    successRate(log: DailyLog) {
-      const completed = this.countCompleted(log)
-      const habitsInPlay = this.getCompletionEntries(log.id).filter(
-        (x) => x.status !== 0
-      ).length
+    successRate(log: DailyLog, includeRation = false) {
+      let completed = this.countCompleted(log)
+      if (includeRation) completed += this.rationProgress(log) > 1 ? 0 : 1
+      const habitsInPlay =
+        this.getCompletionEntries(log.id).filter((x) => x.status !== 0).length +
+        (includeRation ? 1 : 0)
       const rate =
         completed === 0 || habitsInPlay === 0 ? 0 : completed / habitsInPlay
 
       return rate
     },
-    maxWeight(log: DailyLog) {
+    maxWeight(log: DailyLog): number {
+      const user = useUsersStore().gimmeUser(log.userID)
       const entries = this.getWeightEntries(log.id).map((x) => x.weight)
-      return Math.max(...entries)
-    },
-    weightDelta(log: DailyLog) {
       const previous = this.getByID(log.previousLogID)
-      if (typeof previous === 'undefined') return 0
-      const beforeThat = this.getByID(previous.previousLogID)
-      if (typeof beforeThat === 'undefined') return 0
+      if (entries.length > 0) return Math.max(...entries)
+      if (typeof previous === 'undefined') return user.minWeight
+      else return this.maxWeight(previous)
+    },
+    weightDelta(log: DailyLog, previous?: DailyLog) {
+      if (typeof previous === 'undefined') {
+        if (typeof log.previousLogID === 'undefined') return 0
+        previous = this.previousLog(log)
+      }
+      if (
+        typeof previous.previousLogID === 'undefined' ||
+        previous.previousLogID === null ||
+        previous.previousLogID < 1
+      ) {
+        return 0
+      }
+      const beforeThat = this.previousLog(previous)
       return this.maxWeight(beforeThat) - this.maxWeight(previous)
     },
     totalCaloriesConsumed(dailyLogID?: number) {
@@ -204,111 +233,105 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         return Math.max(prevImproved + 1, user.startingSampleRate)
       }
     },
-    calculateBaseRation(log: DailyLog) {
-      const user = useUsersStore().gimmeUser(log.userID)
-      // 1. get previous ration or default to user starting ration
-      // 1.a. get previous logs
-      const priorLogs = this.items
-        .filter((x) => Utils.d(x.logDate) < Utils.d(log.logDate))
-        .sort((a, b) => Utils.mddl(a, b, 'asc'))
-      priorLogs.push(log)
-      // 1.b. tail it
-      for (let i = 0; i < priorLogs.length; i++) {
-        const l = priorLogs[i]
-        if (typeof l.previousLogID === 'undefined') {
-          // not sure where to take the database-backed optimization of this query.
-          // todo: optimize, perhaps with a 'dirty' flag to indicate which need to be recalculated
-          // for now, recalculate all
-          priorLogs[i].rationStoredValue = user.startingRation
-          priorLogs[i].lastModified = new Date().toISOString()
-        } else if (l.previousLogID < 1) {
-          // not sure where to take the database-backed optimization of this query.
-          // todo: optimize, perhaps with a 'dirty' flag to indicate which need to be recalculated
-          // for now, recalculate all
-          priorLogs[i].rationStoredValue = user.startingRation
-          priorLogs[i].lastModified = new Date().toISOString()
-        } else {
-          const previousRation = Utils.hardCheck(
-            this.previousLog(priorLogs[i])?.rationStoredValue,
-            'previous log not found'
-          )
-          // todo: validate previous log has an up to date value etc etc
-          let newRation = previousRation ?? user.startingRation
-          const delta = this.weightDelta(priorLogs[i])
-          if (delta > 0) newRation -= 100
-          // todo: add weight status as default habit, auto-tracked
-          // todo: add calorie count status as default habit, auto-tracked
-          else if (delta < 0) {
-            newRation += 100
-          }
-          priorLogs[i].rationStoredValue = Math.max(user.minRation, newRation)
-          priorLogs[i].lastModified = new Date().toISOString()
-        }
+    calculateBaseRation(log: DailyLog): number {
+      const user = this.getUserFromLog(log)
+      if (
+        typeof log.previousLogID === 'undefined' ||
+        log.previousLogID === null ||
+        log.previousLogID < 1
+      ) {
+        log.baseRation = user.startingRation
+        return Math.max(user.startingRation, user.minRation)
       }
 
-      // 2. if auto size base ration: if weight up, reduce by x; else increase by x
-      // todo: make this a toggle. Currently only enabled.
-      // todo: have a min weight user setting. If below min weight, add calories no matter the delta
-      // if at min weight, do not change ration
-      // 3. compute total completed / total sampled for previous day
-      // 4. multiply base ration by completion ratio
-      const ration = priorLogs.pop()?.rationStoredValue
-      if (typeof ration === 'undefined') {
-        console.warn('ration is undefined.')
-        return user.startingRation
-      } else return Math.round(ration)
+      const previousLog = this.previousLog(log)
+      const baseRation =
+        typeof previousLog.baseRation === 'undefined'
+          ? this.calculateBaseRation(previousLog)
+          : previousLog.baseRation
+      // weight
+      const delta = this.weightDelta(log)
+      const weight = this.maxWeight(previousLog)
+      const minWeight = user.minWeight
+      if (delta > 0 && weight > minWeight) {
+        log.baseRation = baseRation - 100
+        return Math.max(baseRation - 100, user.minRation)
+      }
+
+      log.baseRation = baseRation + 100
+      return Math.max(baseRation + 100, user.minRation)
+    },
+    async refreshAllBaseRations(): Promise<void> {
+      const allLogs = this.allAsc()
+      for (let i = 0; i < allLogs.length; i++) {
+        this.calculateBaseRation(allLogs[i])
+        await this.updateItem(allLogs[i])
+      }
     },
     calculateActualRation(log: DailyLog) {
       const base = this.calculateBaseRation(log)
-      if (typeof log.previousLogID === 'undefined' || log.previousLogID < 1) {
-        return base
-      } else {
-        const prev = Utils.hardCheck(
-          this.previousLog(log),
-          'should have returned previous log object'
-        )
-        const user = useUsersStore().gimmeUser(log.userID)
-        return Math.round(
-          Math.max(user.minRation, base * this.successRate(prev))
-        )
+      const user = useUsersStore().gimmeUser(log.userID)
+      let previous: DailyLog
+      try {
+        previous = this.previousLog(log)
+      } catch (e) {
+        return user.startingRation
       }
+      return Math.round(
+        Math.max(user.minRation, base * this.successRate(previous, true))
+      )
     },
-    async reSampleHabits(dailyLogID?: number) {
-      if (typeof dailyLogID === 'undefined')
-        throw new Error('resample failed because id was undefined.')
-
-      const dailyLog = Utils.hardCheck(
-        this.items.find((x) => x.id === dailyLogID),
-        'daily log does not come up by this id'
-      )
-      console.log('RE-SAMPLING DAILY LOG ', this.formattedDate(dailyLog))
+    async reSampleHabits(logID?: number) {
+      // sanity checks
+      if (typeof logID === 'undefined') throw new Error('log id is undefined')
+      const log = Utils.hardCheck(this.getByID(logID), 'could not get log')
+      console.log('RE-SAMPLING DAILY LOG ', this.formattedDate(log))
+      // all the stores
       const completionStore = useCompletionsStore()
-      completionStore.resetFailedFromLog(dailyLogID)
-      const notcompleted =
-        completionStore.getFailedOrUnspecifiedFromLog(dailyLogID)
       const habitStore = useHabitsStore()
-      let habits = notcompleted.map((x) =>
-        Utils.hardCheck(
-          habitStore.getByID(x.habitID),
-          'somehow the habitID did not link back to a real record'
-        )
-      )
-      habits = habits.sort((a, b) => {
-        return (
-          habitStore.priorCompletionRate(Utils.d(dailyLog.logDate), a.id) -
-          habitStore.priorCompletionRate(Utils.d(dailyLog.logDate), b.id)
-        )
-      })
-      habits = habits.slice(0, this.sampleRate(dailyLogID) - 1)
-      for (let i = 0; i < habits.length; i++) {
-        const completionEntriesOfHabit = completionStore
-          .allItemsForHabit(habits[i].id)
-          .filter((y) => y.dailyLogID === dailyLog.id)
-        for (let j = 0; j < completionEntriesOfHabit.length; j++) {
-          completionEntriesOfHabit[j].status = 1
-          await useCompletionsStore().updateItem(completionEntriesOfHabit[j])
-        }
+      // if the log is being resampled, get habits sampled yet incomplete and reset them:
+      // a. sampled -> false
+      // b. status -> 0 (back to indeterminate)
+      const resetIncompleteSampledFromLog = async (dailyLogID: number) => {
+        const incompleteSampled = completionStore
+          .allItemsForDailyLog(dailyLogID)
+          .filter((x) => (x.sampled && x.status !== 2) || x.status === 1)
+        incompleteSampled.forEach((x) => {
+          x.sampled = false
+          x.status = 0
+        })
       }
+      await resetIncompleteSampledFromLog(logID)
+      // easy out: calculate how many more habits are needed to be sampled based on the number of complete sampled habits
+      const countSampledOfDailyLog = (dailyLogID: number) => {
+        const sampled = completionStore
+          .allItemsForDailyLog(dailyLogID)
+          .filter((x) => x.sampled)
+        return sampled.length
+      }
+      const countSampled = countSampledOfDailyLog(logID)
+      const remainingNeeded = this.sampleRate(logID) - countSampled
+      if (remainingNeeded <= 0) return
+      // collect incomplete habit entries for the log, sort by completion rate
+      const notcompleted = completionStore
+        .getFailedOrUnspecifiedFromLog(logID)
+        .sort(
+          (a, b) =>
+            habitStore.completionRate(a.habitID) -
+            habitStore.completionRate(b.habitID)
+        )
+      // set just the remaining needed to 'sampled'
+      const remainingToSample = notcompleted.slice(0, remainingNeeded)
+      remainingToSample.forEach(async (x) => {
+        x.sampled = true
+        x.status = 1
+        await completionStore.updateItem(x)
+      })
+      // re sample any logs after this one
+      const logsAfter = this.allLogsAfter(log).sort((a, b) =>
+        Utils.mddl(a, b, 'asc')
+      )
+      logsAfter.forEach(async (x) => await this.reSampleHabits(x.id))
     },
     async reSampleHabitsGivenDate(fromDate: Date) {
       const toReSample = this.items
