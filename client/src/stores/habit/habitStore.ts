@@ -74,30 +74,19 @@ export const useHabitsStore = defineStore('habits', {
           completionStore.allItemsForHabit(id),
           'cannot find completion entries for the habit id provided'
         )
-        const latest = Utils.hardCheck(
-          completionStore.latestCompletionEntryForHabit(id),
-          `cannot find latest entry for habit ${id}`
-        )
-        return entries.filter((x) => x.status !== 0).length - latest.status !==
-          0
-          ? 1
-          : 0
+        return entries.filter((x) => x.status !== 0).length
       },
-    times_completed: () => (id?: number) => {
-      if (typeof id === 'undefined') throw new Error('id was undefined')
-      const completionStore = useCompletionsStore()
-      const latest = Utils.hardCheck(
-        completionStore.latestCompletionEntryForHabit(id),
-        'could not find completion entry for the provided habit id'
-      )
-      const entries: CompletionEntry[] = Utils.hardCheck(
-        completionStore.allItemsForHabit(id),
-        'could not find any completion entries for the provided habit id'
-      )
-      return entries.filter((x) => x.status === 2).length - latest.status === 2
-        ? 1
-        : 0
-    },
+    times_completed:
+      () =>
+      (id?: number): number => {
+        if (typeof id === 'undefined') throw new Error('id was undefined')
+        const completionStore = useCompletionsStore()
+        const entries: CompletionEntry[] = Utils.hardCheck(
+          completionStore.allItemsForHabit(id),
+          'could not find any completion entries for the provided habit id'
+        )
+        return entries.filter((x) => x.status === 2).length
+      },
     latestDailyLog: () => (habitID: number) => {
       const completionStore = useCompletionsStore()
       const completion = Utils.hardCheck(
@@ -113,6 +102,13 @@ export const useHabitsStore = defineStore('habits', {
     },
   },
   actions: {
+    times_completed_internal(id?: number) {
+      // subtract latest log's status in order to prevent re-sampling
+      const completionStore = useCompletionsStore()
+      const latest = completionStore.latestCompletionEntryForHabit(id)
+      const latestStatusFlag = latest.status === 2 ? 1 : 0
+      return this.times_completed(id) - latestStatusFlag
+    },
     completionRate(id?: number) {
       if (typeof id === 'undefined')
         throw new Error(
@@ -120,7 +116,7 @@ export const useHabitsStore = defineStore('habits', {
         )
       return this.times_sampled(id) === 0
         ? 0.0
-        : this.times_completed(id) / this.times_sampled(id)
+        : this.times_completed_internal(id) / this.times_sampled(id)
     },
     priorCompletionRate(beforeDate: Date, habitID?: number) {
       const hID = Utils.hardCheck(
@@ -130,11 +126,15 @@ export const useHabitsStore = defineStore('habits', {
       if (new Date().getDate() === beforeDate.getDate())
         return this.completionRate(hID)
       const completionStore = useCompletionsStore()
+      const dailyLogStore = useDailyLogsStore()
       let entries = completionStore.allItemsForHabit(hID)
-      entries = entries.filter(
-        (x: CompletionEntry) =>
-          new Date(x.dateValue).getDate() < beforeDate.getDate()
-      )
+      entries = entries.filter((x: CompletionEntry) => {
+        const log = Utils.hardCheck(
+          dailyLogStore.getByID(x.dailyLogID),
+          'no daily log found'
+        )
+        return Utils.d(log.logDate).getDate() < beforeDate.getDate()
+      })
       const successes = entries.filter((x) => x.status === 2).length
       const sampled = entries.filter((x) => x.status !== 0).length
       return successes / sampled
@@ -171,12 +171,13 @@ export const useHabitsStore = defineStore('habits', {
       // const completionsStore = useCompletionsStore()
       // await completionsStore.fetchAll()
     },
-    async fetchAll() {
+    async fetchAll(): Promise<Habit[]> {
       const response = await api.get('/habits', {
         headers: {},
         params: {},
       })
       this.items = response.data
+      return this.items
     },
     async fetchItem(id: number) {
       const response = await api.get(`/habits/${id}`, {

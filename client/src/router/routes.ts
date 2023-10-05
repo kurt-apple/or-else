@@ -19,10 +19,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/pages/HabitsPage2.vue'),
       },
       {
-        path: 'logs',
-        component: () => import('src/pages/DailyLog.vue'),
-      },
-      {
         path: 'food-logs',
         component: () => import('src/pages/FoodLogs.vue'),
       },
@@ -39,12 +35,8 @@ const routes: RouteRecordRaw[] = [
         component: AccountSettings,
       },
       {
-        path: 'completions',
-        component: () => import('src/pages/CompletionsPage2.vue'),
-      },
-      {
         path: 'daily-logs',
-        component: () => import('src/pages/DailyLogsPage.vue'),
+        component: () => import('src/pages/DailyLogsPage2.vue'),
       },
       {
         path: 'super',

@@ -22,7 +22,7 @@ const onSubmit = async () => {
     throw new Error('selected food item is incomplete in form')
   if (foodEntryDate.value === '')
     throw new Error(
-      'todo: validate more; meanwhile, date input is empty and that is bad'
+      'todo: validate more;\n meanwhile, date input is empty and that is bad'
     )
   const log = Utils.hardCheck(
     dailyLogStore.queryDate(foodEntryDate.value),
@@ -49,7 +49,7 @@ const onSubmit = async () => {
   router.push('food-logs')
 }
 const onReset = () => {
-  foodEntryDate.value = ''
+  foodEntryDate.value = new Date().toDateString()
   selectedFoodItem.value = null
   qtyInput.value = 1
 }
@@ -64,7 +64,7 @@ const getUnit = computed(() => {
   }
 })
 
-const foodEntryDate = ref<string>('')
+const foodEntryDate = ref<string>(new Date().toDateString())
 const selectedFoodItem = ref<FoodItem | null>(null)
 const allFoodOptions = foodItemStore.getAll()
 console.log('food items: ', allFoodOptions)
@@ -151,8 +151,8 @@ const setQuantity = (qty: number) => {
       filled
       :rules="[(val) => val > 0 || 'A positive quantity is required']"
     />
-    <div v-if="selectedFoodItem">
-      Top 3 Most Common Quantities For {{ selectedFoodItem?.name }}:
+    <div v-if="selectedFoodItem && topQuantities.length > 0">
+      Most Common Quantities For {{ selectedFoodItem?.name }}:
       <q-list>
         <q-item v-for="(item, index) in topQuantities" :key="index">
           <q-btn @click="setQuantity(item)"

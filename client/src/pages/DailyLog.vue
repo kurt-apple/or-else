@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <daily-log-card
+    <daily-log-list
       title="All Daily Logs"
       :logs="useDailyLogsStore().getAll()"
     />
@@ -8,6 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import DailyLogCard from 'src/components/DailyLogCard.vue'
+import DailyLogList from 'src/components/DailyLogList.vue'
 import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 </script>

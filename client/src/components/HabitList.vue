@@ -10,8 +10,8 @@ import { defineComponent, ref } from 'vue'
 import HabitDetails from './HabitDetails.vue'
 import { useQuasar } from 'quasar'
 
-const HabitCard = defineComponent({
-  name: 'HabitCard',
+const HabitList = defineComponent({
+  name: 'HabitList',
 })
 
 const habitsStore = useHabitsStore()
@@ -19,12 +19,16 @@ const completionsStore = useCompletionsStore()
 export interface Props {
   title?: string
   habits?: Array<Habit>
+  showEditButton?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'Habits',
   habits: () => [],
+  showEditButton: true,
 })
+
+const emit = defineEmits(['update'])
 
 const editModeToggle = ref(false)
 const viewDetailsToggle = ref(false)
@@ -85,10 +89,15 @@ const viewDetails = (h: Habit) => {
     component: HabitDetails,
     componentProps: {
       habit: h,
+      mode: 'update',
     },
   })
-    .onOk(() => {
+    .onOk(async (action: { item: Habit; unsaved: boolean }) => {
+      console.log('action: ', action)
+      console.log('update')
+      await habitsStore.updateItem(action.item)
       console.log('OK')
+      emit('update')
     })
     .onCancel(() => {
       console.log('Cancel')
@@ -114,7 +123,7 @@ const habitMap = ref<{ h: Habit; ce: CompletionEntry }[]>(
     <h2>{{ title }}</h2>
     <h4 v-if="habits.length == 0">None Yet</h4>
     <q-btn
-      v-if="habits.length"
+      v-if="habits.length && showEditButton"
       :icon="editModeToggle ? 'visibility' : 'edit'"
       @click="toggleEditMode"
     ></q-btn>
@@ -123,7 +132,6 @@ const habitMap = ref<{ h: Habit; ce: CompletionEntry }[]>(
         <q-item-section>
           <q-btn icon="info" @click="viewDetails(h.h)" />
         </q-item-section>
-        {{ h.ce.status }}
         <q-checkbox
           v-model="h.ce.status"
           :indeterminate-value="0"

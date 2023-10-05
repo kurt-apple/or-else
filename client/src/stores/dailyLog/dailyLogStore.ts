@@ -59,6 +59,9 @@ export const useDailyLogsStore = defineStore('daily-logs', {
   getters: {
     ...PiniaGenerics.generateStoreGetters<DailyLog>(),
     // ...UserGenerics.generateUserGetters<DailyLog>(),
+    allDesc: (state) => () => {
+      return state.items.sort((a, b) => Utils.mddl(a, b, 'desc'))
+    },
     allItemsForUser: (state) => (userID?: number) => {
       if (typeof userID === 'undefined')
         throw new Error('cannot fetch related records of undefined')
@@ -149,16 +152,10 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const habitsInPlay = this.getCompletionEntries(log.id).filter(
         (x) => x.status !== 0
       ).length
-      console.log(
-        this.formattedDate(log),
-        ' success rate is ',
-        completed,
-        ' / ',
-        habitsInPlay,
-        ', or ',
-        completed / habitsInPlay
-      )
-      return habitsInPlay === 0 ? 0 : completed / habitsInPlay
+      const rate =
+        completed === 0 || habitsInPlay === 0 ? 0 : completed / habitsInPlay
+
+      return rate
     },
     maxWeight(log: DailyLog) {
       const entries = this.getWeightEntries(log.id).map((x) => x.weight)
@@ -174,11 +171,9 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     totalCaloriesConsumed(dailyLogID?: number) {
       const foodEntryStore = useFoodEntryStore()
       const entries = this.allFoodEntries(dailyLogID)
-      console.log('all food entries: ', entries)
       let sum = 0
       for (let i = 0; i < entries.length; i++) {
         sum += foodEntryStore.totalCalories(entries[i])
-        console.log('sum is now ', sum)
       }
       return sum
     },
@@ -261,11 +256,10 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       if (typeof ration === 'undefined') {
         console.warn('ration is undefined.')
         return user.startingRation
-      } else return ration
+      } else return Math.round(ration)
     },
     calculateActualRation(log: DailyLog) {
       const base = this.calculateBaseRation(log)
-      console.log('base ration for ', this.formattedDate(log), ' is ', base)
       if (typeof log.previousLogID === 'undefined' || log.previousLogID < 1) {
         return base
       } else {
@@ -274,7 +268,9 @@ export const useDailyLogsStore = defineStore('daily-logs', {
           'should have returned previous log object'
         )
         const user = useUsersStore().gimmeUser(log.userID)
-        return Math.max(user.minRation, base * this.successRate(prev))
+        return Math.round(
+          Math.max(user.minRation, base * this.successRate(prev))
+        )
       }
     },
     async reSampleHabits(dailyLogID?: number) {

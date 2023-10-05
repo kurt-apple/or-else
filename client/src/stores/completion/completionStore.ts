@@ -9,7 +9,6 @@ import { PiniaGenerics, Record } from '../PiniaGenerics'
 import {
   /* HabitGenerics, */ HasHabit,
   useHabitsStore,
-  Habit,
 } from '../habit/habitStore'
 import { api } from 'src/boot/axios'
 import Utils from 'src/util'
@@ -18,26 +17,14 @@ export class CompletionEntry extends Record implements HasDailyLog, HasHabit {
   habitID = -1
   dailyLogID = -1
   status: 0 | 1 | 2 = 0
-  get habit(): Habit {
-    return Utils.hardCheck<Habit>(
-      useHabitsStore().getByID(this.habitID),
-      'user not found for completion entry'
-    )
-  }
 
-  get dailyLog(): DailyLog {
-    return Utils.hardCheck(
-      useDailyLogsStore().getByID(this.dailyLogID),
-      'could not find daily log for completion entry'
-    )
-  }
-
-  get dateValue() {
-    const log = Utils.hardCheck(
-      this.dailyLog,
-      'daily log fetched from completion store'
-    )
-    return log.logDate
+  static defaults(): CompletionEntry {
+    const temp: CompletionEntry = {
+      habitID: -1,
+      dailyLogID: -1,
+      status: 0,
+    }
+    return temp
   }
 }
 
@@ -63,6 +50,16 @@ export const useCompletionsStore = defineStore('completion-entries', {
           entriesOfLatestLog.find((x) => x.habitID === habitID),
           `completion entry from latest log was not found for habit id ${habitID}`
         )
+      },
+    isSampled:
+      () =>
+      (entry: CompletionEntry): boolean => {
+        const habitsStore = useHabitsStore()
+        const thorns = Utils.hardCheck(
+          habitsStore.thorns(),
+          'no daily log found'
+        )
+        return typeof thorns.find((x) => x.id === entry.habitID) !== 'undefined'
       },
     getCompletedFromLog: (state) => (logID: number) => {
       return state.items
@@ -98,7 +95,6 @@ export const useCompletionsStore = defineStore('completion-entries', {
     allItemsForDailyLog(dailyLogID?: number) {
       if (typeof dailyLogID === 'undefined')
         throw new Error('cannot do math on undefined id')
-      console.log('getting all completion entries for daily log ', dailyLogID)
       return this.items.filter((x) => x.dailyLogID === dailyLogID)
     },
     dateValueFromDailyLog(completionEntryID?: number) {

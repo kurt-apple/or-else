@@ -6,7 +6,6 @@ import { DailyLog, useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import { User, useUsersStore } from 'src/stores/user/userStore'
 import Utils from 'src/util'
 import TheGreatHydrator from 'src/stores/TheGreatHydrator'
-import { join } from 'path'
 
 const linksList = [
   {
@@ -17,7 +16,7 @@ const linksList = [
   {
     title: 'Daily Logs',
     icon: 'view_agenda',
-    link: '/logs',
+    link: '/daily-logs',
   },
   {
     title: 'Food Logs',
@@ -45,16 +44,6 @@ const linksList = [
     link: 'settings',
   },
   {
-    title: 'All Daily Logs',
-    icon: 'checklist',
-    link: 'daily-logs',
-  },
-  {
-    title: 'Completion Entries',
-    icon: 'checklist',
-    link: 'completions',
-  },
-  {
     title: 'Super User',
     icon: 'edit',
     link: 'super',
@@ -62,7 +51,6 @@ const linksList = [
 ]
 
 await TheGreatHydrator.brrrrr()
-console.log(useDailyLogsStore().getAll())
 const leftDrawerOpen = ref(false)
 
 const checkTime = async () => {

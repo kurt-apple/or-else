@@ -265,16 +265,47 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 - [x] make it so you don't have to refresh the homepage
 - [L] make habits page so you don't have to refresh
 - [x] accordian on completion entries list
-- [ ] times completed / times sampled shows as only 0 or 1
-- [ ] label everything in settings page
-- [ ] remove console logs that are stupid
-- [ ] display something for 0% ration progress instead of blank screen
-- [ ] make fill color for remaining portion of ration visualizer
-- [ ] auto form generation
-- [ ] habit createdDate to avoid rewriting history on resamples
-- [ ] make habit page reactive on create or update
-  - [ ] try inlining the dialog NOT using dialog plugin
-- [ ] configure API and stores to only store one user's information
-- [ ] try to have dialog pass payload back to parent component when creating or updating.
-- [ ] add food item
-- [ ] add custom pretty components to completion entries tree again
+- [x] times completed / times sampled shows as only 0 or 1
+  - [x] when a new habit is marked complete, times_sampled does not go up but times_completed does which leads to confusion.
+    - [x] separate internal vs external times_completed. (external would not ignore today's status whereas internal would in order to prevent re-sampling)
+- [x] label everything in settings page
+- [x] remove console logs that are stupid
+- [x] display something for 0% ration progress instead of blank screen
+- [x] make fill color for remaining portion of ration visualizer
+- [L] auto form generation
+- [L] habit createdDate to avoid rewriting history on resamples
+- [L] make habit page reactive on create or update
+  - [L] try inlining the dialog NOT using dialog plugin
+- [L] configure API and stores to only store one user's information
+- [x] try to have dialog pass payload back to parent component when creating or updating.
+- [x] add food item
+- [x] add custom pretty components to completion entries tree again
+- [x] add text next to or inside the Ration graph on dashboard
+- [x] remove status text near info button on habits list component
+- [x] rename \*'Card' components
+- [x] remove 2 way binding on ration graph
+- [x] make a custom card for each daily log in the daily logs screen
+- [-] paginate (tables?)
+- [L] edit button on All Food Entries
+- [x] Tree view in All Food Entries
+- [L] make the tree view component generic so I can use it in other areas of the app
+- [x] try force refresh for dialogs
+  - [L] try not using the dialog plugin to create a dialog
+- [x] "top 3 most common quantities" can be only shown on the condition that there are some records for that food item.
+- [x] "top 3" needs to instead be the "top X" where x = min(records array length, 3)
+- [x] implement reset on the food entry form
+- [-] add edit/details functionality on the food items list
+- [x] weigh-in input needs the up/down arrows of an input of type number
+- [ ] set minimum weight
+  - [x] ensure it is in backend model
+  - [x] ensure it is in frontend model
+  - [x] add setting to settings page
+  - [ ] add logic to ration calculation
+- [ ] make sure auto sizing actual ration works
+- [ ] add weight to all daily logs table
+- [ ] daily logs: use a table instead?
+- [ ] auto adjust calories based on conformity to ration
+- [ ] add ration back in to daily log record. prevent resampling of old rations.
+- [ ] sample rate must consist of the total improved habits from yesterday plus one, plus any additional that today was logged.
+  - [ ] have a function on the completion stores repo to determine if a habit was either sampled or taken off indeterminate
+    - [ ] store sampled y/n on completion entry records. ugh.

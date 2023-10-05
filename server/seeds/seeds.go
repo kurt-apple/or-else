@@ -39,6 +39,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		StartingRation:          2000,
 		StartDate:               time.Now().AddDate(0, 0, -3),
 		MinRation:               1500,
+		MinWeight:               200,
 	}
 
 	fmt.Println("pushing default user to db")

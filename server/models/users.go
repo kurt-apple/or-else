@@ -19,6 +19,7 @@ type User struct {
 	StartingRation          uint      `json:"startingRation"`
 	StartDate               time.Time `json:"startDate"`
 	MinRation               uint      `json:"minRation"`
+	MinWeight               uint      `json:"minWeight"`
 }
 
 func GetUsers(db *gorm.DB) http.HandlerFunc {

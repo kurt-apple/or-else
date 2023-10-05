@@ -62,7 +62,6 @@ export const useWeightEntryStore = defineStore('weight-entries', {
         params: {},
       })
       this.items = response.data
-      console.log('weights: ', this.items)
     },
     async fetchItem(id: number) {
       const response = await api.get(`/weight-entries/${id}`, {

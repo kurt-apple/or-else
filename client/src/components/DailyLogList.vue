@@ -39,6 +39,12 @@ const completionStore = useCompletionsStore()
         </q-item-section>
         <q-item-section>
           <q-item-label>
+            base ration:
+            {{ dailyLogStore.calculateBaseRation(h) }}
+          </q-item-label>
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>
             ration:
             {{ dailyLogStore.calculateActualRation(h) }}</q-item-label
           >
@@ -56,13 +62,19 @@ const completionStore = useCompletionsStore()
         </q-item-section>
         <q-item-section>
           <q-item-label>
-            sample size: {{ dailyLogStore.sampleRate(h.id) }}</q-item-label
+            sampled {{ dailyLogStore.sampleRate(h.id) }}</q-item-label
           >
         </q-item-section>
         <q-item-section>
           <q-item-label>
             done: {{ dailyLogStore.countCompleted(h) }}</q-item-label
           >
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>
+            completed
+            {{ Math.round(dailyLogStore.successRate(h) * 100) + '%' }}
+          </q-item-label>
         </q-item-section>
       </q-item>
     </q-list>

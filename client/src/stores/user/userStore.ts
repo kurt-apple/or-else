@@ -43,6 +43,7 @@ export class User extends Record {
   startingRation = 2000
   startDate = ''
   minRation = 1500
+  minWeight = 200
   get dailyLogs(): DailyLog[] {
     console.log('getting all user daily logs')
     return useDailyLogsStore().allItemsForUser(

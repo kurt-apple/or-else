@@ -7,18 +7,19 @@ import {
 } from 'src/stores/foodEntry/foodEntryStore'
 import { useFoodItemStore } from 'src/stores/foodItem/foodItemStore'
 import { useUsersStore } from 'src/stores/user/userStore'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import Utils from 'src/util'
 import { useRouter } from 'vue-router'
 const foodEntryStore = useFoodEntryStore()
+const dailyLogStore = useDailyLogsStore()
 const logs = ref<Array<FoodEntry>>([...foodEntryStore.getAll()])
 const router = useRouter()
 const todayOnly = ref(false)
 const redirectToForm = () => {
   router.push('food-entry')
 }
+
 const addEntry = () => {
-  const dailyLogStore = useDailyLogsStore()
   const userStore = useUsersStore()
   const user = userStore.gimmeUser()
   const latest = dailyLogStore.latestLog(user.id)
@@ -40,8 +41,6 @@ const addEntry = () => {
 </script>
 <template>
   <q-page padding>
-    today only?
-    <q-checkbox v-model="todayOnly"></q-checkbox>
     <food-entry-list
       title="All Food Entries"
       :logs="todayOnly ? foodEntryStore.todayOnly() : foodEntryStore.getAll()"

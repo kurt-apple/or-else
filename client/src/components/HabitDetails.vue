@@ -35,11 +35,15 @@ import { useDialogPluginComponent } from 'quasar'
 import { Habit, useHabitsStore } from 'src/stores/habit/habitStore'
 import { computed, ref } from 'vue'
 
-const props = withDefaults(defineProps<{ habit: Habit | null }>(), {
-  habit: null,
-})
+const props = withDefaults(
+  defineProps<{ habit: Habit | null; mode: 'create' | 'update' }>(),
+  {
+    habit: null,
+    mode: 'create',
+  }
+)
 
-defineEmits([
+const emit = defineEmits([
   // REQUIRED; need to specify some events that your
   // component will emit through useDialogPluginComponent()
   ...useDialogPluginComponent.emits,
@@ -76,14 +80,11 @@ const onOKClick = () => {
 
 const onSaveClick = async () => {
   console.log('ree')
-  if (props.habit) {
-    console.log('update item', habitData.value)
-    await habitsStore.updateItem(habitData.value)
-  } else {
-    console.log('create item', habitData.value)
-    await habitsStore.createItem(habitData.value)
-  }
-  onDialogOK()
+  console.log('habit prop: ', props.habit ? 'update' : 'create')
+  onDialogOK({
+    item: habitData.value,
+    unsaved: unsavedChanges.value,
+  })
 }
 
 const message = computed(() => {

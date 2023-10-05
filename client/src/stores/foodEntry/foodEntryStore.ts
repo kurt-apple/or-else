@@ -25,12 +25,10 @@ export const useFoodEntryStore = defineStore('food-entry', {
     },
     foodItem: () => (entry: FoodEntry) => {
       const foodItemStore = useFoodItemStore()
-      console.log('finding food item for entry: ', entry)
       const item = Utils.hardCheck(
         foodItemStore.getByID(entry.foodItemID),
         'could not find food item by id from food entry.'
       )
-      console.log('found food item: ', item)
       return item
     },
     allItemsForDailyLog: (state) => (dailyLogID?: number | undefined) => {
@@ -54,7 +52,6 @@ export const useFoodEntryStore = defineStore('food-entry', {
         this.foodItem(entry),
         'could not find the food item for food entry'
       )
-      console.log('food item for this entry: ', item)
       return entry.qty * item.caloriesPerUnit
     },
     // todo: make these generic
@@ -77,7 +74,6 @@ export const useFoodEntryStore = defineStore('food-entry', {
         headers: {},
         params: {},
       })
-      console.log(response.data)
       this.items = response.data
     },
     async fetchItem(id: number) {

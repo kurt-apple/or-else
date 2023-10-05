@@ -33,8 +33,7 @@ const newEntry = async () => {
     v-model="weight"
     bottom-slots
     label="Weigh-in"
-    counter
-    maxlength="12"
+    type="number"
     dense
     filled
     @keyup.enter="newEntry"

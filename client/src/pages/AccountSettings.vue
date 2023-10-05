@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { useUsersStore } from 'src/stores/user/userStore'
 import { ref } from 'vue'
 
@@ -24,6 +24,9 @@ const saveUserSettings = async () => {
 <template>
   <q-page padding>
     <br />
+    <q-item-label
+      >Minimum Completion Rate for "Your Best Habits" Section</q-item-label
+    >
     <q-slider
       v-model="user.completionRateThreshold"
       name="Completion Rate Threshold"
@@ -34,6 +37,7 @@ const saveUserSettings = async () => {
       :min="0.5"
       :max="1.0"
     />
+    <q-item-label>Starting Ration</q-item-label>
     <q-slider
       v-model="user.startingRation"
       name="Starting Ration"
@@ -44,6 +48,7 @@ const saveUserSettings = async () => {
       :min="user.minRation"
       :max="3000"
     />
+    <q-item-label>Lower Limit for Ration</q-item-label>
     <q-slider
       v-model="user.minRation"
       name="Min Ration"
@@ -53,6 +58,16 @@ const saveUserSettings = async () => {
       :markers="true"
       :min="500"
       :max="3000"
+    />
+    <q-item-label>Lower Limit for Weight</q-item-label>
+    <q-slider
+      v-model="user.minWeight"
+      name="Minimum Weight"
+      :snap="true"
+      :step="1"
+      :label-always="true"
+      :min="100"
+      :max="300"
     />
     <q-btn icon="save" @click="saveUserSettings">Save</q-btn>
   </q-page>

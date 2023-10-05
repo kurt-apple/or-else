@@ -6,12 +6,12 @@ const dailyLogStore = useDailyLogsStore()
 
 const latestLog = dailyLogStore.latestLog()
 
-const rationProgress = ref(dailyLogStore.rationProgress(latestLog) * 100)
+const rationProgress = ref(
+  Math.round(dailyLogStore.rationProgress(latestLog) * 100)
+)
 
 const barColor = computed(() => {
-  console.log('ration progress is ', rationProgress.value)
   const color = rationProgress.value >= 100 ? 'red' : 'green'
-  console.log(color)
   return color
 })
 </script>
@@ -19,8 +19,13 @@ const barColor = computed(() => {
 <template>
   <q-knob
     v-model="rationProgress"
+    show-value
     size="300px"
     :color="barColor"
+    center-color="grey"
+    track-color="black"
     class="q-ma-md"
-  />
+    readonly
+    >{{ rationProgress }}%</q-knob
+  >
 </template>
