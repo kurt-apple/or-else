@@ -34,12 +34,8 @@ export const useCompletionsStore = defineStore('completion-entries', {
     latestCompletionEntryForHabit:
       (state) =>
       (habitID?: number): CompletionEntry => {
-        if (typeof habitID === 'undefined')
-          throw new Error(
-            'cannot retrieve related records off of undefined habit id'
-          )
-        const logsStore = useDailyLogsStore()
-        const latestLog = logsStore.latestLog()
+        Utils.hardCheck(habitID)
+        const latestLog = useDailyLogsStore().latestLog()
         const entriesOfLatestLog: CompletionEntry[] = state.items.filter(
           (x) => x.dailyLogID === latestLog.id
         )
@@ -51,11 +47,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
     isSampled:
       () =>
       (entry: CompletionEntry): boolean => {
-        const habitsStore = useHabitsStore()
-        const thorns = Utils.hardCheck(
-          habitsStore.thorns(),
-          'no daily log found'
-        )
+        const thorns = useHabitsStore().thorns()
         return typeof thorns.find((x) => x.id === entry.habitID) !== 'undefined'
       },
     getCompletedFromLog: (state) => (logID: number) => {
@@ -109,8 +101,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
       return this.items.filter((x) => x.dailyLogID === dailyLogID)
     },
     dateValueFromDailyLog(completionEntryID?: number) {
-      if (typeof completionEntryID === 'undefined')
-        throw new Error('completionEntryID is undefined')
+      Utils.hardCheck(completionEntryID)
       const completion = Utils.hardCheck(
         this.getByID(completionEntryID),
         'completion from id argument is not found'

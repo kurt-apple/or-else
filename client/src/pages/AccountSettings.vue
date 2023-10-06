@@ -4,7 +4,7 @@ import { useUsersStore } from 'src/stores/user/userStore'
 import { ref } from 'vue'
 
 const userStore = useUsersStore()
-const user = ref(userStore.gimmeUser())
+const user = ref(userStore.getUser())
 console.log('default user: ', user)
 const saveUserSettings = async () => {
   try {

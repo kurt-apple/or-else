@@ -9,11 +9,11 @@ import { computed, ref } from 'vue'
 const foodEntryStore = useFoodEntryStore()
 
 export interface Props {
-  entry: FoodEntry | null
+  entry?: FoodEntry
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  entry: null,
+  entry: undefined,
 })
 
 const e = ref<FoodEntry>(

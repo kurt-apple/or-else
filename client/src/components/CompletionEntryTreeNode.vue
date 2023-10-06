@@ -3,17 +3,17 @@ import {
   CompletionEntry,
   useCompletionsStore,
 } from 'src/stores/completion/completionStore'
-import { DailyLog, useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
+import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import { useHabitsStore } from 'src/stores/habit/habitStore'
 import Utils from 'src/util'
-import { PropType, ref } from 'vue'
+import { ref } from 'vue'
 
 export interface Props {
-  entry: CompletionEntry | null
+  entry?: CompletionEntry
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  entry: null,
+  entry: undefined,
 })
 
 const e = ref<CompletionEntry>(

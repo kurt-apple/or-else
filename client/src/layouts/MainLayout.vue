@@ -51,14 +51,7 @@ const leftDrawerOpen = ref(false)
 const checkTime = async () => {
   const currentTime = new Date()
   const repo = useDailyLogsStore()
-  const user: User = Utils.hardCheck(
-    useUsersStore().defaultUser(),
-    'default user not found'
-  )
-  let latestLog = Utils.hardCheck(
-    repo.latestLog(user.id),
-    'latest log for default user was not found'
-  )
+  let latestLog = repo.latestLog()
   let latestLogTime = Utils.d(latestLog.logDate)
   // console.log('latestlogtime: ', latestLogTime, ' is type of: ', typeof latestLogTime)
   while (currentTime.getDate() !== latestLogTime.getDate()) {
@@ -78,10 +71,7 @@ const checkTime = async () => {
       'newly created log is not able to be retrieved'
     )
     await repo.reSampleHabits(createdLog.id)
-    latestLog = Utils.hardCheck(
-      repo.latestLog(user.id),
-      'latest log for default user was not found'
-    )
+    latestLog = repo.latestLog()
     latestLogTime = Utils.d(latestLog.logDate)
     repo.calculateBaseRation(latestLog)
     repo.reSampleHabits(latestLog.id)

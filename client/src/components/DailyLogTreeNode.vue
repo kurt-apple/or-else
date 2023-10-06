@@ -6,11 +6,11 @@ import { ref } from 'vue'
 const dailyLogStore = useDailyLogsStore()
 
 export interface Props {
-  log: DailyLog | null
+  log?: DailyLog
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  log: null,
+  log: undefined,
 })
 
 const log = ref<DailyLog>(

@@ -328,6 +328,11 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
   - [x] have a function on the completion stores repo to determine if a habit was either sampled or taken off indeterminate
 - [ ] complete vs incomplete top performing habits should implicitly be considered 'sampled' too
   - [ ] multiple sample types as string propety or enum of the completion entry model?
-    - [ ] tidy up the code
-      - [ ] IDs and other similar values should default to undefined
-        - [ ] make function to set 0 to undefined (go defaults to zero value on undefined)
+    - [x] tidy up the code
+      - [x] IDs and other similar values should default to undefined
+        - [x] make function to set 0 to undefined (go defaults to zero value on undefined)
+        - [x] props on components, too
+          - [-] is null better?
+      - [x] do some golf
+        - [x] refactor to single user client...
+        - [x] check for unnecessary hard checks

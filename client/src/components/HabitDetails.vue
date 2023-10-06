@@ -36,9 +36,9 @@ import { Habit, useHabitsStore } from 'src/stores/habit/habitStore'
 import { computed, ref } from 'vue'
 
 const props = withDefaults(
-  defineProps<{ habit: Habit | null; mode: 'create' | 'update' }>(),
+  defineProps<{ habit?: Habit; mode: 'create' | 'update' }>(),
   {
-    habit: null,
+    habit: undefined,
     mode: 'create',
   }
 )

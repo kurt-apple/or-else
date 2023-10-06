@@ -36,20 +36,8 @@ const currentHabit = ref<Habit>()
 
 const toggleEditMode = () => (editModeToggle.value = !editModeToggle.value)
 
-// const logDate = (h: Habit) => {
-//   const latestLog = habitsStore.latestDailyLog(
-//     Utils.hardCheck(h.id, 'habit id is not known')
-//   )
-//   return Utils.d(
-//     Utils.hardCheck(
-//       latestLog,
-//       'could not retrieve the daily log from latest completion entry of habit'
-//     ).logDate
-//   )
-// }
-
 const updateCompletedStatus = async (h: { h: Habit; ce: CompletionEntry }) => {
-  const latest = Utils.hardCheck(h.ce, 'Could not find latest log for habit')
+  const latest = h.ce
   const result = await useCompletionsStore().updateItem(latest)
   console.log(
     `#${h.h.id} status is now ${latest.status} - api result: `,
@@ -110,10 +98,7 @@ const viewDetails = (h: Habit) => {
 const habitMap = ref<{ h: Habit; ce: CompletionEntry }[]>(
   props.habits.map((x) => ({
     h: x,
-    ce: Utils.hardCheck(
-      completionsStore.latestCompletionEntryForHabit(x.id),
-      'oops'
-    ),
+    ce: completionsStore.latestCompletionEntryForHabit(x.id),
   }))
 )
 </script>

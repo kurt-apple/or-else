@@ -1,38 +1,10 @@
 import { defineStore } from 'pinia'
-import { PiniaGenerics, Record, State } from '../PiniaGenerics'
+import { Record } from '../PiniaGenerics'
 import { api } from 'src/boot/axios'
-import { DailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
-import { Habit, useHabitsStore } from '../habit/habitStore'
 import Utils from 'src/util'
 
 export interface HasUser extends Record {
   userID?: number
-}
-
-export class UserGenerics {
-  static generateUserGetters<R extends HasUser>() {
-    console.log('inside generateUserGetters')
-    return {
-      user:
-        () =>
-        (item: R): User | undefined => {
-          return useUsersStore().getByID(item.userID)
-        },
-      allItemsForUser:
-        (state: State<R>) =>
-        (userId: number): R[] => {
-          return state.items.filter((x) => x.userID === userId)
-        },
-    }
-  }
-}
-
-export class UserStatics {
-  static getByID(userID?: number) {
-    const userStore = useUsersStore()
-    const user = userID ? userStore.getByID(userID) : userStore.defaultUser()
-    return Utils.hardCheck(user, 'could not find user for static func')
-  }
 }
 
 export class User extends Record {
@@ -44,62 +16,24 @@ export class User extends Record {
   startDate = ''
   minRation = 1500
   minWeight = 200
-  get dailyLogs(): DailyLog[] {
-    console.log('getting all user daily logs')
-    return useDailyLogsStore().allItemsForUser(
-      Utils.hardCheck(
-        this.id,
-        'fetching records by associated user ID before user record has ID'
-      )
-    )
-  }
+}
 
-  get habits(): Habit[] {
-    return useHabitsStore().allItemsForUser(
-      Utils.hardCheck(
-        this.id,
-        'fetching records by associated user ID before user record has ID'
-      )
-    )
-  }
+export interface UserState {
+  user?: User
 }
 
 export const useUsersStore = defineStore('users', {
-  ...PiniaGenerics.stateTree<User>(),
+  state: (): UserState => {
+    return {
+      user: undefined,
+    }
+  },
   getters: {
-    ...PiniaGenerics.generateStoreGetters<User>(),
-    gimmeUser: (state) => (userID?: number) => {
-      const user = userID
-        ? state.items.find((x) => x.id === userID)
-        : state.items.find((x) => x.name === 'DEFAULT')
-      return Utils.hardCheck(user, 'could not find user for static func')
-    },
-    defaultUser: (state) => (): User => {
+    getUser: (state) => () => {
       return Utils.hardCheck(
-        state.items.find((x) => x.name === 'DEFAULT'),
-        'default user might not be here'
+        state.user,
+        'expected user to exist in store by now'
       )
-    },
-    latestLog: (state) => (): DailyLog => {
-      const defaultUser = Utils.hardCheck(
-        state.items.find((x) => x.name === 'DEFAULT'),
-        'no default user found'
-      )
-      const defaultUserId = Utils.hardCheck(
-        defaultUser.id,
-        'defaultUser was found but does not have id'
-      )
-      return useDailyLogsStore()
-        .allItemsForUser(defaultUserId)
-        .sort((a, b) => {
-          return Utils.mddl(a, b, 'desc')
-        })[0]
-    },
-    dailyLogs: () => (userID?: number) => {
-      if (typeof userID === 'undefined')
-        throw new Error('userID is not defined')
-      const dailyLogStore = useDailyLogsStore()
-      return dailyLogStore.allItemsForUser(userID)
     },
   },
   actions: {
@@ -113,7 +47,7 @@ export const useUsersStore = defineStore('users', {
         })
         .then((response) => {
           console.log('createItem response from backend: ', response)
-          this.items.push(item)
+          this.user = response.data
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {
@@ -121,7 +55,7 @@ export const useUsersStore = defineStore('users', {
         headers: {},
         params: {},
       })
-      this.items = response.data
+      this.user = response.data[0]
     },
     async fetchItem(id: number) {
       const response = await api.get(`/users/${id}`, {
@@ -131,34 +65,22 @@ export const useUsersStore = defineStore('users', {
       return response.data
     },
     async updateItem(item: User) {
-      const index = this.items.findIndex((x) => x.id === item.id)
-      let result
-      if (index !== -1) {
-        console.log('user is: ', this.items[index])
-        result = await api
-          .patch(`/users/${item.id}`, item, {
-            headers: {},
-          })
-          .then((response) => {
-            console.log('then...')
-            this.items[index] = { ...this.items[index], ...item }
-            console.log('response is: ', response)
-          }, Utils.handleError('Error updating item.'))
-        return result
-      } else throw new Error('user was not found by its id')
+      await api
+        .patch(`/users/${item.id}`, item, { headers: {} })
+        .then((response) => {
+          this.user = { ...this.user, ...item }
+          return response
+        }, Utils.handleError('Error updating user.'))
     },
-    async deleteItem(id: number) {
-      const index = this.items.findIndex((x) => x.id === id)
-      if (index !== -1) {
-        await api
-          .delete(`/users/${id}`, {
-            headers: {},
-          })
-          .then((response) => {
-            this.items.splice(index, 1)
-            return response
-          }, Utils.handleError('Error deleting item.'))
-      }
+    async deleteItem() {
+      const uid = this.getUser().id
+      await api
+        .delete(`/users/${uid}`, {
+          headers: {},
+        })
+        .then((response) => {
+          return response
+        }, Utils.handleError('Error deleting item.'))
     },
   },
 })

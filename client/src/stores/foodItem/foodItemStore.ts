@@ -12,7 +12,7 @@ export class FoodItem extends Record {
 }
 
 export interface HasFoodItem extends Record {
-  foodItemID: number
+  foodItemID?: number
 }
 
 export const useFoodItemStore = defineStore('food-item', {

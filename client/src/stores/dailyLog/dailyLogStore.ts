@@ -10,20 +10,16 @@ import { useFoodEntryStore } from '../foodEntry/foodEntryStore'
 
 export class DailyLog extends Record implements HasUser {
   id?: number
-  getID(): number {
-    throw new Error('Method not implemented.')
-  }
-
   userID?: number = undefined
   logDate = ''
   previousLogID?: number = undefined
-  baseRation: number | undefined
-  lastModified?: string | undefined
+  baseRation?: number = undefined
+  lastModified?: string
   constructor(options: {
     userID?: number
     logDate?: string
-    previousLogID?: number | undefined
-    rationStoredValue?: number | undefined
+    previousLogID?: number
+    rationStoredValue?: number
     lastModified?: string
   }) {
     super({})
@@ -65,36 +61,14 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     allAsc: (state) => () => {
       return state.items.sort((a, b) => Utils.mddl(a, b, 'asc'))
     },
-    allItemsForUser: (state) => (userID?: number) => {
-      if (typeof userID === 'undefined')
-        throw new Error('cannot fetch related records of undefined')
-      return state.items.filter((x) => x.userID === userID)
-    },
-    latestLog: (state) => (userID?: number) => {
-      const id =
-        typeof userID === 'undefined'
-          ? Utils.hardCheck(
-              useUsersStore().defaultUser().id,
-              'how is a number type causing an issue?'
-            )
-          : userID
-      // console.log('id went from undefined to ', id)
-      // console.log('state items: ', state.items, ', id is ', id)
-      const logs = state.items.filter((x) => x.userID === id)
-      // console.log('all logs for user', logs)
-      return logs.sort((a, b) => Utils.mddl(a, b, 'desc'))[0]
-    },
-    qtyImprovedHabits: () => (logID?: number, userID?: number) => {
+    qtyImprovedHabits: () => (logID?: number) => {
       if (typeof logID === 'undefined')
         throw new Error('cannot do math on undefined record')
-      const completionStore = useCompletionsStore()
-      const completed = completionStore.getCompletedFromLog(logID)
-      const userStore = useUsersStore()
-      const user = userStore.gimmeUser(userID)
+      const completed = useCompletionsStore().getCompletedFromLog(logID)
+      const threshold = useUsersStore().getUser().completionRateThreshold
       const habitStore = useHabitsStore()
       return completed.filter(
-        (x) =>
-          habitStore.completionRate(x.habitID) <= user.completionRateThreshold
+        (x) => habitStore.completionRate(x.habitID) <= threshold
       ).length
     },
     formattedDate: () => (item: DailyLog) => {
@@ -105,15 +79,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       (item: DailyLog): Date => {
         return Utils.d(item.logDate)
       },
-    getUserFromLog: () => (log?: DailyLog) => {
-      if (typeof log === 'undefined')
-        throw new Error('cannot retrieve related records of undefined')
-      const userStore = useUsersStore()
-      return Utils.hardCheck(
-        userStore.getByID(log.userID),
-        'user not found for dailylog'
-      )
-    },
     getWeightEntries: () => (dailyLogID?: number) => {
       if (typeof dailyLogID === 'undefined')
         throw new Error('daily log id is undefined')
@@ -159,6 +124,19 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     },
   },
   actions: {
+    latestLog() {
+      let log: DailyLog | undefined
+      let date = new Date()
+      let count = this.items.length
+      while (typeof log === 'undefined' && count > 0) {
+        log = this.queryDate(date.toDateString())
+        date = new Date(date.getTime() - 86400000)
+        count--
+      }
+      if (typeof log === 'undefined')
+        throw new Error('daily log not found for user')
+      return log
+    },
     mapZeroToUndefined(item: DailyLog) {
       if (item.userID === 0) item.userID = undefined
       if (item.previousLogID === 0) item.previousLogID = undefined
@@ -180,12 +158,8 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       return rate
     },
     maxWeight(log: DailyLog): number {
-      const user = useUsersStore().gimmeUser(log.userID)
       const entries = this.getWeightEntries(log.id).map((x) => x.weight)
-      const previous = this.getByID(log.previousLogID)
-      if (entries.length > 0) return Math.max(...entries)
-      if (typeof previous === 'undefined') return user.minWeight
-      else return this.maxWeight(previous)
+      return Math.max(...entries)
     },
     weightDelta(log: DailyLog, previous?: DailyLog) {
       if (typeof previous === 'undefined') {
@@ -217,20 +191,12 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       return consumed / ration
     },
     sampleRate(dailyLogID?: number) {
+      Utils.hardCheck(dailyLogID)
       const log = Utils.hardCheck(
-        this.getByID(
-          Utils.hardCheck(
-            dailyLogID,
-            'sampleRate: dailyLogID is null or undefined'
-          )
-        ),
+        this.getByID(dailyLogID),
         'daily log id provided did not work'
       )
-      const userStore = useUsersStore()
-      const user = Utils.hardCheck(
-        userStore.getByID(log.userID),
-        'user related to daily log was not found'
-      )
+      const user = useUsersStore().getUser()
       if (typeof log.previousLogID === 'undefined') {
         return user.startingSampleRate
       } else {
@@ -239,7 +205,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       }
     },
     calculateBaseRation(log: DailyLog): number {
-      const user = this.getUserFromLog(log)
+      const user = useUsersStore().getUser()
       if (
         typeof log.previousLogID === 'undefined' ||
         log.previousLogID === null ||
@@ -276,7 +242,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     },
     calculateActualRation(log: DailyLog) {
       const base = this.calculateBaseRation(log)
-      const user = useUsersStore().gimmeUser(log.userID)
+      const user = useUsersStore().getUser()
       let previous: DailyLog
       try {
         previous = this.previousLog(log)

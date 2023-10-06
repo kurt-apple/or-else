@@ -48,11 +48,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
   },
   actions: {
     totalCalories(entry: FoodEntry) {
-      const item = Utils.hardCheck(
-        this.foodItem(entry),
-        'could not find the food item for food entry'
-      )
-      return entry.qty * item.caloriesPerUnit
+      return entry.qty * this.foodItem(entry).caloriesPerUnit
     },
     // todo: make these generic
     // problem is 'this' is possibly undefined

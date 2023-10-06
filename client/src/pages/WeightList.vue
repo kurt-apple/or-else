@@ -5,21 +5,15 @@ import {
   WeightEntry,
   useWeightEntryStore,
 } from 'src/stores/weight-entry/weightEntryStore'
-import Utils from 'src/util'
 import { ref } from 'vue'
 const weightEntryStore = useWeightEntryStore()
 const weight = ref<string>(weightEntryStore.latest().weight.toString())
-
-const userID = useUsersStore().gimmeUser().id
 
 const newEntry = async () => {
   console.log('weight: ', weight.value)
   if (parseInt(weight.value) < 1) throw new Error('weight value is not valid')
   const entry: WeightEntry = {
-    dailyLogID: Utils.hardCheck(
-      useDailyLogsStore().latestLog(userID).id,
-      'no daily log for user.'
-    ),
+    dailyLogID: useDailyLogsStore().latestLog().id,
     time: new Date().toISOString(),
     weight: parseInt(weight.value),
   }

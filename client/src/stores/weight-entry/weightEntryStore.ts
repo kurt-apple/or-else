@@ -3,7 +3,6 @@ import { PiniaGenerics, Record } from '../PiniaGenerics'
 import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
 import Utils from 'src/util'
 import { api } from 'src/boot/axios'
-import { useUsersStore } from '../user/userStore'
 
 export class WeightEntry extends Record implements HasDailyLog {
   id?: number = undefined
@@ -24,21 +23,16 @@ export const useWeightEntryStore = defineStore('weight-entries', {
       if (typeof userID === 'undefined')
         throw new Error('cannot fetch anything with undefined id')
       const logStore = useDailyLogsStore()
-      const logs = logStore.allItemsForUser(userID)
+      const logs = logStore.items
       const weightEntries: WeightEntry[] = []
       logs.forEach((x) =>
         weightEntries.push(...state.items.filter((y) => y.dailyLogID === x.id))
       )
       return weightEntries
     },
-    latest:
-      (state) =>
-      (userID?: number): WeightEntry => {
-        if (typeof userID === 'undefined') {
-          userID = useUsersStore().gimmeUser().id
-        }
-        return state.items.sort((a, b) => Utils.mdwe(a, b, 'desc'))[0]
-      },
+    latest: (state) => (): WeightEntry => {
+      return state.items.sort((a, b) => Utils.mdwe(a, b, 'desc'))[0]
+    },
   },
   actions: {
     mapZeroToUndefined(item: WeightEntry) {

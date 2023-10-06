@@ -15,7 +15,7 @@ export class Habit extends Record implements HasUser {
 
   static defaults() {
     const newHabit: Habit = {
-      userID: useUsersStore().gimmeUser().id ?? undefined,
+      userID: useUsersStore().getUser().id,
       title: 'New Habit',
     }
     return newHabit
@@ -58,22 +58,14 @@ export const useHabitsStore = defineStore('habits', {
         const completionStore = useCompletionsStore()
         const latestCompletion =
           completionStore.latestCompletionEntryForHabit(habitID)
-        return (
-          Utils.hardCheck(
-            latestCompletion,
-            'could not find latest completion entry for habit'
-          ).status === 2
-        )
+        return latestCompletion.status === 2
       },
     times_sampled:
       () =>
       (id?: number): number => {
         if (typeof id === 'undefined') throw new Error('id was undefined')
         const completionStore = useCompletionsStore()
-        const entries = Utils.hardCheck(
-          completionStore.allItemsForHabit(id),
-          'cannot find completion entries for the habit id provided'
-        )
+        const entries = completionStore.allItemsForHabit(id)
         return entries.filter((x) => x.status !== 0).length
       },
     times_completed:
@@ -81,22 +73,14 @@ export const useHabitsStore = defineStore('habits', {
       (id?: number): number => {
         if (typeof id === 'undefined') throw new Error('id was undefined')
         const completionStore = useCompletionsStore()
-        const entries: CompletionEntry[] = Utils.hardCheck(
-          completionStore.allItemsForHabit(id),
-          'could not find any completion entries for the provided habit id'
-        )
+        const entries: CompletionEntry[] = completionStore.allItemsForHabit(id)
         return entries.filter((x) => x.status === 2).length
       },
     latestDailyLog: () => (habitID: number) => {
       const completionStore = useCompletionsStore()
-      const completion = Utils.hardCheck(
-        completionStore.latestCompletionEntryForHabit(habitID),
-        'could not find latest completion entry for provided habit id'
-      )
-      const logStore = useDailyLogsStore()
-      const log = logStore.getByID(completion?.dailyLogID)
+      const completion = completionStore.latestCompletionEntryForHabit(habitID)
       return Utils.hardCheck(
-        log,
+        useDailyLogsStore().getByID(completion.dailyLogID),
         'could not find daily log from latest completion entry of provided habit id'
       )
     },
@@ -119,18 +103,14 @@ export const useHabitsStore = defineStore('habits', {
         : this.times_completed_internal(id) / this.times_sampled(id)
     },
     priorCompletionRate(beforeDate: Date, habitID?: number) {
-      const hID = Utils.hardCheck(
-        habitID,
-        'habitID is undefined at priorCompletionRate function'
-      )
+      Utils.hardCheck(habitID)
       if (new Date().getDate() === beforeDate.getDate())
-        return this.completionRate(hID)
+        return this.completionRate(habitID)
       const completionStore = useCompletionsStore()
-      const dailyLogStore = useDailyLogsStore()
-      let entries = completionStore.allItemsForHabit(hID)
+      let entries = completionStore.allItemsForHabit(habitID)
       entries = entries.filter((x: CompletionEntry) => {
         const log = Utils.hardCheck(
-          dailyLogStore.getByID(x.dailyLogID),
+          useDailyLogsStore().getByID(x.dailyLogID),
           'no daily log found'
         )
         return Utils.d(log.logDate).getDate() < beforeDate.getDate()
@@ -139,21 +119,19 @@ export const useHabitsStore = defineStore('habits', {
       const sampled = entries.filter((x) => x.status !== 0).length
       return successes / sampled
     },
-    roses(userID?: number) {
+    roses(): Habit[] {
       const userStore = useUsersStore()
-      const user = userStore.gimmeUser(userID)
+      const user = userStore.getUser()
       const threshold = user.completionRateThreshold
       return this.items.filter((x) => this.completionRate(x.id) > threshold)
     },
 
-    thorns(userID?: number) {
-      const userStore = useUsersStore()
+    thorns(): Habit[] {
       const dailyLogStore = useDailyLogsStore()
-      const user = userStore.gimmeUser(userID)
       const sortedHabits = this.items.sort(
         (a, b) => this.completionRate(a.id) - this.completionRate(b.id)
       )
-      const latestLog = dailyLogStore.latestLog(user.id)
+      const latestLog = dailyLogStore.latestLog()
       return sortedHabits.slice(0, dailyLogStore.sampleRate(latestLog.id))
     },
     // todo: make these generic
