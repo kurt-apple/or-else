@@ -329,3 +329,5 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 - [ ] complete vs incomplete top performing habits should implicitly be considered 'sampled' too
   - [ ] multiple sample types as string propety or enum of the completion entry model?
     - [ ] tidy up the code
+      - [ ] IDs and other similar values should default to undefined
+        - [ ] make function to set 0 to undefined (go defaults to zero value on undefined)

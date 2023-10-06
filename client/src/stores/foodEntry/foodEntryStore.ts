@@ -6,9 +6,9 @@ import Utils from 'src/util'
 import { HasFoodItem, useFoodItemStore } from '../foodItem/foodItemStore'
 
 export class FoodEntry extends Record implements HasDailyLog, HasFoodItem {
-  id?: number | undefined
-  dailyLogID = -1
-  foodItemID = -1
+  id?: number = undefined
+  dailyLogID?: number = undefined
+  foodItemID?: number = undefined
   qty = 0
 }
 
@@ -65,9 +65,14 @@ export const useFoodEntryStore = defineStore('food-entry', {
         })
         .then((response) => {
           console.log('create food entry response from backend: ', response)
-          newItem = response.data
+          newItem = this.mapZeroToUndefined(response.data)
           this.items.push(newItem)
         }, Utils.handleError('Error creating item.'))
+    },
+    mapZeroToUndefined(item: FoodEntry): FoodEntry {
+      if (item.dailyLogID === 0) item.dailyLogID = undefined
+      if (item.foodItemID === 0) item.foodItemID = undefined
+      return item
     },
     async fetchAll() {
       const response = await api.get('/food-entries', {
@@ -75,6 +80,9 @@ export const useFoodEntryStore = defineStore('food-entry', {
         params: {},
       })
       this.items = response.data
+      for (let i = 0; i < this.items.length; i++) {
+        this.items[i] = this.mapZeroToUndefined(this.items[i])
+      }
     },
     async fetchItem(id: number) {
       const response = await api.get(`/food-entries/${id}`, {

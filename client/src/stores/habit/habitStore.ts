@@ -10,12 +10,12 @@ import Utils from 'src/util'
 import { useDailyLogsStore } from '../dailyLog/dailyLogStore'
 
 export class Habit extends Record implements HasUser {
-  userID = -1
+  userID?: number = undefined
   title = 'Untitled'
 
   static defaults() {
     const newHabit: Habit = {
-      userID: useUsersStore().gimmeUser().id ?? -1,
+      userID: useUsersStore().gimmeUser().id ?? undefined,
       title: 'New Habit',
     }
     return newHabit
@@ -23,7 +23,7 @@ export class Habit extends Record implements HasUser {
 }
 
 export interface HasHabit extends Record {
-  habitID: number
+  habitID?: number
 }
 
 export class HabitGenerics {

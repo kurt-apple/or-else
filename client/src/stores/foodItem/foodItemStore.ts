@@ -5,7 +5,7 @@ import { api } from 'src/boot/axios'
 import Utils from 'src/util'
 
 export class FoodItem extends Record {
-  id?: number | undefined
+  id?: number = undefined
   name = 'Unnamed Food Item'
   unit = 'piece'
   caloriesPerUnit = 0

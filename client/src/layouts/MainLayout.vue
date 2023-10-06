@@ -43,11 +43,6 @@ const linksList = [
     icon: 'manage_accounts',
     link: 'settings',
   },
-  {
-    title: 'Super User',
-    icon: 'edit',
-    link: 'super',
-  },
 ]
 
 await TheGreatHydrator.brrrrr()

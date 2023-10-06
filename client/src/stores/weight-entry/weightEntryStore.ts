@@ -6,8 +6,8 @@ import { api } from 'src/boot/axios'
 import { useUsersStore } from '../user/userStore'
 
 export class WeightEntry extends Record implements HasDailyLog {
-  id?: number | undefined
-  dailyLogID = -1
+  id?: number = undefined
+  dailyLogID?: number = undefined
   time = new Date().toLocaleDateString()
   weight = -1
 }
@@ -41,6 +41,10 @@ export const useWeightEntryStore = defineStore('weight-entries', {
       },
   },
   actions: {
+    mapZeroToUndefined(item: WeightEntry) {
+      if (item.dailyLogID === 0) item.dailyLogID = undefined
+      return item
+    },
     // todo: make these generic
     // problem is 'this' is possibly undefined
     async createItem(item: WeightEntry) {
@@ -52,7 +56,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
         })
         .then((response) => {
           console.log('createItem response from backend: ', response)
-          newItem = response.data
+          newItem = this.mapZeroToUndefined(response.data)
           this.items.push(newItem)
         }, Utils.handleError('Error creating item.'))
     },
@@ -62,13 +66,16 @@ export const useWeightEntryStore = defineStore('weight-entries', {
         params: {},
       })
       this.items = response.data
+      for (let i = 0; i < this.items.length; i++) {
+        this.items[i] = this.mapZeroToUndefined(this.items[i])
+      }
     },
     async fetchItem(id: number) {
       const response = await api.get(`/weight-entries/${id}`, {
         headers: {},
         params: {},
       })
-      return response.data
+      return this.mapZeroToUndefined(response.data)
     },
     async updateItem(item: WeightEntry) {
       const index = this.items.findIndex((x) => x.id === item.id)

@@ -6,7 +6,7 @@ import { Habit, useHabitsStore } from '../habit/habitStore'
 import Utils from 'src/util'
 
 export interface HasUser extends Record {
-  userID: number
+  userID?: number
 }
 
 export class UserGenerics {

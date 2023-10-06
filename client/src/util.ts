@@ -66,4 +66,16 @@ export default class Utils {
   static randbetween(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1) + min)
   }
+
+  // todo: make this work
+  // static zeroToUndefined<T>(item: T, ...keys: string[]) {
+  //   keys.forEach((k) => {
+  //     if(item[k] === 0) item.k = undefined
+  //   })
+  //   return item
+  // }
+
+  static todo(s?: string) {
+    throw new Error(s ?? 'needs refactor')
+  }
 }

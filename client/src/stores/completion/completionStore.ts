@@ -9,15 +9,15 @@ import { api } from 'src/boot/axios'
 import Utils from 'src/util'
 
 export class CompletionEntry extends Record implements HasDailyLog, HasHabit {
-  habitID = -1
-  dailyLogID = -1
+  habitID?: number = undefined
+  dailyLogID?: number = undefined
   status: 0 | 1 | 2 = 0
   sampled = false
 
   static defaults(): CompletionEntry {
     const temp: CompletionEntry = {
-      habitID: -1,
-      dailyLogID: -1,
+      habitID: undefined,
+      dailyLogID: undefined,
       status: 0,
       sampled: false,
     }
@@ -135,19 +135,28 @@ export const useCompletionsStore = defineStore('completion-entries', {
           this.items.push(item)
         }, Utils.handleError('Error creating a completion entry'))
     },
+    mapZeroToUndefined(item: CompletionEntry) {
+      if (item.dailyLogID === 0) item.dailyLogID = undefined
+      if (item.habitID === 0) item.habitID = undefined
+      return item
+    },
     async fetchAll() {
       const response = await api.get('/completions', {
         headers: {},
         params: {},
       })
       this.items = response.data
+      for (let i = 0; i < this.items.length; i++) {
+        this.items[i] = this.mapZeroToUndefined(this.items[i])
+      }
+      return this.items
     },
     async fetchItem(id: number) {
       const response = await api.get(`/completions/${id}`, {
         headers: {},
         params: {},
       })
-      return response.data
+      return this.mapZeroToUndefined(response.data)
     },
     async updateItem(item: CompletionEntry) {
       const dailyLogStore = useDailyLogsStore()

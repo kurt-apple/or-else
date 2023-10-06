@@ -9,14 +9,14 @@ import { useWeightEntryStore } from '../weight-entry/weightEntryStore'
 import { useFoodEntryStore } from '../foodEntry/foodEntryStore'
 
 export class DailyLog extends Record implements HasUser {
-  id?: number | undefined
+  id?: number
   getID(): number {
     throw new Error('Method not implemented.')
   }
 
-  userID = -1
+  userID?: number = undefined
   logDate = ''
-  previousLogID?: number | undefined
+  previousLogID?: number = undefined
   baseRation: number | undefined
   lastModified?: string | undefined
   constructor(options: {
@@ -27,7 +27,7 @@ export class DailyLog extends Record implements HasUser {
     lastModified?: string
   }) {
     super({})
-    this.userID = options.userID ?? -1
+    this.userID = options.userID
     this.logDate = options.logDate ?? ''
     this.previousLogID = options.previousLogID
     this.baseRation = options.rationStoredValue ?? 2000
@@ -36,7 +36,7 @@ export class DailyLog extends Record implements HasUser {
 }
 
 export interface HasDailyLog extends Record {
-  dailyLogID: number
+  dailyLogID?: number
 }
 
 export class DailyLogGenerics {
@@ -159,6 +159,11 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     },
   },
   actions: {
+    mapZeroToUndefined(item: DailyLog) {
+      if (item.userID === 0) item.userID = undefined
+      if (item.previousLogID === 0) item.previousLogID = undefined
+      return item
+    },
     countCompleted(log: DailyLog) {
       return this.getCompletionEntries(log.id).filter((x) => x.status === 2)
         .length
@@ -262,6 +267,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       return Math.max(baseRation + 100, user.minRation)
     },
     async refreshAllBaseRations(): Promise<void> {
+      Utils.todo()
       const allLogs = this.allAsc()
       for (let i = 0; i < allLogs.length; i++) {
         this.calculateBaseRation(allLogs[i])
@@ -350,7 +356,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         })
         .then((response) => {
           console.log('createItem response from backend: ', response)
-          newItem = response.data
+          newItem = this.mapZeroToUndefined(response.data)
           this.items.push(newItem)
         }, Utils.handleError('Error creating item.'))
     },
@@ -360,13 +366,16 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         params: {},
       })
       this.items = response.data
+      for (let i = 0; i < this.items.length; i++) {
+        this.items[i] = this.mapZeroToUndefined(this.items[i])
+      }
     },
     async fetchItem(id: number) {
       const response = await api.get(`/daily-logs/${id}`, {
         headers: {},
         params: {},
       })
-      return response.data
+      return this.mapZeroToUndefined(response.data)
     },
     async updateItem(item: DailyLog) {
       const index = this.items.findIndex((x) => x.id === item.id)
