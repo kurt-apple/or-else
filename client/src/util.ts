@@ -51,6 +51,7 @@ export default class Utils {
   }
 
   static same24(a: Date, b: Date) {
+    // console.log('same24', { a, b })
     return (
       a.getFullYear() === b.getFullYear() &&
       a.getMonth() === b.getMonth() &&

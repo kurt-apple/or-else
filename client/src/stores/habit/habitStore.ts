@@ -4,6 +4,8 @@ import { HasUser, useUsersStore } from '../user/userStore'
 import { api } from 'src/boot/axios'
 import {
   CompletionEntry,
+  habitStatus,
+  sampleType,
   useCompletionsStore,
 } from '../completion/completionStore'
 import Utils from 'src/util'
@@ -58,15 +60,15 @@ export const useHabitsStore = defineStore('habits', {
         const completionStore = useCompletionsStore()
         const latestCompletion =
           completionStore.latestCompletionEntryForHabit(habitID)
-        return latestCompletion.status === 2
+        return latestCompletion.status === habitStatus.COMPLETED
       },
     times_sampled:
       () =>
       (id?: number): number => {
         if (typeof id === 'undefined') throw new Error('id was undefined')
-        const completionStore = useCompletionsStore()
-        const entries = completionStore.allItemsForHabit(id)
-        return entries.filter((x) => x.status !== 0).length
+        const entries = useCompletionsStore().allItemsForHabit(id)
+        return entries.filter((x) => x.status !== habitStatus.UNSPECIFIED)
+          .length
       },
     times_completed:
       () =>
@@ -74,7 +76,7 @@ export const useHabitsStore = defineStore('habits', {
         if (typeof id === 'undefined') throw new Error('id was undefined')
         const completionStore = useCompletionsStore()
         const entries: CompletionEntry[] = completionStore.allItemsForHabit(id)
-        return entries.filter((x) => x.status === 2).length
+        return entries.filter((x) => x.status === habitStatus.COMPLETED).length
       },
     latestDailyLog: () => (habitID: number) => {
       const completionStore = useCompletionsStore()
@@ -90,7 +92,10 @@ export const useHabitsStore = defineStore('habits', {
       // subtract latest log's status in order to prevent re-sampling
       const completionStore = useCompletionsStore()
       const latest = completionStore.latestCompletionEntryForHabit(id)
-      const latestStatusFlag = latest.status === 2 ? 1 : 0
+      const latestStatusFlag =
+        latest.status === habitStatus.COMPLETED
+          ? habitStatus.NOTCOMPLETED
+          : habitStatus.UNSPECIFIED
       return this.times_completed(id) - latestStatusFlag
     },
     completionRate(id?: number) {
@@ -101,6 +106,21 @@ export const useHabitsStore = defineStore('habits', {
       return this.times_sampled(id) === 0
         ? 0.0
         : this.times_completed_internal(id) / this.times_sampled(id)
+    },
+    completionRateOnDate(habit: Habit, dateStr: string) {
+      const entriesPrior = useCompletionsStore().allEntriesForHabitPriorTo(
+        habit,
+        dateStr
+      )
+      const timesCompleted = entriesPrior.filter(
+        (x) => x.status === habitStatus.COMPLETED
+      )
+      const timesSampled = entriesPrior.filter(
+        (x) => x.sampleType !== sampleType.NOTSAMPLED
+      )
+      if (timesSampled.length === 0) return 0
+      if (timesCompleted.length === 0) return 0
+      return timesCompleted.length / timesCompleted.length
     },
     priorCompletionRate(beforeDate: Date, habitID?: number) {
       Utils.hardCheck(habitID)
@@ -115,8 +135,12 @@ export const useHabitsStore = defineStore('habits', {
         )
         return Utils.d(log.logDate).getDate() < beforeDate.getDate()
       })
-      const successes = entries.filter((x) => x.status === 2).length
-      const sampled = entries.filter((x) => x.status !== 0).length
+      const successes = entries.filter(
+        (x) => x.status === habitStatus.COMPLETED
+      ).length
+      const sampled = entries.filter(
+        (x) => x.status !== habitStatus.UNSPECIFIED
+      ).length
       return successes / sampled
     },
     roses(): Habit[] {

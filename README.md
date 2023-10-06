@@ -327,7 +327,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 - [ ] sample rate must consist of the total improved habits from yesterday plus one, plus any additional that today was logged.
   - [x] have a function on the completion stores repo to determine if a habit was either sampled or taken off indeterminate
 - [ ] complete vs incomplete top performing habits should implicitly be considered 'sampled' too
-  - [ ] multiple sample types as string propety or enum of the completion entry model?
+  - [x] multiple sample types as string property or enum of the completion entry model?
     - [x] tidy up the code
       - [x] IDs and other similar values should default to undefined
         - [x] make function to set 0 to undefined (go defaults to zero value on undefined)
@@ -336,3 +336,7 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
       - [x] do some golf
         - [x] refactor to single user client...
         - [x] check for unnecessary hard checks
+- [ ] optimize daily logs page further.
+  - [x] max weight div 0 bug
+  - [x] sampled now has stars on all of them
+  - [ ] ensure new logs are created with top performers' sampletype updated.

@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record, State } from 'src/stores/PiniaGenerics'
 import { HasUser, useUsersStore } from 'src/stores/user/userStore'
-import { useCompletionsStore } from '../completion/completionStore'
+import {
+  habitStatus,
+  sampleType,
+  useCompletionsStore,
+} from '../completion/completionStore'
 import { api } from 'src/boot/axios'
 import Utils from 'src/util'
 import { useHabitsStore } from '../habit/habitStore'
@@ -19,14 +23,14 @@ export class DailyLog extends Record implements HasUser {
     userID?: number
     logDate?: string
     previousLogID?: number
-    rationStoredValue?: number
+    baseRation?: number
     lastModified?: string
   }) {
     super({})
     this.userID = options.userID
     this.logDate = options.logDate ?? ''
     this.previousLogID = options.previousLogID
-    this.baseRation = options.rationStoredValue ?? 2000
+    this.baseRation = options.baseRation ?? 2000
     this.lastModified = options.lastModified ?? new Date().toISOString()
   }
 }
@@ -70,6 +74,13 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       return completed.filter(
         (x) => habitStore.completionRate(x.habitID) <= threshold
       ).length
+    },
+    topPerformersForDate: () => (dateStr: string) => {
+      const habitsStore = useHabitsStore()
+      const threshold = useUsersStore().getUser().completionRateThreshold
+      return habitsStore.items.filter(
+        (x) => habitsStore.completionRateOnDate(x, dateStr) >= threshold
+      )
     },
     formattedDate: () => (item: DailyLog) => {
       return new Date(item.logDate).toLocaleDateString()
@@ -118,24 +129,46 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       )
     },
     allLogsAfter: (state) => (log: DailyLog) => {
-      return state.items.filter(
+      const after = state.items.filter(
         (x) => Utils.d(log.logDate).getTime() < Utils.d(x.logDate).getTime()
       )
+      console.log(
+        'after ',
+        new Date(log.logDate).toDateString(),
+        ': ',
+        after.map((x) => new Date(x.logDate).toDateString())
+      )
+      return after
     },
+    nextLog:
+      (state) =>
+      (log: DailyLog): DailyLog => {
+        return state.items
+          .filter(
+            (x) => Utils.d(log.logDate).getTime() < Utils.d(x.logDate).getTime()
+          )
+          .sort((a, b) => Utils.mddl(a, b, 'asc'))[0]
+      },
   },
   actions: {
     latestLog() {
-      let log: DailyLog | undefined
-      let date = new Date()
-      let count = this.items.length
-      while (typeof log === 'undefined' && count > 0) {
-        log = this.queryDate(date.toDateString())
-        date = new Date(date.getTime() - 86400000)
-        count--
-      }
-      if (typeof log === 'undefined')
-        throw new Error('daily log not found for user')
-      return log
+      // let log: DailyLog | undefined
+      // let date = new Date()
+      // let count = this.items.length
+      // console.log('logs: ', this.items)
+      // while (typeof log === 'undefined' && count > 0) {
+      //   log = this.queryDate(date.toDateString())
+      //   // todo: if no log for today, kick off a new log
+      //   date = new Date(date.getTime() - 86400000)
+      //   count--
+      // }
+      // if (typeof log === 'undefined')
+      //   throw new Error('daily log not found for user')
+      // return log
+
+      return Utils.hardCheck(
+        this.items.sort((a, b) => Utils.mddl(a, b, 'desc'))[0]
+      )
     },
     mapZeroToUndefined(item: DailyLog) {
       if (item.userID === 0) item.userID = undefined
@@ -143,15 +176,17 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       return item
     },
     countCompleted(log: DailyLog) {
-      return this.getCompletionEntries(log.id).filter((x) => x.status === 2)
-        .length
+      return this.getCompletionEntries(log.id).filter(
+        (x) => x.status === habitStatus.COMPLETED
+      ).length
     },
     successRate(log: DailyLog, includeRation = false) {
       let completed = this.countCompleted(log)
       if (includeRation) completed += this.rationProgress(log) > 1 ? 0 : 1
       const habitsInPlay =
-        this.getCompletionEntries(log.id).filter((x) => x.status !== 0).length +
-        (includeRation ? 1 : 0)
+        this.getCompletionEntries(log.id).filter(
+          (x) => x.status !== habitStatus.UNSPECIFIED
+        ).length + (includeRation ? 1 : 0)
       const rate =
         completed === 0 || habitsInPlay === 0 ? 0 : completed / habitsInPlay
 
@@ -159,6 +194,15 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     },
     maxWeight(log: DailyLog): number {
       const entries = this.getWeightEntries(log.id).map((x) => x.weight)
+      if (entries.length === 0) {
+        if (log.previousLogID) {
+          const previous = this.getByID(log.previousLogID)
+          if (typeof previous !== 'undefined') {
+            return this.maxWeight(previous)
+          }
+        }
+        return useUsersStore().getUser().minWeight
+      }
       return Math.max(...entries)
     },
     weightDelta(log: DailyLog, previous?: DailyLog) {
@@ -201,16 +245,15 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         return user.startingSampleRate
       } else {
         const prevImproved = this.qtyImprovedHabits(log.previousLogID)
-        return Math.max(prevImproved + 1, user.startingSampleRate)
+        return Math.max(
+          prevImproved + 1 + this.topPerformersForDate(log.logDate).length,
+          user.startingSampleRate
+        )
       }
     },
     calculateBaseRation(log: DailyLog): number {
       const user = useUsersStore().getUser()
-      if (
-        typeof log.previousLogID === 'undefined' ||
-        log.previousLogID === null ||
-        log.previousLogID < 1
-      ) {
+      if (typeof log.previousLogID === 'undefined') {
         log.baseRation = user.startingRation
         return Math.max(user.startingRation, user.minRation)
       }
@@ -224,13 +267,25 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const delta = this.weightDelta(log)
       const weight = this.maxWeight(previousLog)
       const minWeight = user.minWeight
-      if (delta > 0 && weight > minWeight) {
-        log.baseRation = baseRation - 100
-        return Math.max(baseRation - 100, user.minRation)
+      if (weight <= minWeight) {
+        log.baseRation = baseRation + 100
+        console.log(
+          'base ration: ',
+          baseRation,
+          ' and log base ration: ',
+          log.baseRation
+        )
+        return Math.max(baseRation + 100, user.minRation)
+      } else {
+        if (delta > 0) {
+          log.baseRation = Math.max(baseRation - 100, user.minRation)
+        } else if (delta < 0) {
+          log.baseRation = Math.max(baseRation + 100, user.minRation)
+        } else {
+          return baseRation
+        }
+        return log.baseRation
       }
-
-      log.baseRation = baseRation + 100
-      return Math.max(baseRation + 100, user.minRation)
     },
     async refreshAllBaseRations(): Promise<void> {
       Utils.todo()
@@ -253,9 +308,30 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         Math.max(user.minRation, base * this.successRate(previous, true))
       )
     },
+    async flagTopPerformersForLog(log: DailyLog) {
+      const completionStore = useCompletionsStore()
+      const threshold = useUsersStore().threshold()
+      const hs = useHabitsStore()
+      const entries = this.getCompletionEntries(log.id).filter(
+        (x) =>
+          hs.completionRateOnDate(
+            Utils.hardCheck(hs.getByID(x.habitID)),
+            log.logDate
+          ) >= threshold
+      )
+      entries.forEach(async (x) => {
+        x.sampleType = sampleType.TOPPERFORMER
+        x.status =
+          x.status === habitStatus.COMPLETED
+            ? habitStatus.COMPLETED
+            : habitStatus.NOTCOMPLETED
+        completionStore.updateItem(x)
+      })
+    },
+    // todo: write a sampleHabits that is simpler for new daily logs.
     async reSampleHabits(logID?: number) {
-      // sanity checks
-      if (typeof logID === 'undefined') throw new Error('log id is undefined')
+      // todo: resample is kicking top performers back to incomplete
+      logID = Utils.hardCheck(logID)
       const log = Utils.hardCheck(this.getByID(logID), 'could not get log')
       console.log('RE-SAMPLING DAILY LOG ', this.formattedDate(log))
       // all the stores
@@ -267,18 +343,25 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const resetIncompleteSampledFromLog = async (dailyLogID: number) => {
         const incompleteSampled = completionStore
           .allItemsForDailyLog(dailyLogID)
-          .filter((x) => (x.sampled && x.status !== 2) || x.status === 1)
-        incompleteSampled.forEach((x) => {
-          x.sampled = false
-          x.status = 0
+          .filter(
+            (x) =>
+              (x.sampleType !== sampleType.NOTSAMPLED &&
+                x.status !== habitStatus.COMPLETED) ||
+              x.status === habitStatus.NOTCOMPLETED
+          )
+        incompleteSampled.forEach(async (x) => {
+          x.sampleType = sampleType.NOTSAMPLED
+          x.status = habitStatus.UNSPECIFIED
+          await completionStore.updateItem(x)
         })
       }
       await resetIncompleteSampledFromLog(logID)
+      await this.flagTopPerformersForLog(log)
       // easy out: calculate how many more habits are needed to be sampled based on the number of complete sampled habits
       const countSampledOfDailyLog = (dailyLogID: number) => {
         const sampled = completionStore
           .allItemsForDailyLog(dailyLogID)
-          .filter((x) => x.sampled)
+          .filter((x) => x.sampleType !== sampleType.NOTSAMPLED)
         return sampled.length
       }
       const countSampled = countSampledOfDailyLog(logID)
@@ -295,35 +378,28 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       // set just the remaining needed to 'sampled'
       const remainingToSample = notcompleted.slice(0, remainingNeeded)
       remainingToSample.forEach(async (x) => {
-        x.sampled = true
-        x.status = 1
+        x.sampleType = sampleType.NEEDSWORK
+        x.status = habitStatus.NOTCOMPLETED
         await completionStore.updateItem(x)
       })
-      // re sample any logs after this one
-      const logsAfter = this.allLogsAfter(log).sort((a, b) =>
-        Utils.mddl(a, b, 'asc')
-      )
-      logsAfter.forEach(async (x) => await this.reSampleHabits(x.id))
-    },
-    async reSampleHabitsGivenDate(fromDate: Date) {
-      const toReSample = this.items
-        .filter((x) => Utils.t(x.logDate) > fromDate.getTime())
-        .sort((a, b) => Utils.mddl(a, b, 'asc'))
-      toReSample.forEach(async (x) => await this.reSampleHabits(x.id))
+      const nextLog = this.nextLog(log)
+      if (typeof nextLog === 'undefined') return
+      await this.reSampleHabits(nextLog.id)
     },
     // todo: make these generic
     // problem is 'this' is possibly undefined
     async createItem(item: DailyLog) {
-      let newItem
+      let newItem: DailyLog
       await api
         .post('/daily-logs', item, {
           headers: {},
           params: {},
         })
-        .then((response) => {
+        .then(async (response) => {
           console.log('createItem response from backend: ', response)
           newItem = this.mapZeroToUndefined(response.data)
           this.items.push(newItem)
+          await this.reSampleHabits(newItem.id)
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {

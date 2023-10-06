@@ -2,24 +2,37 @@ import { defineStore } from 'pinia'
 import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
 import {
+  Habit,
   /* HabitGenerics, */ HasHabit,
   useHabitsStore,
 } from '../habit/habitStore'
 import { api } from 'src/boot/axios'
 import Utils from 'src/util'
 
+export enum habitStatus {
+  UNSPECIFIED = 0,
+  NOTCOMPLETED = 1,
+  COMPLETED = 2,
+}
+
+export enum sampleType {
+  NOTSAMPLED = 0,
+  NEEDSWORK = 1,
+  TOPPERFORMER = 2,
+}
+
 export class CompletionEntry extends Record implements HasDailyLog, HasHabit {
   habitID?: number = undefined
   dailyLogID?: number = undefined
-  status: 0 | 1 | 2 = 0
-  sampled = false
+  status: habitStatus = habitStatus.UNSPECIFIED
+  sampleType: sampleType = sampleType.NOTSAMPLED
 
   static defaults(): CompletionEntry {
     const temp: CompletionEntry = {
       habitID: undefined,
       dailyLogID: undefined,
-      status: 0,
-      sampled: false,
+      status: habitStatus.UNSPECIFIED,
+      sampleType: sampleType.NOTSAMPLED,
     }
     return temp
   }
@@ -47,29 +60,29 @@ export const useCompletionsStore = defineStore('completion-entries', {
     isSampled:
       () =>
       (entry: CompletionEntry): boolean => {
-        const thorns = useHabitsStore().thorns()
-        return typeof thorns.find((x) => x.id === entry.habitID) !== 'undefined'
+        // console.log('sample type: ', entry.sampleType)
+        return entry.sampleType !== sampleType.NOTSAMPLED
       },
     getCompletedFromLog: (state) => (logID: number) => {
       return state.items
         .filter((x) => x.dailyLogID === logID)
-        .filter((x) => x.status === 2)
+        .filter((x) => x.status === habitStatus.COMPLETED)
     },
     getFailedFromLog: (state) => (logID: number) => {
       return state.items
         .filter((x) => x.dailyLogID === logID)
-        .filter((x) => x.status === 1)
+        .filter((x) => x.status === habitStatus.NOTCOMPLETED)
     },
     getFailedOrUnspecifiedFromLog: (state) => (logID: number) => {
       return state.items
         .filter((x) => x.dailyLogID === logID)
-        .filter((x) => x.status !== 2)
+        .filter((x) => x.status !== habitStatus.COMPLETED)
     },
     getIncompleteSampledFromLog: (state) => (logID: number) => {
       return state.items
         .filter((x) => x.dailyLogID === logID)
-        .filter((x) => x.sampled)
-        .filter((x) => x.status !== 2)
+        .filter((x) => x.sampleType !== sampleType.NOTSAMPLED)
+        .filter((x) => x.status !== habitStatus.COMPLETED)
     },
     getHabit: () => (c: CompletionEntry) => {
       const habitStore = useHabitsStore()
@@ -79,14 +92,14 @@ export const useCompletionsStore = defineStore('completion-entries', {
   actions: {
     resetFailedFromLog(logID: number) {
       this.getFailedFromLog(logID).forEach((x) => {
-        x.status = 0
+        x.status = habitStatus.UNSPECIFIED
       })
     },
     resetIncompleteSampledFromLog(logID: number) {
       const incompleteSampled = this.getIncompleteSampledFromLog(logID)
       incompleteSampled.forEach(async (x) => {
-        x.status = 0
-        x.sampled = false
+        x.status = habitStatus.UNSPECIFIED
+        x.sampleType = sampleType.NOTSAMPLED
         await this.updateItem(x)
       })
     },
@@ -95,10 +108,24 @@ export const useCompletionsStore = defineStore('completion-entries', {
         throw new Error('cannot find items based on undefined habit id')
       return this.items.filter((x) => x.habitID === habitID)
     },
+    allEntriesForHabitPriorTo(habit: Habit, dateStr: string) {
+      const dailyLogStore = useDailyLogsStore()
+      const dailyLogAtDate = Utils.hardCheck(dailyLogStore.queryDate(dateStr))
+      return dailyLogStore
+        .allLogsPrior(dailyLogAtDate)
+        .flatMap((x) => this.EntryFromDailyLogForHabit(x.id, habit.id))
+    },
     allItemsForDailyLog(dailyLogID?: number) {
       if (typeof dailyLogID === 'undefined')
         throw new Error('cannot do math on undefined id')
       return this.items.filter((x) => x.dailyLogID === dailyLogID)
+    },
+    EntryFromDailyLogForHabit(dailyLogID?: number, habitID?: number) {
+      Utils.hardCheck(dailyLogID)
+      Utils.hardCheck(habitID)
+      return this.items
+        .filter((x) => x.dailyLogID === dailyLogID)
+        .find((x) => x.habitID === habitID)
     },
     dateValueFromDailyLog(completionEntryID?: number) {
       Utils.hardCheck(completionEntryID)
@@ -149,21 +176,16 @@ export const useCompletionsStore = defineStore('completion-entries', {
       })
       return this.mapZeroToUndefined(response.data)
     },
+    // NOT the responsibility of this function to kick off a resample of the daily logs
     async updateItem(item: CompletionEntry) {
-      const dailyLogStore = useDailyLogsStore()
-      const log = Utils.hardCheck(
-        dailyLogStore.getByID(item.dailyLogID),
-        'daily log for completion entry not found somehow'
-      )
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
         await api
           .patch(`/completions/${item.id}`, item, {
             headers: {},
           })
-          .then((response) => {
+          .then(async (response) => {
             this.items[index] = { ...this.items[index], ...item }
-            dailyLogStore.reSampleHabitsGivenDate(Utils.d(log.logDate))
             return response
           }, Utils.handleError('Error updating completion entry'))
       }
@@ -181,16 +203,15 @@ export const useCompletionsStore = defineStore('completion-entries', {
           }, Utils.handleError('Error deleting completion entry'))
       }
     },
-    async updateStatus(id: number, status?: 0 | 1 | 2) {
-      const index = this.items.findIndex((x) => x.id === id)
-      if (index !== -1) {
-        const item: CompletionEntry = this.items[index]
-
-        if (status) item.status = status
-        else if (this.items[index].status !== 2) this.items[index].status = 2
-        else this.items[index].status = 1
-        await this.updateItem(this.items[index])
-      }
+    // THIS is the function that will kick off a resample.
+    async updateStatus(item: CompletionEntry, status?: habitStatus) {
+      if (typeof status !== 'undefined') item.status = status
+      else if (item.status !== habitStatus.COMPLETED)
+        item.status = habitStatus.COMPLETED
+      else item.status = habitStatus.NOTCOMPLETED
+      console.log('updateStatus: status is now ', item.status)
+      await this.updateItem(item)
+      await useDailyLogsStore().reSampleHabits(item.dailyLogID)
     },
   },
 })

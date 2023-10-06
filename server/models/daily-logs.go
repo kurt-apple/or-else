@@ -61,7 +61,7 @@ func CreateLog(db *gorm.DB, dl *DailyLog) {
 			HabitID:    habit.ID,
 			DailyLogID: dl.ID,
 			Status:     CompletionStatus(Unspecified),
-			Sampled:    false,
+			SampleType: HabitSampleType(NotSampled),
 		}
 		db.Create(completion)
 	}

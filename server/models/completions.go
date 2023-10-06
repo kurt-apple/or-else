@@ -17,13 +17,21 @@ const (
 	Unspecified  CompletionStatus = 0
 )
 
+type HabitSampleType uint
+
+const (
+	TopPerformer HabitSampleType = 2
+	NeedsWork    HabitSampleType = 1
+	NotSampled   HabitSampleType = 0
+)
+
 type Completion struct {
 	///TODO: figure out best data type for date property
 	ID         uint             `gorm:"primaryKey" json:"id"`
 	HabitID    uint             `json:"habitID"`
 	DailyLogID uint             `json:"dailyLogID"`
 	Status     CompletionStatus `json:"status"`
-	Sampled    bool             `json:"sampled"`
+	SampleType HabitSampleType  `json:"sampleType"`
 }
 
 func GetCompletions(db *gorm.DB) http.HandlerFunc {

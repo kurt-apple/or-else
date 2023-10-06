@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { CompletionEntry } from 'src/stores/completion/completionStore'
+import {
+  CompletionEntry,
+  habitStatus,
+} from 'src/stores/completion/completionStore'
 import { DailyLog, useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import { useHabitsStore } from 'src/stores/habit/habitStore'
 import { computed } from 'vue'
@@ -18,22 +21,28 @@ const treePayload = computed(() => {
       .getCompletionEntries(x.id)
       .map((y: CompletionEntry) => ({
         label:
-          y.habitID.toString() +
+          (y.habitID ?? 'undefined').toString() +
           ': ' +
           habitsStore.getByID(y.habitID)?.title +
           ': ' +
-          (y.status === 2 ? 'COMPLETED' : 'INCOMPLETE'),
+          (y.status === habitStatus.COMPLETED ? 'COMPLETED' : 'INCOMPLETE'),
         status: y.status,
         type: 'entry',
         obj: y as CompletionEntry,
       })),
   }))
 })
+const resample = () => {
+  dailyLogStore
+    .allAsc()
+    .forEach(async (x) => await dailyLogStore.reSampleHabits(x.id))
+}
 </script>
 
 <template>
   <q-page>
     <h4>Daily Logs</h4>
+    <q-btn @click="resample()">REFRESH</q-btn>
     <q-tree :nodes="treePayload" node-key="label">
       <template #default-header="prop">
         <completion-entry-tree-node

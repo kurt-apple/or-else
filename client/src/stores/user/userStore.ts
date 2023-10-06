@@ -35,6 +35,9 @@ export const useUsersStore = defineStore('users', {
         'expected user to exist in store by now'
       )
     },
+    threshold: (state) => () => {
+      return Utils.hardCheck(state.user).completionRateThreshold
+    },
   },
   actions: {
     // todo: make these generic
