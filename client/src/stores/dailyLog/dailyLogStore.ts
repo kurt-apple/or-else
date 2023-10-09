@@ -117,12 +117,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const after = state.items.filter(
         (x) => Utils.d(log.logDate).getTime() < Utils.d(x.logDate).getTime()
       )
-      console.log(
-        'after ',
-        new Date(log.logDate).toDateString(),
-        ': ',
-        after.map((x) => new Date(x.logDate).toDateString())
-      )
       return after
     },
     nextLog:
@@ -162,20 +156,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       )
     },
     latestLog() {
-      // let log: DailyLog | undefined
-      // let date = new Date()
-      // let count = this.items.length
-      // console.log('logs: ', this.items)
-      // while (typeof log === 'undefined' && count > 0) {
-      //   log = this.queryDate(date.toDateString())
-      //   // todo: if no log for today, kick off a new log
-      //   date = new Date(date.getTime() - 86400000)
-      //   count--
-      // }
-      // if (typeof log === 'undefined')
-      //   throw new Error('daily log not found for user')
-      // return log
-
       return Utils.hardCheck(
         this.items.sort((a, b) => Utils.mddl(a, b, 'desc'))[0]
       )
@@ -260,15 +240,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       } else {
         const prevImproved = this.qtyImprovedHabits(log.previousLogID)
         const sampleRate = Math.max(prevImproved + 1, user.startingSampleRate)
-        if (Utils.d(log.logDate).getDate() === 6) {
-          console.log(
-            Utils.df(log.logDate),
-            ' sample rate is ',
-            sampleRate,
-            ' prev improved is ',
-            prevImproved
-          )
-        }
         return sampleRate
       }
     },
@@ -311,12 +282,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const minWeight = user.minWeight
       if (weight <= minWeight) {
         log.baseRation = baseRation + 100
-        // console.log(
-        //   'base ration: ',
-        //   baseRation,
-        //   ' and log base ration: ',
-        //   log.baseRation
-        // )
         return Math.max(baseRation + 100, user.minRation)
       } else {
         if (delta > 0) {
@@ -381,10 +346,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
             x.status !== habitStatus.COMPLETED
         )
       incompleteSampled.forEach(async (x) => {
-        console.log(
-          hs.getByID(x.habitID)?.title,
-          ' switching to not sampled and unspecified status'
-        )
         x.sampleType = sampleType.NOTSAMPLED
         x.status = habitStatus.UNSPECIFIED
         await completionStore.updateItem(x)
@@ -408,7 +369,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     // 1. resampling the earliest daily log should not change the qty of sampled tasks from the base sample rate
     async reSample(log: DailyLog, triggered?: boolean): Promise<void> {
       if (typeof log === 'undefined') return
-      const hs = useHabitsStore()
       console.log('reSampling ', new Date(log.logDate).toDateString())
       console.log('sample rate: ', this.sampleRate(log.id))
 
@@ -464,67 +424,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       else await this.reSample(nextLog, true)
     },
 
-    // todo: write a sampleHabits that is simpler for new daily logs.
-    /*
-    full resample process:
-    - incomplete sampled --> unsampled unspecified
-    - sampled --> unsampled (completion status stays the same)
-    - top performers --> sampled
-    - low performers --> sampled
-    - unspecified sampled --> notcomplete sampled
-    - resample logs that come after this one, in order.
-    */
-    // async reSampleHabits(logID?: number, triggered?: boolean) {
-    //   // todo: resample is kicking needswork habits marked incomplete to unspecified, and replacing it with a different habit
-    //   logID = Utils.hardCheck(logID)
-    //   const log = Utils.hardCheck(this.getByID(logID), 'could not get log')
-    //   console.log('RE-SAMPLING DAILY LOG ', this.formattedDate(log))
-    //   const completionStore = useCompletionsStore()
-    //   const habitStore = useHabitsStore()
-    //   // set any incomplete sampled as 'needswork' back to unspecified (what has the lowest completion rate may have changed)
-    //   // only need to do this calculation if resample was triggered from an earlier log
-    //   // also need to reset any incomplete top performers
-    //   if (triggered) {
-    //     await this.resetIncompleteSampledFromLog(logID)
-    //     await this.flagTopPerformersForLog(log)
-    //   }
-    //   // easy out: calculate how many more habits are needed to be sampled based on the number of complete sampled habits
-    //   const countSampled = this.countSampledOfDailyLog(logID)
-    //   const remainingNeeded = this.sampleRate(logID) - countSampled
-    //   if (remainingNeeded <= 0) {
-    //     console.log(
-    //       'no more habits are needed to be sampled for log date ',
-    //       new Date(log.logDate).toDateString()
-    //     )
-    //     // todo: instead of returing here, I actually need to proceed to the next log.
-    //     return
-    //   }
-    //   // collect incomplete habit entries for the log, sort by completion rate
-    //   const notcompleted = completionStore
-    //     .getUnsampledUnspecifiedFromLog(logID)
-    //     .sort((a, b) =>
-    //       habitStore.completionRate(a.habitID) -
-    //         habitStore.completionRate(b.habitID) ===
-    //       0
-    //         ? (a.id ?? 1) - (b.id ?? 1)
-    //         : habitStore.completionRate(a.habitID) -
-    //           habitStore.completionRate(b.habitID)
-    //     )
-    //   // set just the remaining needed to 'sampled'
-    //   const remainingToSample = notcompleted.slice(0, remainingNeeded)
-    //   remainingToSample.forEach(async (x) => {
-    //     x.sampleType = sampleType.NEEDSWORK
-    //     x.status = habitStatus.NOTCOMPLETED
-    //     await completionStore.updateItem(x)
-    //   })
-    //   // resample the logs that succeed this one (recursively)
-    //   const nextLog = this.nextLog(log)
-    //   if (typeof nextLog === 'undefined')
-    //     console.log('no new log after ', new Date(log.logDate).toDateString())
-    //   else await this.reSampleHabits(nextLog.id)
-    // },
-    // todo: make these generic
-    // problem is 'this' is possibly undefined
     async createItem(item: DailyLog) {
       let newItem: DailyLog
       await api
