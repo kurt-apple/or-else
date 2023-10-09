@@ -38,6 +38,10 @@ export default class Utils {
     return new Date(val)
   }
 
+  static df(val: string) {
+    return new Date(val).toDateString()
+  }
+
   // sorting function for two dailylogs
   static mddl(one: DailyLog, two: DailyLog, dir: 'asc' | 'desc') {
     return (

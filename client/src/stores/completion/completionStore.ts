@@ -52,6 +52,10 @@ export const useCompletionsStore = defineStore('completion-entries', {
         const entriesOfLatestLog: CompletionEntry[] = state.items.filter(
           (x) => x.dailyLogID === latestLog.id
         )
+        if (entriesOfLatestLog.length === 0)
+          throw new Error(
+            'trying to find latest completion entry for a habit but there are no entries'
+          )
         return Utils.hardCheck(
           entriesOfLatestLog.find((x) => x.habitID === habitID),
           `completion entry from latest log was not found for habit id ${habitID}`
@@ -84,6 +88,12 @@ export const useCompletionsStore = defineStore('completion-entries', {
         .filter((x) => x.sampleType !== sampleType.NOTSAMPLED)
         .filter((x) => x.status !== habitStatus.COMPLETED)
     },
+    getUnsampledUnspecifiedFromLog: (state) => (logID: number) => {
+      return state.items
+        .filter((x) => x.dailyLogID === logID)
+        .filter((x) => x.sampleType === sampleType.NOTSAMPLED)
+        .filter((x) => x.status === habitStatus.UNSPECIFIED)
+    },
     getHabit: () => (c: CompletionEntry) => {
       const habitStore = useHabitsStore()
       return habitStore.getByID(c.habitID)
@@ -108,7 +118,10 @@ export const useCompletionsStore = defineStore('completion-entries', {
         throw new Error('cannot find items based on undefined habit id')
       return this.items.filter((x) => x.habitID === habitID)
     },
-    allEntriesForHabitPriorTo(habit: Habit, dateStr: string) {
+    allEntriesForHabitPriorTo(
+      habit: Habit,
+      dateStr: string
+    ): CompletionEntry[] {
       const dailyLogStore = useDailyLogsStore()
       const dailyLogAtDate = Utils.hardCheck(dailyLogStore.queryDate(dateStr))
       return dailyLogStore
@@ -120,12 +133,17 @@ export const useCompletionsStore = defineStore('completion-entries', {
         throw new Error('cannot do math on undefined id')
       return this.items.filter((x) => x.dailyLogID === dailyLogID)
     },
-    EntryFromDailyLogForHabit(dailyLogID?: number, habitID?: number) {
+    EntryFromDailyLogForHabit(
+      dailyLogID?: number,
+      habitID?: number
+    ): CompletionEntry {
       Utils.hardCheck(dailyLogID)
       Utils.hardCheck(habitID)
-      return this.items
-        .filter((x) => x.dailyLogID === dailyLogID)
-        .find((x) => x.habitID === habitID)
+      return Utils.hardCheck(
+        this.items
+          .filter((x) => x.dailyLogID === dailyLogID)
+          .find((x) => x.habitID === habitID)
+      )
     },
     dateValueFromDailyLog(completionEntryID?: number) {
       Utils.hardCheck(completionEntryID)
@@ -139,6 +157,16 @@ export const useCompletionsStore = defineStore('completion-entries', {
         'daily log from completion entry id was not found'
       )
       return Utils.d(log.logDate)
+    },
+    totalTimesSampledBeforeDate(habit: Habit, dateStr: string) {
+      const dls = useDailyLogsStore()
+      const dlAtDate = Utils.hardCheck(dls.queryDate(dateStr))
+      const entriesBeforeDate = dls
+        .allLogsPrior(dlAtDate)
+        .flatMap((x) => dls.getCompletionEntries(x.id))
+      return entriesBeforeDate
+        .filter((x) => x.habitID === habit.id)
+        .filter((x) => x.sampleType !== sampleType.NOTSAMPLED).length
     },
     // todo: make these generic
     // problem is 'this' is possibly undefined
@@ -205,13 +233,18 @@ export const useCompletionsStore = defineStore('completion-entries', {
     },
     // THIS is the function that will kick off a resample.
     async updateStatus(item: CompletionEntry, status?: habitStatus) {
-      if (typeof status !== 'undefined') item.status = status
-      else if (item.status !== habitStatus.COMPLETED)
+      if (typeof status !== 'undefined') {
+        item.status = status
+      } else if (item.status !== habitStatus.COMPLETED) {
         item.status = habitStatus.COMPLETED
-      else item.status = habitStatus.NOTCOMPLETED
+      } else {
+        item.status = habitStatus.NOTCOMPLETED
+      }
       console.log('updateStatus: status is now ', item.status)
       await this.updateItem(item)
-      await useDailyLogsStore().reSampleHabits(item.dailyLogID)
+      const dls = useDailyLogsStore()
+      const dailyLog = Utils.hardCheck(dls.getByID(item.dailyLogID))
+      await useDailyLogsStore().reSample(dailyLog)
     },
   },
 })

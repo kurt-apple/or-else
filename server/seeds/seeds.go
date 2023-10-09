@@ -47,7 +47,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 	fmt.Println("default user now has ID ", defaultUser.ID)
 
 	defaultHabits := []models.Habit{}
-	for i := uint8(1); i <= 100; i += 2 {
+	for i := uint8(1); i <= 100; i += 7 {
 		defaultHabits = append(defaultHabits, models.Habit{
 			UserID: defaultUser.ID,
 			Title:  "Randomized Habit " + fmt.Sprint(i),

@@ -49,16 +49,8 @@ const updateCompletedStatus = async (h: { h: Habit; ce: CompletionEntry }) => {
     'Could not find log associated with latest completion entry of habit'
   )
   const logDate = Utils.d(log.logDate)
-  const logsToRefresh = useDailyLogsStore()
-    .getAll()
-    .filter((log) => {
-      return Utils.d(log.logDate).getTime() > logDate.getTime()
-    })
-    .sort((a, b) => Utils.mddl(a, b, 'asc'))
-
-  for (let i = 0; i < logsToRefresh.length; i++) {
-    await logStore.reSampleHabits(logsToRefresh[i].id)
-  }
+  const nextLog = logStore.nextLog(log)
+  await logStore.reSample(nextLog)
 }
 const deleteHabit = async (habit: Habit) => {
   console.log('delete item id: ', habit.id)

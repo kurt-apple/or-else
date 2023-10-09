@@ -32,10 +32,9 @@ const treePayload = computed(() => {
       })),
   }))
 })
-const resample = () => {
-  dailyLogStore
-    .allAsc()
-    .forEach(async (x) => await dailyLogStore.reSampleHabits(x.id))
+const resample = async () => {
+  const firstEntry = dailyLogStore.allAsc()[0]
+  await dailyLogStore.reSample(firstEntry)
 }
 </script>
 

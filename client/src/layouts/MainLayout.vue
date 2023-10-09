@@ -45,7 +45,9 @@ const linksList = [
   },
 ]
 
+console.log('brrrr')
 await TheGreatHydrator.brrrrr()
+console.log('brrrrrrrrr')
 const leftDrawerOpen = ref(false)
 
 const checkTime = async () => {
@@ -70,11 +72,11 @@ const checkTime = async () => {
       repo.queryDate(newLog.logDate),
       'newly created log is not able to be retrieved'
     )
-    await repo.reSampleHabits(createdLog.id)
+    await repo.reSample(createdLog)
     latestLog = repo.latestLog()
     latestLogTime = Utils.d(latestLog.logDate)
     repo.calculateBaseRation(latestLog)
-    repo.reSampleHabits(latestLog.id)
+    // repo.reSample(latestLog.id)
   }
   setTimeout(checkTime, 10000)
 }

@@ -112,15 +112,21 @@ export const useHabitsStore = defineStore('habits', {
         habit,
         dateStr
       )
+
+      if (entriesPrior.length === 0) return 0
       const timesCompleted = entriesPrior.filter(
         (x) => x.status === habitStatus.COMPLETED
       )
+
       const timesSampled = entriesPrior.filter(
-        (x) => x.sampleType !== sampleType.NOTSAMPLED
+        (x) =>
+          x.sampleType !== sampleType.NOTSAMPLED ||
+          x.status !== habitStatus.UNSPECIFIED // also count the times a habit was manually entered, even when it was not sampled.
       )
+
       if (timesSampled.length === 0) return 0
       if (timesCompleted.length === 0) return 0
-      return timesCompleted.length / timesCompleted.length
+      return timesCompleted.length / timesSampled.length
     },
     priorCompletionRate(beforeDate: Date, habitID?: number) {
       Utils.hardCheck(habitID)

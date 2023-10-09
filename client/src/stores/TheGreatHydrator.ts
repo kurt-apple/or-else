@@ -31,5 +31,7 @@ export default class TheGreatHydrator {
     await useFoodEntryStore().fetchAll()
     await useFoodItemStore().fetchAll()
     await useWeightEntryStore().fetchAll()
+    const log = useDailyLogsStore().allAsc()[0]
+    await useDailyLogsStore().reSample(log)
   }
 }

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import HabitsPage2 from 'src/pages/HabitsPage2.vue'
 import {
   CompletionEntry,
   useCompletionsStore,
@@ -7,7 +6,6 @@ import {
   sampleType,
 } from 'src/stores/completion/completionStore'
 import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
-import { FoodEntry } from 'src/stores/foodEntry/foodEntryStore'
 import { useHabitsStore } from 'src/stores/habit/habitStore'
 import Utils from 'src/util'
 import { computed, ref } from 'vue'
@@ -29,8 +27,10 @@ const e = ref<CompletionEntry>(
 
 const completionStore = useCompletionsStore()
 const habitStore = useHabitsStore()
+const dls = useDailyLogsStore()
 
 const updateCompletedStatus = async (r: CompletionEntry) => {
+  console.log('going to update status now...')
   await completionStore.updateStatus(r, r.status)
   console.log(`#${r.id} status is now ${r.status}`)
 }
@@ -40,6 +40,12 @@ const statusValue = computed(() => {
   if (props.entry?.status === habitStatus.NOTCOMPLETED) return 'not completed'
   return 'completed'
 })
+
+const completionRateOnDate = computed(() => {
+  const logDate = Utils.hardCheck(dls.getByID(props.entry?.dailyLogID)).logDate
+  const habit = Utils.hardCheck(habitStore.getByID(props.entry?.habitID))
+  return Math.round(habitStore.completionRateOnDate(habit, logDate) * 100)
+})
 </script>
 
 <template>
@@ -48,6 +54,8 @@ const statusValue = computed(() => {
     :indeterminate-value="habitStatus.UNSPECIFIED"
     :true-value="habitStatus.COMPLETED"
     :false-value="habitStatus.NOTCOMPLETED"
+    checked-icon="thumb_up"
+    unchecked-icon="thumb_down"
     indeterminate-icon="check_box_outline_blank"
     @click="updateCompletedStatus(e)"
   />
@@ -67,12 +75,7 @@ const statusValue = computed(() => {
   </q-item-section>
   <q-item-section>
     <q-item-label>
-      {{
-        habitStore.completionRateOnDate(
-          Utils.hardCheck(habitStore.getByID(e.habitID)),
-          Utils.hardCheck(useDailyLogsStore().getByID(e.dailyLogID)).logDate
-        )
-      }}
+      {{ completionRateOnDate }}
     </q-item-label>
   </q-item-section>
 </template>
