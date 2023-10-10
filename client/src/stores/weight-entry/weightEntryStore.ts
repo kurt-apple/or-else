@@ -53,7 +53,8 @@ export const useWeightEntryStore = defineStore('weight-entries', {
         .then((response) => {
           console.log('createItem response from backend: ', response)
           newItem = this.mapZeroToUndefined(response.data)
-          this.items.push(newItem)
+          if (this.items.length === 0) this.items = [newItem]
+          else this.items.push(newItem)
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {

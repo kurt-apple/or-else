@@ -36,7 +36,7 @@ export class PiniaGenerics {
     return {
       state: (): State<R> => {
         return {
-          items: [],
+          items: [] as R[],
         }
       },
     }

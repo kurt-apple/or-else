@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
-import { useUsersStore } from 'src/stores/user/userStore'
 import {
   WeightEntry,
   useWeightEntryStore,
 } from 'src/stores/weight-entry/weightEntryStore'
+import Utils from 'src/util'
 import { ref } from 'vue'
 const weightEntryStore = useWeightEntryStore()
 const latest = ref(weightEntryStore.latest())
-// todo: finish checking for null
-if (latest.value === null) {
-}
-const weight = ref<string>(latest.value.weight.toString())
+const weight = ref<string>(
+  latest.value === null ? '1' : latest.value.weight.toString()
+)
 
 const newEntry = async () => {
   console.log('weight: ', weight.value)
@@ -43,8 +42,13 @@ const newEntry = async () => {
     </template>
   </q-input>
   <q-list>
-    <q-item v-for="(w, i) in useWeightEntryStore().getAll()" :key="i">
-      {{ w.time }} - {{ w.weight }}
+    <q-item v-for="(w, i) in useWeightEntryStore().items" :key="i">
+      {{
+        Utils.d(w.time).toLocaleDateString() +
+        ' ' +
+        Utils.d(w.time).toLocaleTimeString()
+      }}
+      - {{ w.weight }} lbs
     </q-item>
   </q-list>
 </template>

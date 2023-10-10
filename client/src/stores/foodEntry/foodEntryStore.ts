@@ -18,11 +18,14 @@ export const useFoodEntryStore = defineStore('food-entry', {
     ...PiniaGenerics.generateStoreGetters<FoodEntry>(),
     // ...DailyLogGenerics.generateDailyLogGetters<FoodEntry>(),
     // ...FoodItemGenerics.generateFoodItemGetters<FoodEntry>(),
-    allFoodLogEntriesForFoodItem: (state) => (foodItemID?: number) => {
-      if (typeof foodItemID === 'undefined')
-        throw new Error('food item id is undefined')
-      return state.items.filter((x) => x.foodItemID === foodItemID)
-    },
+    allFoodLogEntriesForFoodItem:
+      (state) =>
+      (foodItemID?: number): FoodEntry[] => {
+        if (typeof foodItemID === 'undefined')
+          throw new Error('food item id is undefined')
+        if (state.items.length === 0) return []
+        return state.items.filter((x) => x.foodItemID === foodItemID)
+      },
     foodItem: () => (entry: FoodEntry) => {
       const foodItemStore = useFoodItemStore()
       const item = Utils.hardCheck(

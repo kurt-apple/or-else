@@ -46,6 +46,8 @@ const treePayload = computed(() => {
   }))
 })
 
+console.log(treePayload)
+
 const toExpand = generateLogLabel(dailyLogStore.allDesc()[0])
 const expanded = ref([toExpand])
 </script>

@@ -124,9 +124,11 @@ const habitMap = ref<{ h: Habit; ce: CompletionEntry }[]>(
           <q-item-label>
             {{
               Math.round(
-                (habitsStore.times_completed(h.h.id) /
-                  habitsStore.times_sampled(h.h.id)) *
-                  100
+                habitsStore.times_sampled(h.h.id) === 0
+                  ? 0
+                  : (habitsStore.times_completed(h.h.id) /
+                      habitsStore.times_sampled(h.h.id)) *
+                      100
               )
             }}% Completion Rate out of
             {{ habitsStore.times_sampled(h.h.id) }}</q-item-label

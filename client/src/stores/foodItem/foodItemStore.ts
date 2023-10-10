@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
-import { useFoodEntryStore } from '../foodEntry/foodEntryStore'
+import { FoodEntry, useFoodEntryStore } from '../foodEntry/foodEntryStore'
 import { api } from 'src/boot/axios'
 import Utils from 'src/util'
 
@@ -19,12 +19,16 @@ export const useFoodItemStore = defineStore('food-item', {
   ...PiniaGenerics.stateTree<FoodItem>(),
   getters: {
     ...PiniaGenerics.generateStoreGetters<FoodItem>(),
-    getRelatedFoodEntries: () => (foodItemID?: number) => {
-      if (typeof foodItemID === 'undefined')
-        throw new Error('foodItemID is not known')
-      const foodEntryStore = useFoodEntryStore()
-      return foodEntryStore.allFoodLogEntriesForFoodItem(foodItemID)
-    },
+    getRelatedFoodEntries:
+      () =>
+      (foodItemID?: number): FoodEntry[] => {
+        if (typeof foodItemID === 'undefined')
+          throw new Error('foodItemID is not known')
+        const foodEntryStore = useFoodEntryStore()
+        const allLogEntries =
+          foodEntryStore.allFoodLogEntriesForFoodItem(foodItemID)
+        return allLogEntries
+      },
   },
   actions: {
     top3mostCommon() {
