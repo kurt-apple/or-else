@@ -30,3 +30,5 @@ client/.npmrc
 client/.vscode
 
 .obsidian
+
+server/seeds/private.go
