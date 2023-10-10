@@ -150,19 +150,21 @@ export const useHabitsStore = defineStore('habits', {
       return successes / sampled
     },
     roses(): Habit[] {
-      const userStore = useUsersStore()
-      const user = userStore.getUser()
-      const threshold = user.completionRateThreshold
-      return this.items.filter((x) => this.completionRate(x.id) > threshold)
+      const cs = useCompletionsStore()
+      return this.items.filter(
+        (x) =>
+          cs.latestCompletionEntryForHabit(x.id).sampleType ===
+          sampleType.TOPPERFORMER
+      )
     },
 
     thorns(): Habit[] {
-      const dailyLogStore = useDailyLogsStore()
-      const sortedHabits = this.items.sort(
-        (a, b) => this.completionRate(a.id) - this.completionRate(b.id)
+      const cs = useCompletionsStore()
+      return this.items.filter(
+        (x) =>
+          cs.latestCompletionEntryForHabit(x.id).sampleType ===
+          sampleType.NEEDSWORK
       )
-      const latestLog = dailyLogStore.latestLog()
-      return sortedHabits.slice(0, dailyLogStore.sampleRate(latestLog.id))
     },
     // todo: make these generic
     // problem is 'this' is possibly undefined

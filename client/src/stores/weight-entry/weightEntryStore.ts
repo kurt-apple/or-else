@@ -17,6 +17,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
     ...PiniaGenerics.generateStoreGetters<WeightEntry>(),
     // ...DailyLogGenerics.generateDailyLogGetters<WeightEntry>(),
     allItemsForDailyLog: (state) => (dailyLogID: number) => {
+      if (state.items.length === 0) return []
       return state.items.filter((x) => x.dailyLogID === dailyLogID)
     },
     allItemsForUser: (state) => (userID?: number) => {
@@ -30,7 +31,8 @@ export const useWeightEntryStore = defineStore('weight-entries', {
       )
       return weightEntries
     },
-    latest: (state) => (): WeightEntry => {
+    latest: (state) => (): WeightEntry | null => {
+      if (state.items.length === 0) return null
       return state.items.sort((a, b) => Utils.mdwe(a, b, 'desc'))[0]
     },
   },

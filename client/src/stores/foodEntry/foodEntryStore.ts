@@ -32,6 +32,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
       return item
     },
     allItemsForDailyLog: (state) => (dailyLogID?: number | undefined) => {
+      if (state.items.length === 0) return []
       return state.items.filter((x) => x.dailyLogID === dailyLogID)
     },
     dailyLog: () => (item: FoodEntry) => {
@@ -42,6 +43,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
       )
     },
     todayOnly: (state) => () => {
+      if (state.items.length === 0) return []
       const latestLog = useDailyLogsStore().latestLog()
       return state.items.filter((x) => x.dailyLogID === latestLog.id)
     },

@@ -121,11 +121,16 @@ const habitMap = ref<{ h: Habit; ce: CompletionEntry }[]>(
           <q-item-label> {{ h.h.title }}</q-item-label>
         </q-item-section>
         <q-item-section>
-          been completed {{ habitsStore.times_completed(h.h.id) }} times outta
-          {{ habitsStore.times_sampled(h.h.id) }}</q-item-section
-        >
-        <q-item-section>
-          <q-item-label> {{ habitsStore.completionRate(h.h.id) }}</q-item-label>
+          <q-item-label>
+            {{
+              Math.round(
+                (habitsStore.times_completed(h.h.id) /
+                  habitsStore.times_sampled(h.h.id)) *
+                  100
+              )
+            }}% Completion Rate out of
+            {{ habitsStore.times_sampled(h.h.id) }}</q-item-label
+          >
         </q-item-section>
       </q-item>
     </q-list>

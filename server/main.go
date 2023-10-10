@@ -27,6 +27,7 @@ func main() {
 
 	listOfModels := []interface{}{&models.Habit{}, &models.User{}, &models.DailyLog{}, &models.Completion{}, &models.FoodEntry{}, &models.FoodItem{}, &models.WeightEntry{}}
 	seeds.SeedDatabase(db, listOfModels)
+	seeds.ExampleSeedDatabase(db, listOfModels)
 
 	router := mux.NewRouter()
 

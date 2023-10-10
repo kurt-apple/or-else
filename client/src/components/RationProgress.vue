@@ -18,6 +18,7 @@ const barColor = computed(() => {
 
 <template>
   <q-knob
+    v-if="rationProgress"
     v-model="rationProgress"
     show-value
     size="300px"
@@ -27,5 +28,9 @@ const barColor = computed(() => {
     class="q-ma-md"
     readonly
     >{{ rationProgress }}%</q-knob
+  >
+  <h4 v-else>No Food Logs Yet Today</h4>
+  <q-item-label
+    >Ration: {{ dailyLogStore.calculateActualRation(latestLog) }}</q-item-label
   >
 </template>

@@ -14,15 +14,12 @@ const foodEntryStore = useFoodEntryStore()
 const dailyLogStore = useDailyLogsStore()
 const logs = ref<Array<FoodEntry>>([...foodEntryStore.getAll()])
 const router = useRouter()
-const todayOnly = ref(false)
 const redirectToForm = () => {
   router.push('food-entry')
 }
 
 const addEntry = () => {
-  const userStore = useUsersStore()
-  const user = userStore.gimmeUser()
-  const latest = dailyLogStore.latestLog(user.id)
+  const latest = dailyLogStore.latestLog()
   const dailyLogID = latest.id
   if (typeof dailyLogID === 'undefined')
     throw new Error('no can do. daily log id is undefined.')
@@ -38,9 +35,12 @@ const addEntry = () => {
   }
   foodEntryStore.createItem(dummyData)
 }
+
+const todayOnly = ref(true)
 </script>
 <template>
   <q-page padding>
+    <q-checkbox v-model="todayOnly">Today Only</q-checkbox>
     <food-entry-list
       title="All Food Entries"
       :logs="todayOnly ? foodEntryStore.todayOnly() : foodEntryStore.getAll()"

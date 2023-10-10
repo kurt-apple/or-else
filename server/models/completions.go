@@ -39,8 +39,11 @@ func GetCompletions(db *gorm.DB) http.HandlerFunc {
 		fmt.Println("getCompletions")
 		var items []Completion
 		db.Find(&items)
-		fmt.Println(items)
-		json.NewEncoder(w).Encode(items)
+		if len(items) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			json.NewEncoder(w).Encode(items)
+		}
 	}
 }
 

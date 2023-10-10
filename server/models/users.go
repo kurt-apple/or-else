@@ -28,7 +28,11 @@ func GetUsers(db *gorm.DB) http.HandlerFunc {
 		var items []User
 		db.Find(&items)
 		fmt.Println(items)
-		json.NewEncoder(w).Encode(items)
+		if len(items) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			json.NewEncoder(w).Encode(items)
+		}
 	}
 }
 

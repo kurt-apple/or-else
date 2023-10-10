@@ -20,7 +20,11 @@ func GetFoodItems(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var items []FoodItem
 		db.Find(&items)
-		json.NewEncoder(w).Encode(items)
+		if len(items) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			json.NewEncoder(w).Encode(items)
+		}
 	}
 }
 

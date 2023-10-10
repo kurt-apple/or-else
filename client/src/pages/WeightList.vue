@@ -7,7 +7,11 @@ import {
 } from 'src/stores/weight-entry/weightEntryStore'
 import { ref } from 'vue'
 const weightEntryStore = useWeightEntryStore()
-const weight = ref<string>(weightEntryStore.latest().weight.toString())
+const latest = ref(weightEntryStore.latest())
+// todo: finish checking for null
+if (latest.value === null) {
+}
+const weight = ref<string>(latest.value.weight.toString())
 
 const newEntry = async () => {
   console.log('weight: ', weight.value)

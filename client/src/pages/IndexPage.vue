@@ -4,13 +4,8 @@ import { useHabitsStore } from 'src/stores/habit/habitStore'
 import HabitList from '../components/HabitList.vue'
 import RationProgress from '../components/RationProgress.vue'
 import { useRouter } from 'vue-router'
-import { ref } from 'vue'
-import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 
 const habitRepo = useHabitsStore()
-const dailyLogRepo = useDailyLogsStore()
-const latestLog = dailyLogRepo.latestLog()
-const ration = ref(dailyLogRepo.rationProgress(latestLog))
 const router = useRouter()
 
 await TheGreatHydrator.brrrrr()
@@ -20,10 +15,8 @@ await TheGreatHydrator.brrrrr()
   <q-page class="row items-center justify-evenly">
     <div>
       <h1>Ration</h1>
-      <ration-progress v-if="ration"></ration-progress>
-      <h4 v-else>No Food Log Entries Today</h4>
+      <ration-progress></ration-progress>
       <habit-list
-        v-if="habitRepo.roses().length"
         title="Your Best Habits"
         :habits="habitRepo.roses()"
         :show-edit-button="false"

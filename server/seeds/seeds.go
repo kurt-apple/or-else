@@ -15,7 +15,7 @@ import (
 //2. add default habits (0.1 cr to 1.0 cr)
 
 func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
-	fmt.Print("Would you like to reset and seed the db? (y/n): ")
+	fmt.Print("Would you like to reset and seed the db using test payload from seeds.go? (y/n): ")
 	// Read user input
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()

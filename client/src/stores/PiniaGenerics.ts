@@ -26,6 +26,7 @@ export class PiniaGenerics {
         return this.getByID<R>(state, id)
       },
       getAll: (state: State<R>) => (): R[] => {
+        if (state.items.length === 0) return []
         return state.items
       },
     }
