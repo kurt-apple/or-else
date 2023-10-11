@@ -17,9 +17,10 @@ type User struct {
 	StartingSampleRate      uint      `json:"startingSampleRate"`
 	TimeZoneOffset          int       `json:"timeZoneOffset"`
 	StartingRation          uint      `json:"startingRation"`
-	StartDate               time.Time `json:"startDate"`
+	CreatedAt               time.Time `json:"createdAt"`
 	MinRation               uint      `json:"minRation"`
 	MinWeight               uint      `json:"minWeight"`
+	StartingWeight          uint      `json:"startingWeight"`
 }
 
 func GetUsers(db *gorm.DB) http.HandlerFunc {
@@ -45,19 +46,25 @@ func GetUser(db *gorm.DB) http.HandlerFunc {
 	}
 }
 
+func MakeUser(db *gorm.DB, user *User) {
+	fmt.Println("makeUser", user)
+	db.Create(user)
+	// firstDailyLog := &DailyLog{
+	// 	UserID:     user.ID,
+	// 	LogDate:    user.CreatedAt,
+	// 	BaseRation: user.StartingRation,
+	// }
+	// db.Create(firstDailyLog)
+	// fmt.Println("also made the first daily log: ", firstDailyLog)
+}
+
 func CreateUser(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("createuser:")
 		var item User
 		json.NewDecoder(r.Body).Decode(&item)
 		fmt.Println("User: ", item)
-		db.Create(&item)
-		firstDailyLog := &DailyLog{
-			UserID:     item.ID,
-			LogDate:    item.StartDate,
-			BaseRation: item.StartingRation,
-		}
-		db.Create(firstDailyLog)
+		MakeUser(db, &item)
 		json.NewEncoder(w).Encode(item)
 	}
 }

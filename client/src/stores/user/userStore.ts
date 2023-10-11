@@ -2,6 +2,11 @@ import { defineStore } from 'pinia'
 import { Record } from '../PiniaGenerics'
 import { api } from 'src/boot/axios'
 import Utils from 'src/util'
+import {
+  CompletionEntry,
+  useCompletionsStore,
+} from '../completion/completionStore'
+import { DailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
 
 export interface HasUser extends Record {
   userID?: number
@@ -16,6 +21,7 @@ export class User extends Record {
   startDate = ''
   minRation = 1500
   minWeight = 200
+  startingWeight = 200
 }
 
 export interface UserState {
@@ -48,9 +54,20 @@ export const useUsersStore = defineStore('users', {
           headers: {},
           params: {},
         })
-        .then((response) => {
+        .then(async (response) => {
           console.log('createItem response from backend: ', response)
-          this.user = response.data
+          const newUser: User = response.data
+          this.user = newUser
+          const dls = useDailyLogsStore()
+          await dls.createItem(
+            new DailyLog({
+              userID: newUser.id,
+              logDate: new Date().toISOString(),
+              previousLogID: undefined,
+              baseRation: newUser.startingRation,
+              lastModified: new Date().toISOString(),
+            })
+          )
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {

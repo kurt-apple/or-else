@@ -45,6 +45,18 @@ Create a habits.db file in the main directory of the project.
 touch habits.db
 ```
 
+## Create Private Seeds File
+
+This command will get you started:
+
+```bash
+cp server/seeds/example.go server/seeds/private.go
+```
+
+Then uncomment everything in the new `private.go` file.
+
+When the server is launched, you will be presented with the options to re-initialize the database with either a test payload, or a custom payload defined in seeds/private.go
+
 ## Set Up The Client
 
 Navigate to client folder and install dependencies. Yarn is recommended (by Quasar docs)

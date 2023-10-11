@@ -14,11 +14,13 @@ import { useDailyLogsStore } from '../dailyLog/dailyLogStore'
 export class Habit extends Record implements HasUser {
   userID?: number = undefined
   title = 'Untitled'
+  createdAt = ''
 
   static defaults() {
     const newHabit: Habit = {
       userID: useUsersStore().getUser().id,
       title: 'New Habit',
+      createdAt: '',
     }
     return newHabit
   }
@@ -86,6 +88,12 @@ export const useHabitsStore = defineStore('habits', {
         'could not find daily log from latest completion entry of provided habit id'
       )
     },
+    allHabitsOnOrBeforeDate: (state) => (dateStr: string) => {
+      const habitsOnOrAfter = state.items.filter((x) => {
+        return Utils.OnOrBefore(dateStr, x.createdAt)
+      })
+      return habitsOnOrAfter
+    },
   },
   actions: {
     times_completed_internal(id?: number) {
@@ -149,7 +157,7 @@ export const useHabitsStore = defineStore('habits', {
       ).length
       return successes / sampled
     },
-    roses(): Habit[] {
+    roses() {
       const cs = useCompletionsStore()
       return this.items.filter(
         (x) =>
@@ -158,7 +166,7 @@ export const useHabitsStore = defineStore('habits', {
       )
     },
 
-    thorns(): Habit[] {
+    thorns() {
       const cs = useCompletionsStore()
       return this.items.filter(
         (x) =>
@@ -169,34 +177,49 @@ export const useHabitsStore = defineStore('habits', {
     // todo: make these generic
     // problem is 'this' is possibly undefined
     async createItem(item: Habit) {
+      this.loading = true
       await api
         .post('/habits', item, {
           headers: {},
           params: {},
         })
-        .then((response) => {
+        .then(async (response) => {
           console.log('createItem response from backend: ', response)
-          this.items.push(item)
+          const newObj: Habit = response.data
+          this.items.push(newObj)
+          const cs = useCompletionsStore()
+          const dls = useDailyLogsStore()
+          const newEntry: CompletionEntry = {
+            habitID: newObj.id,
+            dailyLogID: dls.latestLog().id,
+            status: habitStatus.UNSPECIFIED,
+            sampleType: sampleType.NOTSAMPLED,
+          }
+          await cs.createItem(newEntry)
+          this.loading = false
         }, Utils.handleError('Error creating item.'))
-      // const completionsStore = useCompletionsStore()
-      // await completionsStore.fetchAll()
     },
     async fetchAll(): Promise<Habit[]> {
+      this.loading = true
       const response = await api.get('/habits', {
         headers: {},
         params: {},
       })
       this.items = response.data
+      this.loading = false
       return this.items
     },
     async fetchItem(id: number) {
+      this.loading = true
       const response = await api.get(`/habits/${id}`, {
         headers: {},
         params: {},
       })
+      this.loading = false
       return response.data
     },
     async updateItem(item: Habit) {
+      this.loading = true
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
         await api
@@ -205,11 +228,13 @@ export const useHabitsStore = defineStore('habits', {
           })
           .then((response) => {
             this.items[index] = { ...this.items[index], ...item }
+            this.loading = false
             return response
           }, Utils.handleError('Error updating item.'))
       }
     },
     async deleteItem(id: number) {
+      this.loading = true
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
         await api
@@ -218,6 +243,7 @@ export const useHabitsStore = defineStore('habits', {
           })
           .then((response) => {
             this.items.splice(index, 1)
+            this.loading = false
             return response
           }, Utils.handleError('Error deleting item.'))
       }

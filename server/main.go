@@ -27,7 +27,7 @@ func main() {
 
 	listOfModels := []interface{}{&models.Habit{}, &models.User{}, &models.DailyLog{}, &models.Completion{}, &models.FoodEntry{}, &models.FoodItem{}, &models.WeightEntry{}}
 	seeds.SeedDatabase(db, listOfModels)
-	seeds.ExampleSeedDatabase(db, listOfModels)
+	seeds.PrivateSeedDatabase(db, listOfModels) // expects a private seed file in the seeds package
 
 	router := mux.NewRouter()
 

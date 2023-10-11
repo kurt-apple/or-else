@@ -12,6 +12,7 @@ export abstract class Record {
 
 export interface State<R extends Record> {
   items: R[]
+  loading: boolean
 }
 export class PiniaGenerics {
   static getByID<R extends Record>(state: State<R>, id: number) {
@@ -37,6 +38,7 @@ export class PiniaGenerics {
       state: (): State<R> => {
         return {
           items: [] as R[],
+          loading: false,
         }
       },
     }

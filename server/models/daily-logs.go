@@ -46,7 +46,8 @@ func GetDailyLog(db *gorm.DB) http.HandlerFunc {
 
 func Latest(db *gorm.DB, UserID uint) DailyLog {
 	var logs []DailyLog
-	db.Find(&logs)
+	db.Where(&DailyLog{UserID: UserID}).Find(&logs)
+	fmt.Println("logs found: ", logs)
 	sort.Slice(logs, func(i, j int) bool {
 		return logs[i].LogDate.After(logs[j].LogDate)
 	})
@@ -57,17 +58,17 @@ func CreateLog(db *gorm.DB, dl *DailyLog) {
 	dl.LastModified = time.Now()
 	fmt.Println("createLog", dl)
 	db.Create(dl)
-	var habits []Habit
-	db.Where(&Habit{UserID: dl.UserID}).Find(&habits)
-	for _, habit := range habits {
-		completion := &Completion{
-			HabitID:    habit.ID,
-			DailyLogID: dl.ID,
-			Status:     CompletionStatus(Unspecified),
-			SampleType: HabitSampleType(NotSampled),
-		}
-		db.Create(completion)
-	}
+	// var habits []Habit
+	// db.Where(&Habit{UserID: dl.UserID}).Find(&habits)
+	// for _, habit := range habits {
+	// 	completion := &Completion{
+	// 		HabitID:    habit.ID,
+	// 		DailyLogID: dl.ID,
+	// 		Status:     CompletionStatus(Unspecified),
+	// 		SampleType: HabitSampleType(NotSampled),
+	// 	}
+	// 	db.Create(completion)
+	// }
 }
 
 func CreateDailyLog(db *gorm.DB) http.HandlerFunc {

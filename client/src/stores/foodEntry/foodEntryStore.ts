@@ -67,6 +67,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
         .then((response) => {
           console.log('create food entry response from backend: ', response)
           newItem = this.mapZeroToUndefined(response.data)
+          if (this.items.length === 0) this.items = []
           this.items.push(newItem)
         }, Utils.handleError('Error creating item.'))
     },

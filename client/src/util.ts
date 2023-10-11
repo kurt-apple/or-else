@@ -67,6 +67,13 @@ export default class Utils {
     return this.same24(new Date(a), new Date(b))
   }
 
+  static OnOrBefore(dateStr: string, testInput: string) {
+    return (
+      this.same24s(dateStr, testInput) ||
+      Utils.d(dateStr).getTime() > Utils.d(testInput).getTime()
+    )
+  }
+
   // thank you https://stackoverflow.com/a/7228322
   static randbetween(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1) + min)

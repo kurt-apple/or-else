@@ -60,6 +60,7 @@ const habitData =
         id: props.habit.id,
         userID: props.habit.userID,
         title: props.habit.title,
+        createdAt: '',
       })
 
 console.log('funny business', {
@@ -79,8 +80,7 @@ const onOKClick = () => {
 }
 
 const onSaveClick = async () => {
-  console.log('ree')
-  console.log('habit prop: ', props.habit ? 'update' : 'create')
+  console.log('habitDetails onsaveclick - ', props.habit ? 'update' : 'create')
   onDialogOK({
     item: habitData.value,
     unsaved: unsavedChanges.value,

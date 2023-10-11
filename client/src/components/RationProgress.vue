@@ -33,4 +33,7 @@ const barColor = computed(() => {
   <q-item-label
     >Ration: {{ dailyLogStore.calculateActualRation(latestLog) }}</q-item-label
   >
+  <q-item-label
+    >Used: {{ dailyLogStore.totalCaloriesConsumed(latestLog.id) }}</q-item-label
+  >
 </template>

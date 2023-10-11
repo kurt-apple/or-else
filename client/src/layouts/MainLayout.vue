@@ -45,9 +45,7 @@ const linksList = [
   },
 ]
 
-console.log('brrrr')
 await TheGreatHydrator.brrrrr()
-console.log('brrrrrrrrr')
 const leftDrawerOpen = ref(false)
 
 const checkTime = async () => {

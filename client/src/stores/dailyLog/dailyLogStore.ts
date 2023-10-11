@@ -148,14 +148,16 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     topPerformersForDate(log: DailyLog) {
       const habitsStore = useHabitsStore()
       const threshold = useUsersStore().getUser().completionRateThreshold
-      const tp = habitsStore.items.filter(
-        (x) => habitsStore.completionRateOnDate(x, log.logDate) >= threshold
-      )
+      const tp = habitsStore
+        .allHabitsOnOrBeforeDate(log.logDate)
+        .filter(
+          (x) => habitsStore.completionRateOnDate(x, log.logDate) >= threshold
+        )
       return this.getCompletionEntries(log.id).filter(
         (x) => typeof tp.find((y) => x.habitID === y.id) !== 'undefined'
       )
     },
-    latestLog() {
+    latestLog(): DailyLog {
       return Utils.hardCheck(
         this.items.sort((a, b) => Utils.mddl(a, b, 'desc'))[0]
       )
@@ -191,7 +193,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
             return this.maxWeight(previous)
           }
         }
-        return useUsersStore().getUser().minWeight
+        return useUsersStore().getUser().startingWeight
       }
       return Math.max(...entries)
     },
@@ -232,10 +234,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       )
       const user = useUsersStore().getUser()
       if (typeof log.previousLogID === 'undefined') {
-        console.log(
-          new Date(log.logDate).toDateString(),
-          ': defaulting to user-defined starting samplerate'
-        )
         return user.startingSampleRate
       } else {
         const prevImproved = this.qtyImprovedHabits(log.previousLogID)
@@ -247,7 +245,8 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const habitsStore = useHabitsStore()
       const sr = this.sampleRate(log.id)
       const cs = useCompletionsStore()
-      const habitsLP = habitsStore.items
+      const habitsLP = habitsStore
+        .allHabitsOnOrBeforeDate(log.logDate)
         .sort((a, b) => {
           let crcomp =
             habitsStore.completionRateOnDate(a, log.logDate) -
@@ -280,7 +279,12 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const delta = this.weightDelta(log)
       const weight = this.maxWeight(previousLog)
       const minWeight = user.minWeight
-      if (weight <= minWeight) {
+      console.log('for log ', Utils.d(log.logDate).toLocaleDateString(), ':', {
+        delta,
+        weight,
+        minWeight,
+      })
+      if (weight < minWeight) {
         log.baseRation = baseRation + 100
         return Math.max(baseRation + 100, user.minRation)
       } else {
@@ -337,7 +341,6 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     },
     async resetIncompleteSampledFromLog(dailyLogID: number) {
       const completionStore = useCompletionsStore()
-      const hs = useHabitsStore()
       const incompleteSampled = completionStore
         .allItemsForDailyLog(dailyLogID)
         .filter(
@@ -417,11 +420,11 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         }
       })
       // try to preserve sample rate of next dailylog to avoid churn
+      // recalculate base ration because why not
+      this.calculateBaseRation(log)
 
       const nextLog = this.nextLog(log)
-      if (typeof nextLog === 'undefined')
-        console.log('no new log after ', new Date(log.logDate).toDateString())
-      else await this.reSample(nextLog)
+      if (typeof nextLog !== 'undefined') await this.reSample(nextLog)
     },
 
     async createItem(item: DailyLog) {
@@ -435,6 +438,18 @@ export const useDailyLogsStore = defineStore('daily-logs', {
           console.log('createItem response from backend: ', response)
           newItem = this.mapZeroToUndefined(response.data)
           this.items.push(newItem)
+          const hs = useHabitsStore()
+          const cs = useCompletionsStore()
+          const currentHabits = hs.allHabitsOnOrBeforeDate(newItem.logDate)
+          currentHabits.forEach(async (x) => {
+            const newEntry: CompletionEntry = {
+              habitID: x.id,
+              dailyLogID: newItem.id,
+              status: habitStatus.UNSPECIFIED,
+              sampleType: sampleType.NOTSAMPLED,
+            }
+            await cs.createItem(newEntry)
+          })
           await this.reSample(newItem)
         }, Utils.handleError('Error creating item.'))
     },

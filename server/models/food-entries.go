@@ -10,10 +10,10 @@ import (
 )
 
 type FoodEntry struct {
-	ID         uint `gorm:"primaryKey" json:"id"`
-	DailyLogID uint `json:"dailyLogID"`
-	FoodItemID uint `json:"foodItemID"`
-	QTY        uint `json:"qty"`
+	ID         uint    `gorm:"primaryKey" json:"id"`
+	DailyLogID uint    `json:"dailyLogID"`
+	FoodItemID uint    `json:"foodItemID"`
+	QTY        float32 `json:"qty" gorm:"type:float"`
 }
 
 func GetFoodEntries(db *gorm.DB) http.HandlerFunc {

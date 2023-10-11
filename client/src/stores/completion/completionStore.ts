@@ -56,6 +56,15 @@ export const useCompletionsStore = defineStore('completion-entries', {
           throw new Error(
             'trying to find latest completion entry for a habit but there are no entries'
           )
+        const hs = useHabitsStore()
+        console.log(
+          'completionStore latestCompletionEntryForHabit: all entries from latest log: ',
+          entriesOfLatestLog.map(
+            (x) => x.habitID + ': ' + hs.getByID(x.habitID)?.title
+          ),
+          'and the habitID I am looking for is ',
+          habitID
+        )
         return Utils.hardCheck(
           entriesOfLatestLog.find((x) => x.habitID === habitID),
           `completion entry from latest log was not found for habit id ${habitID}`

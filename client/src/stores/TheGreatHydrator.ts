@@ -17,6 +17,7 @@ export default class TheGreatHydrator {
   }
 
   static async brrrrr() {
+    console.log('FETCHING ALL RECORDS FROM DB')
     // const repos = [
     //   useDailyLogsStore(),
     //   useUsersStore(),
@@ -28,6 +29,7 @@ export default class TheGreatHydrator {
     await useUsersStore().fetchAll()
     await useCompletionsStore().fetchAll()
     await useHabitsStore().fetchAll()
+    console.log('all habits from hydrator: ', useHabitsStore().getAll())
     await useFoodEntryStore().fetchAll()
     await useFoodItemStore().fetchAll()
     await useWeightEntryStore().fetchAll()

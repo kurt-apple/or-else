@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
 type Habit struct {
-	ID     uint   `gorm:"primaryKey" json:"id"`
-	UserID uint   `json:"userID"`
-	Title  string `json:"title"`
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `json:"userID"`
+	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 func GetHabits(db *gorm.DB) http.HandlerFunc {
@@ -43,14 +45,14 @@ func CreateHabit(db *gorm.DB) http.HandlerFunc {
 		json.NewDecoder(r.Body).Decode(&item)
 		fmt.Println("habit: ", item)
 		db.Create(&item)
-		newEntry := Completion{
-			HabitID:    item.ID,
-			DailyLogID: Latest(db, item.ID).ID,
-			Status:     CompletionStatus(Unspecified),
-			SampleType: HabitSampleType(NotSampled),
-		}
-		fmt.Println("generating new completion entry: ", newEntry, " whose latest daily log is ", newEntry.DailyLogID)
-		db.Create(&newEntry)
+		// newEntry := Completion{
+		// 	HabitID:    item.ID,
+		// 	DailyLogID: Latest(db, item.UserID).ID,
+		// 	Status:     CompletionStatus(Unspecified),
+		// 	SampleType: HabitSampleType(NotSampled),
+		// }
+		// fmt.Println("generating new completion entry: ", newEntry, " whose latest daily log is ", newEntry.DailyLogID)
+		// db.Create(&newEntry)
 		json.NewEncoder(w).Encode(item)
 	}
 }

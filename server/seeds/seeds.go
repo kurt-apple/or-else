@@ -37,13 +37,14 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		StartingSampleRate:      2,
 		TimeZoneOffset:          -8,
 		StartingRation:          2000,
-		StartDate:               time.Now().AddDate(0, 0, -3),
+		CreatedAt:               time.Now().AddDate(0, 0, -3),
 		MinRation:               1500,
 		MinWeight:               200,
+		StartingWeight:          200,
 	}
 
 	fmt.Println("pushing default user to db")
-	db.Create(&defaultUser)
+	models.MakeUser(db, &defaultUser)
 	fmt.Println("default user now has ID ", defaultUser.ID)
 
 	defaultHabits := []models.Habit{}
@@ -59,22 +60,10 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 		db.Create(&habit)
 	}
 
-	firstDailyLog := models.DailyLog{
-		UserID:     defaultUser.ID,
-		LogDate:    defaultUser.StartDate,
-		BaseRation: defaultUser.StartingRation,
-	}
-
-	secondDailyLog := models.DailyLog{
-		UserID:     defaultUser.ID,
-		LogDate:    defaultUser.StartDate.AddDate(0, 0, 1),
-		BaseRation: defaultUser.StartingRation,
-	}
+	firstDailyLog := models.Latest(db, defaultUser.ID)
 
 	fmt.Println("pushing first daily log - should auto generate completion entries")
 	models.CreateLog(db, &firstDailyLog)
-	secondDailyLog.PreviousLogID = firstDailyLog.ID
-	models.CreateLog(db, &secondDailyLog)
 
 	fmt.Println("pushing some food items")
 	fakeFoods := []models.FoodItem{}
