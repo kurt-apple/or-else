@@ -6,6 +6,7 @@ import Utils from 'src/util'
 import { computed, ref } from 'vue'
 import {
   CompletionEntry,
+  habitStatus,
   useCompletionsStore,
 } from 'src/stores/completion/completionStore'
 import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
@@ -73,9 +74,11 @@ const updateCompletedStatus = async (ce: CompletionEntry) => {
   <q-checkbox
     v-if="le"
     v-model="le.status"
-    :indeterminate-value="0"
-    :false-value="1"
-    :true-value="2"
+    :indeterminate-value="habitStatus.UNSPECIFIED"
+    :true-value="habitStatus.COMPLETED"
+    :false-value="habitStatus.NOTCOMPLETED"
+    checked-icon="thumb_up"
+    unchecked-icon="thumb_down"
     indeterminate-icon="check_box_outline_blank"
     @click="updateCompletedStatus(le)"
   ></q-checkbox>
