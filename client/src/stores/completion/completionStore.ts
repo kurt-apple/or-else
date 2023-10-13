@@ -6,8 +6,8 @@ import {
   /* HabitGenerics, */ HasHabit,
   useHabitsStore,
 } from '../habit/habitStore'
-import { api } from 'src/boot/axios'
 import Utils from 'src/util'
+import { api } from 'src/boot/axios'
 
 export enum habitStatus {
   UNSPECIFIED = 0,
@@ -49,6 +49,10 @@ export const useCompletionsStore = defineStore('completion-entries', {
       (habitID?: number): CompletionEntry => {
         Utils.hardCheck(habitID)
         const latestLog = useDailyLogsStore().latestLog()
+        console.log(
+          'the latest log is supposedly ',
+          Utils.d(latestLog.logDate).toDateString()
+        )
         const entriesOfLatestLog: CompletionEntry[] = state.items.filter(
           (x) => x.dailyLogID === latestLog.id
         )
@@ -131,11 +135,11 @@ export const useCompletionsStore = defineStore('completion-entries', {
       habit: Habit,
       dateStr: string
     ): CompletionEntry[] {
-      const dailyLogStore = useDailyLogsStore()
-      const dailyLogAtDate = Utils.hardCheck(dailyLogStore.queryDate(dateStr))
-      return dailyLogStore
+      const dls = useDailyLogsStore()
+      const dailyLogAtDate = Utils.hardCheck(dls.queryDate(dateStr))
+      return dls
         .allLogsPrior(dailyLogAtDate)
-        .flatMap((x) => this.EntryFromDailyLogForHabit(x.id, habit.id))
+        .flatMap((x) => this.EntryFromDailyLogForHabit(x.id, habit.id) ?? [])
     },
     allItemsForDailyLog(dailyLogID?: number) {
       if (typeof dailyLogID === 'undefined')
@@ -145,14 +149,12 @@ export const useCompletionsStore = defineStore('completion-entries', {
     EntryFromDailyLogForHabit(
       dailyLogID?: number,
       habitID?: number
-    ): CompletionEntry {
-      Utils.hardCheck(dailyLogID)
-      Utils.hardCheck(habitID)
-      return Utils.hardCheck(
-        this.items
-          .filter((x) => x.dailyLogID === dailyLogID)
-          .find((x) => x.habitID === habitID)
-      )
+    ): CompletionEntry | undefined {
+      dailyLogID = Utils.hardCheck(dailyLogID)
+      habitID = Utils.hardCheck(habitID)
+      return this.items
+        .filter((x) => x.dailyLogID === dailyLogID)
+        .find((x) => x.habitID === habitID)
     },
     dateValueFromDailyLog(completionEntryID?: number) {
       Utils.hardCheck(completionEntryID)

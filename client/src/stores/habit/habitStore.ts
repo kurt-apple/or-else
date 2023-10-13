@@ -189,9 +189,11 @@ export const useHabitsStore = defineStore('habits', {
           this.items.push(newObj)
           const cs = useCompletionsStore()
           const dls = useDailyLogsStore()
+          const latestLog = dls.latestLog()
+          console.log('creating completion entry on latest log ', latestLog)
           const newEntry: CompletionEntry = {
             habitID: newObj.id,
-            dailyLogID: dls.latestLog().id,
+            dailyLogID: latestLog.id,
             status: habitStatus.UNSPECIFIED,
             sampleType: sampleType.NOTSAMPLED,
           }

@@ -12,7 +12,6 @@ import Utils from 'src/util'
 import { useHabitsStore } from '../habit/habitStore'
 import { useWeightEntryStore } from '../weight-entry/weightEntryStore'
 import { useFoodEntryStore } from '../foodEntry/foodEntryStore'
-import { date } from 'quasar'
 
 export class DailyLog extends Record implements HasUser {
   id?: number

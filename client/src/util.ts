@@ -12,7 +12,7 @@ export default class Utils {
   }
 
   static hardCheck<T>(t: T | undefined | null, memo = 'ERROR'): T {
-    if (typeof t === 'undefined' || t == null) {
+    if (typeof t === 'undefined' || t === null) {
       throw new Error(`variable was undefined - ${memo}`)
     }
     return t
