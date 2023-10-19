@@ -37,25 +37,14 @@ const log = ref<DailyLog>(
   </q-item-section>
   <q-item-section>
     <q-item-label>
-      food entries:
-      {{ dailyLogStore.allFoodEntries(log.id).length }}</q-item-label
-    >
-  </q-item-section>
-  <q-item-section>
-    <q-item-label>
-      calories: {{ dailyLogStore.totalCaloriesConsumed(log.id) }}
+      consumed: {{ dailyLogStore.totalCaloriesConsumed(log.id) }}
     </q-item-label>
   </q-item-section>
   <q-item-section>
     <q-item-label> sampled {{ dailyLogStore.sampleRate(log.id) }}</q-item-label>
   </q-item-section>
   <q-item-section>
-    <q-item-label>
-      done: {{ dailyLogStore.countCompleted(log) }} ({{
-        dailyLogStore.qtyImprovedHabits(log.id)
-      }}
-      of which were sampled)</q-item-label
-    >
+    <q-item-label> done: {{ dailyLogStore.countCompleted(log) }}</q-item-label>
   </q-item-section>
   <q-item-section>
     <q-item-label>

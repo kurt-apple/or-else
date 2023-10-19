@@ -209,7 +209,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         return 0
       }
       const beforeThat = this.previousLog(previous)
-      return this.maxWeight(beforeThat) - this.maxWeight(previous)
+      return this.maxWeight(previous) - this.maxWeight(beforeThat)
     },
     totalCaloriesConsumed(dailyLogID?: number) {
       const foodEntryStore = useFoodEntryStore()
