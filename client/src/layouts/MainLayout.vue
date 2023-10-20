@@ -70,7 +70,7 @@ const checkTime = async () => {
       repo.queryDate(newLog.logDate),
       'newly created log is not able to be retrieved'
     )
-    await repo.reSample(createdLog)
+    repo.reSample(createdLog)
     latestLog = repo.latestLog()
     latestLogTime = Utils.d(latestLog.logDate)
     repo.calculateBaseRation(latestLog)

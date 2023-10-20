@@ -25,7 +25,8 @@ const generateLogLabel = (log: DailyLog) => {
     new Date(log.logDate).toLocaleDateString() +
     ': ' +
     dailyLogStore.totalCaloriesConsumed(log.id) +
-    ' Calories'
+    ' / ' +
+    dailyLogStore.calculateActualRation(log)
   )
 }
 

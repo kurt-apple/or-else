@@ -63,11 +63,6 @@ const habitData =
         createdAt: '',
       })
 
-console.log('funny business', {
-  habitData: habitData.value,
-  'habit prop': props.habit,
-})
-
 const unsavedChanges = ref(false)
 
 const markUnsaved = () => {

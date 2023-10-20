@@ -64,7 +64,7 @@ const updateCompletedStatus = async (ce: CompletionEntry) => {
     'Could not find log associated with latest completion entry of habit'
   )
   const nextLog = logStore.nextLog(log)
-  await logStore.reSample(nextLog)
+  logStore.reSample(nextLog)
 }
 </script>
 <template>

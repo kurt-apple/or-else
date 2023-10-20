@@ -365,7 +365,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
 
     // todo: write tests
     // 1. resampling the earliest daily log should not change the qty of sampled tasks from the base sample rate
-    async reSample(log: DailyLog): Promise<void> {
+    reSample(log: DailyLog) {
       if (typeof log === 'undefined') return
       console.log('reSampling ', new Date(log.logDate).toDateString())
       console.log('sample rate: ', this.sampleRate(log.id))
@@ -419,7 +419,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       this.calculateBaseRation(log)
 
       const nextLog = this.nextLog(log)
-      if (typeof nextLog !== 'undefined') await this.reSample(nextLog)
+      if (typeof nextLog !== 'undefined') this.reSample(nextLog)
     },
 
     async createItem(item: DailyLog) {
@@ -445,7 +445,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
             }
             await cs.createItem(newEntry)
           })
-          await this.reSample(newItem)
+          this.reSample(newItem)
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {

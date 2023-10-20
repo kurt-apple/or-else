@@ -9,6 +9,15 @@ export class FoodItem extends Record {
   name = 'Unnamed Food Item'
   unit = 'piece'
   caloriesPerUnit = 0
+
+  static defaults() {
+    const newItem: FoodItem = {
+      name: 'Unnamed Food Item',
+      unit: 'EA',
+      caloriesPerUnit: 100,
+    }
+    return newItem
+  }
 }
 
 export interface HasFoodItem extends Record {
