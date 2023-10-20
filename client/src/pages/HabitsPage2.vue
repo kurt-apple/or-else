@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import HabitList from 'src/components/HabitList.vue'
-import HabitDetails from 'src/components/HabitDetails.vue'
+import HabitDetails from 'src/components/dialog/HabitDetails.vue'
 import { Habit, useHabitsStore } from 'src/stores/habit/habitStore'
 import { computed } from 'vue'
 

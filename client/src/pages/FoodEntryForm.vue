@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useQuasar } from 'quasar'
+import FoodItemDialog from 'src/components/dialog/FoodItemDialog.vue'
 import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import {
   FoodEntry,
@@ -105,6 +107,34 @@ const topQuantities = computed(() => {
 const setQuantity = (qty: number) => {
   qtyInput.value = qty
 }
+
+const fis = useFoodItemStore()
+
+const addFoodItem = async (item: FoodItem) => {
+  await fis.createItem(item)
+}
+
+const $q = useQuasar()
+const addFoodItemDialog = () => {
+  console.log('add food item dialog')
+  $q.dialog({
+    component: FoodItemDialog,
+    componentProps: {
+      foodItem: null,
+      mode: 'create',
+    },
+  })
+    .onOk(async (action: { item: FoodItem; unsaved: boolean }) => {
+      console.log('create habit on OK', action.item)
+      await addFoodItem(action.item)
+    })
+    .onCancel(() => {
+      console.log('Cancel')
+    })
+    .onDismiss(() => {
+      console.log('Dismissed Dialog')
+    })
+}
 </script>
 
 <template>
@@ -114,6 +144,7 @@ const setQuantity = (qty: number) => {
     <h4>ENTRY DATE</h4>
     <q-date v-model="foodEntryDate" minimal />
     <h4>FOOD ITEM</h4>
+    <q-btn @click="addFoodItemDialog">ADD FOOD ITEM</q-btn>
     <q-select
       v-model="selectedFoodItem"
       filled

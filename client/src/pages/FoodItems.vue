@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
-import FoodItemDialog from 'src/components/FoodItemDialog.vue'
+import FoodItemDialog from 'src/components/dialog/FoodItemDialog.vue'
 import { FoodItem, useFoodItemStore } from 'src/stores/foodItem/foodItemStore'
 
 const fis = useFoodItemStore()
@@ -47,7 +47,7 @@ const addFoodItemDialog = (fi: FoodItem | null) => {
       </q-item>
     </q-list>
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
-      <q-btn fab icon="add" color="accent" @click="addFoodItemDialog" />
+      <q-btn fab icon="add" color="accent" @click="addFoodItemDialog(null)" />
     </q-page-sticky>
   </q-page>
 </template>
