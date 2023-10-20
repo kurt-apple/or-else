@@ -278,11 +278,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       const delta = this.weightDelta(log)
       const weight = this.maxWeight(previousLog)
       const minWeight = user.minWeight
-      console.log('for log ', Utils.d(log.logDate).toLocaleDateString(), ':', {
-        delta,
-        weight,
-        minWeight,
-      })
+
       if (weight < minWeight) {
         log.baseRation = baseRation + 100
         return Math.max(baseRation + 100, user.minRation)
