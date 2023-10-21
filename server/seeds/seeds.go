@@ -62,7 +62,7 @@ func SeedDatabase(db *gorm.DB, interfaces []interface{}) error {
 
 	firstDailyLog := models.Latest(db, defaultUser.ID)
 
-	fmt.Println("pushing first daily log - should auto generate completion entries")
+	fmt.Println("pushing first daily log - the client is responsible for creating completion entries typically.")
 	models.CreateLog(db, &firstDailyLog)
 
 	fmt.Println("pushing some food items")

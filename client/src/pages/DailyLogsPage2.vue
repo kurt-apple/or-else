@@ -14,7 +14,7 @@ const habitsStore = useHabitsStore()
 // todo make computed
 const treePayload = computed(() => {
   return dailyLogStore.allDesc().map((x) => ({
-    label: new Date(x.logDate).toLocaleDateString(),
+    label: x.id + ': ' + new Date(x.logDate).toLocaleDateString(),
     type: 'date',
     obj: x,
     children: dailyLogStore
@@ -32,16 +32,17 @@ const treePayload = computed(() => {
       })),
   }))
 })
-const resample = () => {
-  const firstEntry = dailyLogStore.allAsc()[0]
-  dailyLogStore.reSample(firstEntry)
+
+const resampleAll = async () => {
+  const logs = dailyLogStore.allDesc()
+  await dailyLogStore.reSample(logs[logs.length - 1])
 }
 </script>
 
 <template>
   <q-page>
     <h4>Daily Logs</h4>
-    <q-btn @click="resample()">REFRESH</q-btn>
+    <q-btn @click="resampleAll">RESAMPLE</q-btn>
     <q-tree :nodes="treePayload" node-key="label">
       <template #default-header="prop">
         <completion-entry-tree-node

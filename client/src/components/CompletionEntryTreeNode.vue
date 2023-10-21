@@ -40,12 +40,6 @@ const statusValue = computed(() => {
   if (props.entry?.status === habitStatus.NOTCOMPLETED) return 'not completed'
   return 'completed'
 })
-
-const completionRateOnDate = computed(() => {
-  const logDate = Utils.hardCheck(dls.getByID(props.entry?.dailyLogID)).logDate
-  const habit = Utils.hardCheck(habitStore.getByID(props.entry?.habitID))
-  return Math.round(habitStore.completionRateOnDate(habit, logDate) * 100)
-})
 </script>
 
 <template>
@@ -60,7 +54,7 @@ const completionRateOnDate = computed(() => {
     @click="updateCompletedStatus(e)"
   />
   <q-item-section>
-    <q-item-label>{{ habitStore.getByID(e?.habitID)?.title }}</q-item-label>
+    <q-item-label>{{ habitStore.getByID(e.habitID)?.title }}</q-item-label>
   </q-item-section>
   <q-item-section>
     <q-item-label> status: {{ statusValue }}</q-item-label>
@@ -75,7 +69,7 @@ const completionRateOnDate = computed(() => {
   </q-item-section>
   <q-item-section>
     <q-item-label>
-      {{ completionRateOnDate }}
+      {{ e.completionRateOnDate }}
     </q-item-label>
   </q-item-section>
 </template>

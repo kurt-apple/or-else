@@ -22,7 +22,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const h = ref(Utils.hardCheck(props.habit))
-console.log('HabitTreeNode habit = ', h.value.title)
 const le = computed(() => {
   return completionEntryStore.latestCompletionEntryForHabit(h.value.id)
 })
@@ -64,7 +63,7 @@ const updateCompletedStatus = async (ce: CompletionEntry) => {
     'Could not find log associated with latest completion entry of habit'
   )
   const nextLog = logStore.nextLog(log)
-  logStore.reSample(nextLog)
+  await logStore.reSample(nextLog)
 }
 </script>
 <template>

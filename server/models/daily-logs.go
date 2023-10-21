@@ -58,17 +58,6 @@ func CreateLog(db *gorm.DB, dl *DailyLog) {
 	dl.LastModified = time.Now()
 	fmt.Println("createLog", dl)
 	db.Create(dl)
-	// var habits []Habit
-	// db.Where(&Habit{UserID: dl.UserID}).Find(&habits)
-	// for _, habit := range habits {
-	// 	completion := &Completion{
-	// 		HabitID:    habit.ID,
-	// 		DailyLogID: dl.ID,
-	// 		Status:     CompletionStatus(Unspecified),
-	// 		SampleType: HabitSampleType(NotSampled),
-	// 	}
-	// 	db.Create(completion)
-	// }
 }
 
 func CreateDailyLog(db *gorm.DB) http.HandlerFunc {

@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import { DailyLog } from './stores/dailyLog/dailyLogStore'
 import { WeightEntry } from './stores/weight-entry/weightEntryStore'
+import { Record } from './stores/PiniaGenerics'
 
 export default class Utils {
   static check<T>(t: T | undefined | null, mode: 'warn' | 'err', memo: string) {
@@ -89,5 +90,9 @@ export default class Utils {
 
   static todo(s?: string) {
     throw new Error(s ?? 'needs refactor')
+  }
+
+  static notInSet<T extends Record>(arg: T, arr: T[]) {
+    return typeof arr.find((y) => y.id === arg.id) === 'undefined'
   }
 }

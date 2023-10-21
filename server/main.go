@@ -53,6 +53,7 @@ func main() {
 	router.HandleFunc("/completions/{id}", models.GetCompletion(db)).Methods("GET")
 	router.HandleFunc("/completions", models.CreateCompletion(db)).Methods("POST")
 	router.HandleFunc("/completions/{id}", models.UpdateCompletion(db)).Methods("PATCH")
+	router.HandleFunc("/completions/batch-update", models.UpdateCompletions(db)).Methods("POST")
 	router.HandleFunc("/completions/{id}", models.DeleteCompletion(db)).Methods("DELETE")
 
 	router.HandleFunc("/food-entries", models.GetFoodEntries(db)).Methods("GET")

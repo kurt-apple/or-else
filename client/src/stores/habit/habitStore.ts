@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { Store, defineStore } from 'pinia'
 import { PiniaGenerics, State, Record } from '../PiniaGenerics'
 import { HasUser, useUsersStore } from '../user/userStore'
 import { api } from 'src/boot/axios'
@@ -114,27 +114,6 @@ export const useHabitsStore = defineStore('habits', {
       return this.times_sampled(id) === 0
         ? 0.0
         : this.times_completed_internal(id) / this.times_sampled(id)
-    },
-    completionRateOnDate(habit: Habit, dateStr: string) {
-      const entriesPrior = useCompletionsStore().allEntriesForHabitPriorTo(
-        habit,
-        dateStr
-      )
-
-      if (entriesPrior.length === 0) return 0
-      const timesCompleted = entriesPrior.filter(
-        (x) => x.status === habitStatus.COMPLETED
-      )
-
-      const timesSampled = entriesPrior.filter(
-        (x) =>
-          x.sampleType !== sampleType.NOTSAMPLED ||
-          x.status !== habitStatus.UNSPECIFIED // also count the times a habit was manually entered, even when it was not sampled.
-      )
-
-      if (timesSampled.length === 0) return 0
-      if (timesCompleted.length === 0) return 0
-      return timesCompleted.length / timesSampled.length
     },
     priorCompletionRate(beforeDate: Date, habitID?: number) {
       Utils.hardCheck(habitID)

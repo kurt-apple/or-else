@@ -27,11 +27,12 @@ const (
 
 type Completion struct {
 	///TODO: figure out best data type for date property
-	ID         uint             `gorm:"primaryKey" json:"id"`
-	HabitID    uint             `json:"habitID"`
-	DailyLogID uint             `json:"dailyLogID"`
-	Status     CompletionStatus `json:"status"`
-	SampleType HabitSampleType  `json:"sampleType"`
+	ID                   uint             `gorm:"primaryKey" json:"id"`
+	HabitID              uint             `json:"habitID"`
+	DailyLogID           uint             `json:"dailyLogID"`
+	CompletionRateOnDate float32          `json:"completionRateOnDate"`
+	Status               CompletionStatus `json:"status"`
+	SampleType           HabitSampleType  `json:"sampleType"`
 }
 
 func GetCompletions(db *gorm.DB) http.HandlerFunc {
@@ -75,6 +76,40 @@ func UpdateCompletion(db *gorm.DB) http.HandlerFunc {
 		json.NewDecoder(r.Body).Decode(&item)
 		db.Save(&item)
 		json.NewEncoder(w).Encode(item)
+	}
+}
+
+func UpdateCompletions(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Parse the request body into an array of items.
+		var updatedItems []Completion
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&updatedItems); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Invalid request body"))
+			return
+		}
+
+		// Iterate through the updated items and update them in the database.
+		for _, updatedItem := range updatedItems {
+			// Check if the item exists in the database by ID and update it.
+			var existingItem Completion
+			if err := db.Where("id = ?", updatedItem.ID).First(&existingItem).Error; err != nil {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte("Item not found"))
+				return
+			}
+
+			// Update the item with the new values.
+			db.Model(&existingItem).Updates(updatedItem)
+		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 

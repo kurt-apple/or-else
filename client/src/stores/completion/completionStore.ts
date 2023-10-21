@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia'
-import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
+import {
+  DailyLog,
+  HasDailyLog,
+  useDailyLogsStore,
+} from '../dailyLog/dailyLogStore'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
 import {
   Habit,
@@ -8,6 +12,7 @@ import {
 } from '../habit/habitStore'
 import Utils from 'src/util'
 import { api } from 'src/boot/axios'
+import { AxiosResponse } from 'axios'
 
 export enum habitStatus {
   UNSPECIFIED = 0,
@@ -24,6 +29,7 @@ export enum sampleType {
 export class CompletionEntry extends Record implements HasDailyLog, HasHabit {
   habitID?: number = undefined
   dailyLogID?: number = undefined
+  completionRateOnDate = 0
   status: habitStatus = habitStatus.UNSPECIFIED
   sampleType: sampleType = sampleType.NOTSAMPLED
 
@@ -31,6 +37,7 @@ export class CompletionEntry extends Record implements HasDailyLog, HasHabit {
     const temp: CompletionEntry = {
       habitID: undefined,
       dailyLogID: undefined,
+      completionRateOnDate: 0,
       status: habitStatus.UNSPECIFIED,
       sampleType: sampleType.NOTSAMPLED,
     }
@@ -48,11 +55,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
       (state) =>
       (habitID?: number): CompletionEntry => {
         Utils.hardCheck(habitID)
-        const latestLog = useDailyLogsStore().latestLog()
-        console.log(
-          'the latest log is supposedly ',
-          Utils.d(latestLog.logDate).toDateString()
-        )
+        const latestLog = Utils.hardCheck(useDailyLogsStore().latestLog())
         const entriesOfLatestLog: CompletionEntry[] = state.items.filter(
           (x) => x.dailyLogID === latestLog.id
         )
@@ -72,6 +75,9 @@ export const useCompletionsStore = defineStore('completion-entries', {
         // console.log('sample type: ', entry.sampleType)
         return entry.sampleType !== sampleType.NOTSAMPLED
       },
+    getEntriesFromLog: (state) => (logID: number) => {
+      return state.items.filter((x) => x.dailyLogID === logID)
+    },
     getCompletedFromLog: (state) => (logID: number) => {
       return state.items
         .filter((x) => x.dailyLogID === logID)
@@ -105,6 +111,43 @@ export const useCompletionsStore = defineStore('completion-entries', {
     },
   },
   actions: {
+    async cacheCompletionRates(entries: CompletionEntry[], log?: DailyLog) {
+      const payload: CompletionEntry[] = []
+      if (entries.length === 0) return
+      if (typeof log === 'undefined') {
+        const dls = useDailyLogsStore()
+        log = dls.getByID(entries[0].dailyLogID)
+        if (typeof log === 'undefined')
+          throw new Error(
+            'these completion entries are not associated with a daily log that is real'
+          )
+      }
+      const hs = useHabitsStore()
+      for (let i = 0; i < entries.length; i++) {
+        const habit = Utils.hardCheck(hs.getByID(entries[i].habitID))
+        const entriesPrior = this.allEntriesForHabitPriorTo(habit, log.logDate)
+        if (entriesPrior.length === 0) {
+          entries[i].completionRateOnDate = 0.0
+          payload.push(entries[i])
+        }
+        const timesCompleted = entriesPrior.filter(
+          (x) => x.status === habitStatus.COMPLETED
+        )
+        const timesSampled = entriesPrior.filter(
+          (x) =>
+            x.sampleType !== sampleType.NOTSAMPLED ||
+            x.status !== habitStatus.UNSPECIFIED
+        )
+        if (timesSampled.length === 0 || timesCompleted.length === 0)
+          entries[i].completionRateOnDate = 0.0
+        const cr = timesCompleted.length / timesSampled.length
+        if (cr !== entries[i].completionRateOnDate) {
+          entries[i].completionRateOnDate = cr
+          payload.push(entries[i])
+        }
+      }
+      await this.updateItems([...entries])
+    },
     resetFailedFromLog(logID: number) {
       this.getFailedFromLog(logID).forEach((x) => {
         x.status = habitStatus.UNSPECIFIED
@@ -129,9 +172,17 @@ export const useCompletionsStore = defineStore('completion-entries', {
     ): CompletionEntry[] {
       const dls = useDailyLogsStore()
       const dailyLogAtDate = Utils.hardCheck(dls.queryDate(dateStr))
-      return dls
-        .allLogsPrior(dailyLogAtDate)
-        .flatMap((x) => this.EntryFromDailyLogForHabit(x.id, habit.id) ?? [])
+      const priorlogs = dls.allLogsPrior(dailyLogAtDate)
+      const entries: CompletionEntry[] = []
+      for (let i = 0; i < priorlogs.length; i++) {
+        entries.concat(
+          this.EntryFromDailyLogForHabit(priorlogs[i].id, habit.id) ?? []
+        )
+      }
+      return entries
+      // return dls
+      //   .allLogsPrior(dailyLogAtDate)
+      //   .flatMap((x) => this.EntryFromDailyLogForHabit(x.id, habit.id) ?? [])
     },
     allItemsForDailyLog(dailyLogID?: number) {
       if (typeof dailyLogID === 'undefined')
@@ -145,8 +196,8 @@ export const useCompletionsStore = defineStore('completion-entries', {
       dailyLogID = Utils.hardCheck(dailyLogID)
       habitID = Utils.hardCheck(habitID)
       return this.items
-        .filter((x) => x.dailyLogID === dailyLogID)
-        .find((x) => x.habitID === habitID)
+        .filter((x) => x.habitID === habitID)
+        .find((x) => x.dailyLogID === dailyLogID)
     },
     dateValueFromDailyLog(completionEntryID?: number) {
       Utils.hardCheck(completionEntryID)
@@ -220,6 +271,25 @@ export const useCompletionsStore = defineStore('completion-entries', {
             return response
           }, Utils.handleError('Error updating completion entry'))
       }
+    },
+    async updateItems(itemArr: CompletionEntry[]) {
+      // validate they all exist
+      const indices = itemArr.map((x) =>
+        this.items.findIndex((y) => y.id === x.id)
+      )
+      if (indices.some((x) => x === -1))
+        throw new Error('not all items to update seem to be in the store.')
+      await api
+        .post('/completions/batch-update', itemArr)
+        .then(async (response) => {
+          for (let i = 0; i < itemArr.length; i++) {
+            this.items[indices[i]] = {
+              ...this.items[indices[i]],
+              ...itemArr[i],
+            }
+          }
+          return response
+        }, Utils.handleError('Error batch updating completion entry'))
     },
     async deleteItem(id: number) {
       const index = this.items.findIndex((x) => x.id === id)

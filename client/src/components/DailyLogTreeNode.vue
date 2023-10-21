@@ -16,8 +16,22 @@ const props = withDefaults(defineProps<Props>(), {
 const log = ref<DailyLog>(
   Utils.hardCheck(props.log as DailyLog, 'daily log is undefined or null')
 )
+
+const del = async (log: DailyLog) => {
+  const previousLogID = log.previousLogID
+  const nextLog = dailyLogStore.nextLog(log)
+  await dailyLogStore.deleteItem(log.id)
+  if (typeof nextLog === 'undefined') return
+  nextLog.previousLogID = previousLogID
+}
 </script>
 <template>
+  <q-item-label>{{ 'id: ' + log.id + ' - ' }}</q-item-label>
+  <q-item-section>
+    <q-item-label>
+      {{ 'previouslogid: ' + log.previousLogID + ', ' }}
+    </q-item-label>
+  </q-item-section>
   <q-item-section>
     <q-item-label>
       {{ Utils.d(log.logDate).toLocaleDateString() }}</q-item-label
@@ -54,5 +68,8 @@ const log = ref<DailyLog>(
   </q-item-section>
   <q-item-section>
     <q-item-label> {{ dailyLogStore.maxWeight(log) }} lbs </q-item-label>
+  </q-item-section>
+  <q-item-section>
+    <q-btn icon="delete" color="red" @click="del(log)" />
   </q-item-section>
 </template>

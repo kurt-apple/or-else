@@ -6,6 +6,7 @@ import { Store } from 'pinia'
 import { useFoodEntryStore } from './foodEntry/foodEntryStore'
 import { useFoodItemStore } from './foodItem/foodItemStore'
 import { useWeightEntryStore } from './weight-entry/weightEntryStore'
+import { useAppStore } from './app-state'
 
 export default class TheGreatHydrator {
   static async hydratify(repos: Store[]) {
@@ -17,6 +18,8 @@ export default class TheGreatHydrator {
   }
 
   static async brrrrr() {
+    const as = useAppStore()
+    if (!as.loading) return
     console.log('FETCHING ALL RECORDS FROM DB')
     // const repos = [
     //   useDailyLogsStore(),
@@ -29,11 +32,12 @@ export default class TheGreatHydrator {
     await useUsersStore().fetchAll()
     await useCompletionsStore().fetchAll()
     await useHabitsStore().fetchAll()
-    console.log('all habits from hydrator: ', useHabitsStore().getAll())
+    // console.log('all habits from hydrator: ', useHabitsStore().getAll())
     await useFoodEntryStore().fetchAll()
     await useFoodItemStore().fetchAll()
     await useWeightEntryStore().fetchAll()
-    const log = useDailyLogsStore().allAsc()[0]
-    useDailyLogsStore().reSample(log)
+    const logs = useDailyLogsStore().allDesc()
+    useDailyLogsStore().reSample(logs[logs.length - 1])
+    as.loading = false
   }
 }

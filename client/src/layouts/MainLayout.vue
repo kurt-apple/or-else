@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import ExistentialDread from 'components/ExistentialDread.vue'
 import { DailyLog, useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
-import { User, useUsersStore } from 'src/stores/user/userStore'
 import Utils from 'src/util'
 import TheGreatHydrator from 'src/stores/TheGreatHydrator'
 
@@ -51,9 +50,8 @@ const leftDrawerOpen = ref(false)
 const checkTime = async () => {
   const currentTime = new Date()
   const repo = useDailyLogsStore()
-  let latestLog = repo.latestLog()
+  let latestLog = Utils.hardCheck(repo.latestLog())
   let latestLogTime = Utils.d(latestLog.logDate)
-  // console.log('latestlogtime: ', latestLogTime, ' is type of: ', typeof latestLogTime)
   while (currentTime.getDate() !== latestLogTime.getDate()) {
     console.log(
       "conditions were met, we're adding a log. latest log id is ",
@@ -66,15 +64,9 @@ const checkTime = async () => {
       logDate: new Date(latestLogTime.getTime() + 86400000).toISOString(),
     })
     await repo.createItem(newLog)
-    const createdLog = Utils.hardCheck(
-      repo.queryDate(newLog.logDate),
-      'newly created log is not able to be retrieved'
-    )
-    repo.reSample(createdLog)
-    latestLog = repo.latestLog()
+    latestLog = Utils.hardCheck(repo.latestLog())
     latestLogTime = Utils.d(latestLog.logDate)
     repo.calculateBaseRation(latestLog)
-    // repo.reSample(latestLog.id)
   }
   setTimeout(checkTime, 10000)
 }
