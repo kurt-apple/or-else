@@ -16,7 +16,7 @@ const newEntry = async () => {
   console.log('weight: ', weight.value)
   if (parseInt(weight.value) < 1) throw new Error('weight value is not valid')
   const entry: WeightEntry = {
-    dailyLogID: useDailyLogsStore().latestLog().id,
+    dailyLogID: Utils.hardCheck(useDailyLogsStore().latestLog()).id,
     time: new Date().toISOString(),
     weight: parseInt(weight.value),
   }
