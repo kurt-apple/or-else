@@ -1,0 +1,20 @@
+version: '3.1'
+
+services:
+  # Quasar App with Node.js server
+  quasar-app:
+    # cd client
+    # docker build -t or-else-quasar .
+    image: or-else-quasar
+    ports:
+      - "9000:8080"
+
+  # Go/SQLite Backend
+  go-backend:
+    # cd server
+    # docker build -t or-else-go .
+    image: or-else-go
+    ports:
+      - "8080:8080"
+    depends_on:
+      - quasar-app

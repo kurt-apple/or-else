@@ -48,6 +48,7 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
+      showProgress: true,
       target: {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16',
@@ -75,6 +76,7 @@ module.exports = configure(function (/* ctx */) {
       // vitePlugins: [
       //   [ 'package-name', { ..options.. } ]
       // ]
+      productName: 'OR ELSE',
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
@@ -150,6 +152,17 @@ module.exports = configure(function (/* ctx */) {
       // extendInjectManifestOptions (cfg) {},
       // extendManifestJson (json) {}
       // extendPWACustomSWConf (esbuildConf) {}
+      metaVariables: {
+        appleMobileWebAppCapable: 'yes',
+        appleMobileWebAppStatusBarStyle: 'default',
+        appleTouchIcon120: 'icons/apple-icon-120x120.png',
+        appleTouchIcon180: 'icons/apple-icon-180x180.png',
+        appleTouchIcon152: 'icons/apple-icon-152x152.png',
+        appleTouchIcon167: 'icons/apple-icon-167x167.png',
+        appleSafariPinnedTab: 'icons/safari-pinned-tab.svg',
+        msapplicationTileImage: 'icons/ms-icon-144x144.png',
+        msapplicationTileColor: '#000000'
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
@@ -196,5 +209,8 @@ module.exports = configure(function (/* ctx */) {
       // extendBexScriptsConf (esbuildConf) {}
       // extendBexManifestJson (json) {}
     },
+    htmlVariables: {
+      productName: 'OR ELSE'
+    }
   }
 })

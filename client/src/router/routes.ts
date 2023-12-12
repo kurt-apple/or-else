@@ -38,10 +38,10 @@ const routes: RouteRecordRaw[] = [
         path: 'daily-logs',
         component: () => import('src/pages/DailyLogsPage2.vue'),
       },
-      {
-        path: 'super',
-        component: () => import('src/pages/SuperPage.vue'),
-      },
+      // {
+      //   path: 'super',
+      //   component: () => import('src/pages/SuperPage.vue'),
+      // },
       {
         path: 'food-entry',
         component: () => import('src/pages/FoodEntryForm.vue'),

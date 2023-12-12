@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useQuasar } from 'quasar'
 import { useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import {
   WeightEntry,
@@ -6,6 +7,7 @@ import {
 } from 'src/stores/weight-entry/weightEntryStore'
 import Utils from 'src/util'
 import { ref } from 'vue'
+import EditWeightEntryDialog from 'src/components/dialog/EditWeightEntryDialog.vue'
 const weightEntryStore = useWeightEntryStore()
 const latest = ref(weightEntryStore.latest())
 const weight = ref<string>(
@@ -22,6 +24,27 @@ const newEntry = async () => {
   }
   console.log('entry: ', entry)
   await weightEntryStore.createItem(entry)
+}
+
+const $q = useQuasar()
+
+const editWeightEntry = async (entry: WeightEntry) => {
+  console.debug('edit weight entry dialog')
+  $q.dialog({
+    component: EditWeightEntryDialog,
+    componentProps: {
+      entry
+    }
+  })
+  .onOk(async (action: { item: WeightEntry, unsaved: boolean }) => {
+    await weightEntryStore.updateItem(action.item)
+  })
+  .onCancel(() => {
+    console.debug('Edit weight entry canceled')
+  })
+  .onDismiss(() => {
+    console.debug('Dismissed weight entry dialog')
+  })
 }
 </script>
 
@@ -42,7 +65,7 @@ const newEntry = async () => {
     </template>
   </q-input>
   <q-list>
-    <q-item v-for="(w, i) in useWeightEntryStore().items" :key="i">
+    <q-item v-for="(w, i) in useWeightEntryStore().items" :key="i" @click="editWeightEntry(w)">
       {{
         Utils.d(w.time).toLocaleDateString() +
         ' ' +

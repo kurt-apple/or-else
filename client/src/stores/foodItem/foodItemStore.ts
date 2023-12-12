@@ -85,7 +85,8 @@ export const useFoodItemStore = defineStore('food-item', {
         headers: {},
         params: {},
       })
-      this.items = response.data
+      if(typeof response.data === 'undefined' || response.data === null || response.data === '') this.items = []
+      else this.items = response.data
     },
     async fetchItem(id: number) {
       const response = await api.get(`/food-items/${id}`, {

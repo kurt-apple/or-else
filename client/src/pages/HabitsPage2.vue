@@ -11,10 +11,6 @@ const hlist = computed(() => hs.getAll())
 const addHabit = async (item: Habit) => {
   console.log('add habit')
   await hs.createItem(item)
-  console.log(
-    'habits list now: ',
-    hs.getAll().map((x) => x.id + ': ' + x.title)
-  )
 }
 
 const $q = useQuasar()

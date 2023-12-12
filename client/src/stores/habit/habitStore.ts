@@ -138,6 +138,8 @@ export const useHabitsStore = defineStore('habits', {
     },
     roses() {
       const cs = useCompletionsStore()
+      if(typeof this.items === 'undefined' || this.items === null) return []
+      console.log({ items: this.items })
       return this.items.filter(
         (x) =>
           cs.latestCompletionEntryForHabit(x.id).sampleType ===
@@ -147,6 +149,7 @@ export const useHabitsStore = defineStore('habits', {
 
     thorns() {
       const cs = useCompletionsStore()
+      if(typeof this.items === 'undefined' || this.items === null) return []
       return this.items.filter(
         (x) =>
           cs.latestCompletionEntryForHabit(x.id).sampleType ===
@@ -186,7 +189,8 @@ export const useHabitsStore = defineStore('habits', {
         headers: {},
         params: {},
       })
-      this.items = response.data
+      if(typeof response.data === 'undefined' || response.data === null || response.data === '') this.items = []
+      else this.items = response.data
       this.loading = false
       return this.items
     },

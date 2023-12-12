@@ -81,7 +81,8 @@ export const useFoodEntryStore = defineStore('food-entry', {
         headers: {},
         params: {},
       })
-      this.items = response.data
+      if(typeof response.data === 'undefined' || response.data === null || response.data === '') this.items = []
+      else this.items = response.data
       for (let i = 0; i < this.items.length; i++) {
         this.items[i] = this.mapZeroToUndefined(this.items[i])
       }
