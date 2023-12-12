@@ -104,3 +104,8 @@ npm run format
 ## Customize the configuration
 
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+
+# Serve via Docker
+cd to `client` and `server` respectively, and run the bash script, `build_image.sh` in each.
+cd to the base directory then run `docker-compose up`
+you can now navigate to localhost:9000 to view the hosted app
