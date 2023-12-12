@@ -1,9 +1,9 @@
 FROM node:lts-hydrogen
-RUN npm install -g http-server
+RUN yarn global add http-server
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN yarn
 COPY . .
-RUN npm run build -d
+RUN yarn run build -d
 EXPOSE 8080
 CMD [ "http-server", "dist/spa" ]
