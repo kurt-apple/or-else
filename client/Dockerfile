@@ -4,6 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN yarn
 COPY . .
-RUN yarn run build -d
+RUN yarn run build -m pwa -d
 EXPOSE 8080
-CMD [ "http-server", "dist/spa" ]
+CMD [ "http-server", "dist/pwa" ]

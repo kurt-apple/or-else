@@ -8,9 +8,11 @@ services:
     image: or-else-quasar
     ports:
       - "9000:8080"
+    networks:
+      - or-else-net
 
-  # Go/SQLite Backend
-  go-backend:
+  # Go Backend
+  or-else-go-backend:
     # cd server
     # docker build -t or-else-go .
     image: or-else-go
@@ -18,3 +20,13 @@ services:
       - "8080:8080"
     depends_on:
       - quasar-app
+    networks:
+      - or-else-net
+    volumes:
+      - or-else-db:/usr/local/bin/data
+
+networks:
+  or-else-net:
+
+volumes:
+  or-else-db:
