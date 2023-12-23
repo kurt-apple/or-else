@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"or-else/models"
 	"or-else/seeds"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -13,10 +14,18 @@ import (
 )
 
 var db *gorm.DB
-var err error
 
 func main() {
-	db, err = gorm.Open(sqlite.Open("habits.db"), &gorm.Config{})
+	fileName := "/usr/local/bin/data/habits.db"
+	_, err := os.Stat(fileName)
+	if os.IsNotExist(err) {
+		file, err := os.Create(fileName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+	}
+	db, err = gorm.Open(sqlite.Open(fileName), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,9 +35,7 @@ func main() {
 	}()
 
 	listOfModels := []interface{}{&models.Habit{}, &models.User{}, &models.DailyLog{}, &models.Completion{}, &models.FoodEntry{}, &models.FoodItem{}, &models.WeightEntry{}}
-	seeds.SeedDatabase(db, listOfModels)
-	seeds.PrivateSeedDatabase(db, listOfModels) // expects a private seed file in the seeds package
-
+	seeds.DBInit(db, listOfModels)
 	router := mux.NewRouter()
 
 	router.HandleFunc("/habits", models.GetHabits(db)).Methods("GET")

@@ -1,16 +1,11 @@
-FROM golang:1.21.5-alpine
-RUN apk add build-base
-RUN mkdir /app
-WORKDIR /app
+FROM golang:1.21
+WORKDIR /usr/src/app
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod download && go mod verify
 RUN go env -w CGO_ENABLED=1
 RUN go env -w CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
-COPY server-init/init.go ./
-RUN touch habits.db
-COPY models ./models
-RUN go run init.go
-COPY main.go ./
-COPY seeds ./seeds
+COPY . .
+RUN go build -v -o /usr/local/bin/app ./
+RUN mkdir -p /usr/local/bin/data
 EXPOSE 8080
-ENTRYPOINT ["go", "run", "main.go"]
+CMD ["/usr/local/bin/app"]
