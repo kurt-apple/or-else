@@ -1,5 +1,6 @@
 import { boot } from 'quasar/wrappers'
 import axios, { AxiosInstance } from 'axios'
+// import { Config } from '../config'
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -14,7 +15,9 @@ declare module '@vue/runtime-core' {
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({ baseURL: 'http://localhost:8080' })
+// todo figure out how to make this better
+// const api = axios.create({ baseURL: `${Config.ApiProtocol}://${Config.ApiUrl}:${Config.ApiPort}` })
+const api = axios.create({ baseURL: 'http://192.168.1.251:8080' })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
