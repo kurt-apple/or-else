@@ -1,12 +1,9 @@
 import { defineStore } from 'pinia'
 import { Record } from '../PiniaGenerics'
-import { api } from 'src/boot/axios'
+
 import Utils from 'src/util'
-import {
-  CompletionEntry,
-  useCompletionsStore,
-} from '../completion/completionStore'
 import { DailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
+import { useAxiosStore } from '../axios-store'
 
 export interface HasUser extends Record {
   userID?: number
@@ -49,7 +46,7 @@ export const useUsersStore = defineStore('users', {
     // todo: make these generic
     // problem is 'this' is possibly undefined
     async createItem(item: User) {
-      await api
+      await useAxiosStore().axios()
         .post('/users', item, {
           headers: {},
           params: {},
@@ -71,21 +68,21 @@ export const useUsersStore = defineStore('users', {
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {
-      const response = await api.get('/users', {
+      const response = await useAxiosStore().axios().get('/users', {
         headers: {},
         params: {},
       })
       this.user = response.data[0]
     },
     async fetchItem(id: number) {
-      const response = await api.get(`/users/${id}`, {
+      const response = await useAxiosStore().axios().get(`/users/${id}`, {
         headers: {},
         params: {},
       })
       return response.data
     },
     async updateItem(item: User) {
-      await api
+      await useAxiosStore().axios()
         .patch(`/users/${item.id}`, item, { headers: {} })
         .then((response) => {
           this.user = { ...this.user, ...item }
@@ -94,7 +91,7 @@ export const useUsersStore = defineStore('users', {
     },
     async deleteItem() {
       const uid = this.getUser().id
-      await api
+      await useAxiosStore().axios()
         .delete(`/users/${uid}`, {
           headers: {},
         })

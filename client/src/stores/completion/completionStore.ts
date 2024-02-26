@@ -11,8 +11,8 @@ import {
   useHabitsStore,
 } from '../habit/habitStore'
 import Utils from 'src/util'
-import { api } from 'src/boot/axios'
-import { AxiosResponse } from 'axios'
+
+import { useAxiosStore } from '../axios-store'
 
 export enum habitStatus {
   UNSPECIFIED = 0,
@@ -225,7 +225,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
     // todo: make these generic
     // problem is 'this' is possibly undefined
     async createItem(item: CompletionEntry) {
-      await api
+      await useAxiosStore().axios()
         .post('/completions', item, {
           headers: {},
           params: {},
@@ -241,7 +241,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
       return item
     },
     async fetchAll() {
-      const response = await api.get('/completions', {
+      const response = await useAxiosStore().axios().get('/completions', {
         headers: {},
         params: {},
       })
@@ -253,7 +253,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
       return this.items
     },
     async fetchItem(id: number) {
-      const response = await api.get(`/completions/${id}`, {
+      const response = await useAxiosStore().axios().get(`/completions/${id}`, {
         headers: {},
         params: {},
       })
@@ -263,7 +263,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
     async updateItem(item: CompletionEntry) {
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .patch(`/completions/${item.id}`, item, {
             headers: {},
           })
@@ -280,7 +280,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
       )
       if (indices.some((x) => x === -1))
         throw new Error('not all items to update seem to be in the store.')
-      await api
+      await useAxiosStore().axios()
         .post('/completions/batch-update', itemArr)
         .then(async (response) => {
           for (let i = 0; i < itemArr.length; i++) {
@@ -295,7 +295,7 @@ export const useCompletionsStore = defineStore('completion-entries', {
     async deleteItem(id: number) {
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .delete(`/completions/${id}`, {
             headers: {},
           })

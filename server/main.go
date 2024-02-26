@@ -82,7 +82,7 @@ func main() {
 	router.HandleFunc("/weight-entries/{id}", models.DeleteWeightEntry(db)).Methods("DELETE")
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:*"},
+		AllowedOrigins:   []string{"http://localhost:*", "http://192.168.*:*"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 	})

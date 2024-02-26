@@ -5,6 +5,8 @@ import ExistentialDread from 'components/ExistentialDread.vue'
 import { DailyLog, useDailyLogsStore } from 'src/stores/dailyLog/dailyLogStore'
 import Utils from 'src/util'
 import TheGreatHydrator from 'src/stores/TheGreatHydrator'
+import { useQuasar } from 'quasar'
+import ServerConnectionDialog from 'src/components/dialog/ServerConnectionDialog.vue'
 
 const linksList = [
   {
@@ -76,6 +78,14 @@ await checkTime()
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
+
+const $q = useQuasar()
+
+const serverDialog = () => {
+  $q.dialog({
+    component: ServerConnectionDialog
+  })
+}
 </script>
 
 <template>
@@ -94,6 +104,28 @@ const toggleLeftDrawer = () => {
         <q-toolbar-title> OR ELSE </q-toolbar-title>
 
         <existential-dread></existential-dread>
+
+        <q-space />
+
+        <q-btn
+          dense
+          flat
+          no-wrap
+        >
+          <q-avatar rounded size="32px">
+            <q-icon name="fas fa-settings" />
+          </q-avatar>
+          <q-menu auto-close>
+            <q-list>
+              <q-item clickable @click="serverDialog()">
+                <q-item-section>Server</q-item-section>
+                <q-item-section avatar>
+                  <q-icon name="fas fa-sign-out-alt" />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
 

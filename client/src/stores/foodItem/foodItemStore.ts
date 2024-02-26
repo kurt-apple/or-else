@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
 import { FoodEntry, useFoodEntryStore } from '../foodEntry/foodEntryStore'
-import { api } from 'src/boot/axios'
+
 import Utils from 'src/util'
+import { useAxiosStore } from '../axios-store'
 
 export class FoodItem extends Record {
   id?: number = undefined
@@ -69,7 +70,7 @@ export const useFoodItemStore = defineStore('food-item', {
     // problem is 'this' is possibly undefined
     async createItem(item: FoodItem) {
       let newItem
-      await api
+      await useAxiosStore().axios()
         .post('/food-items', item, {
           headers: {},
           params: {},
@@ -81,7 +82,7 @@ export const useFoodItemStore = defineStore('food-item', {
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {
-      const response = await api.get('/food-items', {
+      const response = await useAxiosStore().axios().get('/food-items', {
         headers: {},
         params: {},
       })
@@ -89,7 +90,7 @@ export const useFoodItemStore = defineStore('food-item', {
       else this.items = response.data
     },
     async fetchItem(id: number) {
-      const response = await api.get(`/food-items/${id}`, {
+      const response = await useAxiosStore().axios().get(`/food-items/${id}`, {
         headers: {},
         params: {},
       })
@@ -98,7 +99,7 @@ export const useFoodItemStore = defineStore('food-item', {
     async updateItem(item: FoodItem) {
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .patch(`/food-items/${item.id}`, item, {
             headers: {},
           })
@@ -113,7 +114,7 @@ export const useFoodItemStore = defineStore('food-item', {
         throw new Error('cannot delete undefined. skill issue lol')
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .delete(`/food-items/${id}`, {
             headers: {},
           })

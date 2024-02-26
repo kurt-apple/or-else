@@ -20,6 +20,7 @@
     "axios": "^1.2.1",
     "pinia": "^2.0.11",
     "pinia-orm": "^1.7.2",
+    "pinia-plugin-persistedstate": "^3.2.1",
     "quasar": "^2.6.0",
     "vue": "^3.0.0",
     "vue-eslint-parser": "^9.3.1",
@@ -45,8 +46,8 @@
     "workbox-strategies": "^6.5.0"
   },
   "resolutions": {
-  	"vite": "^5.0.7",
-  	"@vitejs/plugin-vue": "^4.5.2"
+    "vite": "^5.0.7",
+    "@vitejs/plugin-vue": "^4.5.2"
   },
   "engines": {
     "node": "^18 || ^16 || ^14.19",

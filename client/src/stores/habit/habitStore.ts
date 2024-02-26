@@ -1,7 +1,7 @@
-import { Store, defineStore } from 'pinia'
+import { defineStore } from 'pinia'
 import { PiniaGenerics, State, Record } from '../PiniaGenerics'
 import { HasUser, useUsersStore } from '../user/userStore'
-import { api } from 'src/boot/axios'
+
 import {
   CompletionEntry,
   habitStatus,
@@ -10,6 +10,7 @@ import {
 } from '../completion/completionStore'
 import Utils from 'src/util'
 import { useDailyLogsStore } from '../dailyLog/dailyLogStore'
+import { useAxiosStore } from '../axios-store'
 
 export class Habit extends Record implements HasUser {
   userID?: number = undefined
@@ -160,7 +161,7 @@ export const useHabitsStore = defineStore('habits', {
     // problem is 'this' is possibly undefined
     async createItem(item: Habit) {
       this.loading = true
-      await api
+      await useAxiosStore().axios()
         .post('/habits', item, {
           headers: {},
           params: {},
@@ -171,13 +172,14 @@ export const useHabitsStore = defineStore('habits', {
           this.items.push(newObj)
           const cs = useCompletionsStore()
           const dls = useDailyLogsStore()
-          const latestLog = dls.latestLog()
+          const latestLog = Utils.hardCheck(dls.latestLog())
           console.log('creating completion entry on latest log ', latestLog)
           const newEntry: CompletionEntry = {
             habitID: newObj.id,
             dailyLogID: latestLog.id,
             status: habitStatus.UNSPECIFIED,
             sampleType: sampleType.NOTSAMPLED,
+            completionRateOnDate: 0
           }
           await cs.createItem(newEntry)
           this.loading = false
@@ -185,7 +187,7 @@ export const useHabitsStore = defineStore('habits', {
     },
     async fetchAll(): Promise<Habit[]> {
       this.loading = true
-      const response = await api.get('/habits', {
+      const response = await useAxiosStore().axios().get('/habits', {
         headers: {},
         params: {},
       })
@@ -196,7 +198,7 @@ export const useHabitsStore = defineStore('habits', {
     },
     async fetchItem(id: number) {
       this.loading = true
-      const response = await api.get(`/habits/${id}`, {
+      const response = await useAxiosStore().axios().get(`/habits/${id}`, {
         headers: {},
         params: {},
       })
@@ -207,7 +209,7 @@ export const useHabitsStore = defineStore('habits', {
       this.loading = true
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .patch(`/habits/${item.id}`, item, {
             headers: {},
           })
@@ -222,7 +224,7 @@ export const useHabitsStore = defineStore('habits', {
       this.loading = true
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .delete(`/habits/${id}`, {
             headers: {},
           })

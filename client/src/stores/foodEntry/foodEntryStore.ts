@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
 import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
-import { api } from 'src/boot/axios'
+
 import Utils from 'src/util'
 import { HasFoodItem, useFoodItemStore } from '../foodItem/foodItemStore'
+import { useAxiosStore } from '../axios-store'
 
 export class FoodEntry extends Record implements HasDailyLog, HasFoodItem {
   id?: number = undefined
@@ -47,7 +48,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
     },
     todayOnly: (state) => () => {
       if (state.items.length === 0) return []
-      const latestLog = useDailyLogsStore().latestLog()
+      const latestLog = Utils.hardCheck(useDailyLogsStore().latestLog())
       return state.items.filter((x) => x.dailyLogID === latestLog.id)
     },
   },
@@ -59,7 +60,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
     // problem is 'this' is possibly undefined
     async createItem(item: FoodEntry) {
       let newItem
-      await api
+      await useAxiosStore().axios()
         .post('/food-entries', item, {
           headers: {},
           params: {},
@@ -77,7 +78,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
       return item
     },
     async fetchAll() {
-      const response = await api.get('/food-entries', {
+      const response = await useAxiosStore().axios().get('/food-entries', {
         headers: {},
         params: {},
       })
@@ -88,7 +89,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
       }
     },
     async fetchItem(id: number) {
-      const response = await api.get(`/food-entries/${id}`, {
+      const response = await useAxiosStore().axios().get(`/food-entries/${id}`, {
         headers: {},
         params: {},
       })
@@ -97,7 +98,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
     async updateItem(item: FoodEntry) {
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .patch(`/food-entries/${item.id}`, item, {
             headers: {},
           })
@@ -112,7 +113,7 @@ export const useFoodEntryStore = defineStore('food-entry', {
         throw new Error('cannot delete undefined. skill issue lol')
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .delete(`/food-entries/${id}`, {
             headers: {},
           })

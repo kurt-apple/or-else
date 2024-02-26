@@ -2,7 +2,8 @@ import { defineStore } from 'pinia'
 import { PiniaGenerics, Record } from '../PiniaGenerics'
 import { HasDailyLog, useDailyLogsStore } from '../dailyLog/dailyLogStore'
 import Utils from 'src/util'
-import { api } from 'src/boot/axios'
+import { useAxiosStore } from '../axios-store'
+
 
 export class WeightEntry extends Record implements HasDailyLog {
   id?: number = undefined
@@ -45,7 +46,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
     // problem is 'this' is possibly undefined
     async createItem(item: WeightEntry) {
       let newItem
-      await api
+      await useAxiosStore().axios()
         .post('/weight-entries', item, {
           headers: {},
           params: {},
@@ -58,7 +59,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {
-      const response = await api.get('/weight-entries', {
+      const response = await useAxiosStore().axios().get('/weight-entries', {
         headers: {},
         params: {},
       })
@@ -69,7 +70,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
       }
     },
     async fetchItem(id: number) {
-      const response = await api.get(`/weight-entries/${id}`, {
+      const response = await useAxiosStore().axios().get(`/weight-entries/${id}`, {
         headers: {},
         params: {},
       })
@@ -78,7 +79,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
     async updateItem(item: WeightEntry) {
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .patch(`/weight-entries/${item.id}`, item, {
             headers: {},
           })
@@ -93,7 +94,7 @@ export const useWeightEntryStore = defineStore('weight-entries', {
         throw new Error('cannot delete undefined. skill issue lol')
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .delete(`/weight-entries/${id}`, {
             headers: {},
           })

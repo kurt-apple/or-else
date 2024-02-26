@@ -7,11 +7,12 @@ import {
   sampleType,
   useCompletionsStore,
 } from '../completion/completionStore'
-import { api } from 'src/boot/axios'
+
 import Utils from 'src/util'
 import { useHabitsStore } from '../habit/habitStore'
 import { useWeightEntryStore } from '../weight-entry/weightEntryStore'
 import { useFoodEntryStore } from '../foodEntry/foodEntryStore'
+import { useAxiosStore } from '../axios-store'
 
 export class DailyLog extends Record implements HasUser {
   id?: number
@@ -404,7 +405,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
 
     async createItem(item: DailyLog) {
       let newItem: DailyLog
-      await api
+      await useAxiosStore().axios()
         .post('/daily-logs', item, {
           headers: {},
           params: {},
@@ -431,7 +432,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         }, Utils.handleError('Error creating item.'))
     },
     async fetchAll() {
-      const response = await api.get('/daily-logs', {
+      const response = await useAxiosStore().axios().get('/daily-logs', {
         headers: {},
         params: {},
       })
@@ -443,7 +444,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
       this.items.sort((a, b) => Utils.mddl(a, b, 'desc'))
     },
     async fetchItem(id: number) {
-      const response = await api.get(`/daily-logs/${id}`, {
+      const response = await useAxiosStore().axios().get(`/daily-logs/${id}`, {
         headers: {},
         params: {},
       })
@@ -452,7 +453,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
     async updateItem(item: DailyLog) {
       const index = this.items.findIndex((x) => x.id === item.id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .patch(`/daily-logs/${item.id}`, item, {
             headers: {},
           })
@@ -467,7 +468,7 @@ export const useDailyLogsStore = defineStore('daily-logs', {
         throw new Error('cannot delete undefined. skill issue lol')
       const index = this.items.findIndex((x) => x.id === id)
       if (index !== -1) {
-        await api
+        await useAxiosStore().axios()
           .delete(`/daily-logs/${id}`, {
             headers: {},
           })
