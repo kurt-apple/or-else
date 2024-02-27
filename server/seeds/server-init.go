@@ -66,7 +66,11 @@ func DBInit(db *gorm.DB, interfaces []interface{}) {
 				PreviousLogID: 0,
 				LastModified:  time.Now(),
 			}
-			db.Create(&firstDailyLog)
+			dlresult := db.Create(&firstDailyLog)
+			if dlresult.Error != nil {
+				fmt.Println("Error creating the first daily log.")
+				fmt.Println(dlresult.Error.Error())
+			}
 		} else {
 			panic(dailyLogSearchResult.Error)
 		}
